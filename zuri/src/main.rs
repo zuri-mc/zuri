@@ -95,5 +95,9 @@ fn setup(
     commands.spawn(Camera3dBundle {
         transform: Transform::from_xyz(-5.0, 2.5, 5.0),
         ..default()
+    });
+    commands.spawn(TransformBundle {
+        local: Transform::from_xyz(-5.0, 2.5, 5.0),
+        ..default()
     }).insert((Head::default(), Local));
 }
