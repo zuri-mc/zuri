@@ -1,0 +1,11 @@
+[package]
+name = "zuri"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = "0.9.1"
+
+[features]
+# Compiles the application for the wayland window system protocol instead of x11. Only for linux.
+wayland = ["bevy/wayland"]
