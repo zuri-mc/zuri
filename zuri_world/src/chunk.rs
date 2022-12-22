@@ -1,43 +1,52 @@
+use std::iter;
+
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 
-const SUBCHUNKS_SIZE: usize = 16;
-const SUBCHUNKS_BLOCK_COUNT: usize = SUBCHUNKS_SIZE * SUBCHUNKS_SIZE * SUBCHUNKS_SIZE;
+use crate::pos::{BlockPos, ChunkPos};
+use crate::range::YRange;
+use crate::subchunk::*;
 
-pub struct SubChunk {
-    // todo: store actual blocks instead of booleans
-    blocks: [bool; SUBCHUNKS_BLOCK_COUNT],
+pub struct Chunk {
+    range: YRange,
+    sub_chunks: Vec<Option<SubChunk>>,
 }
 
-impl Default for SubChunk {
-    fn default() -> Self {
+impl Chunk {
+    pub fn empty(range: YRange) -> Self {
         Self {
-            blocks: [false; SUBCHUNKS_BLOCK_COUNT],
-        }
-    }
-}
-
-impl SubChunk {
-    #[inline]
-    fn require_inside(x: u8, y: u8, z: u8) {
-        if x >= SUBCHUNKS_SIZE as u8 || y >= SUBCHUNKS_SIZE as u8 || z >= SUBCHUNKS_SIZE as u8 {
-            panic!("subchunk position out of bounds");
+            range,
+            sub_chunks: iter::repeat(None).take((range.height() >> 4) as usize).collect(),
         }
     }
 
-    #[inline]
-    fn index(x: u8, y: u8, z: u8) -> usize {
-        (x as usize) + ((z as usize) << 4) + ((y as usize) << 8)
+    pub fn at(&self, pos: ChunkPos) -> bool {
+        if !self.range.is_inside(pos) {
+            panic!("chunk pos is outside of bounds"); // todo: maybe return an option
+        }
+        if let Some(subchunk) = &self.sub_chunks[self.subchunk_id(pos.y())] {
+            subchunk.at(pos.x(), ((pos.y() - self.range.min()) % 16) as u8, pos.z())
+        } else {
+            false
+        }
     }
 
-    pub fn at(&self, x: u8, y: u8, z: u8) -> bool {
-        Self::require_inside(x, y, z);
-        self.blocks[Self::index(x, y, z)]
+    pub fn set(&mut self, pos: ChunkPos, val: bool) {
+        if !self.range.is_inside(pos) {
+            panic!("chunk pos is outside of bounds"); // todo: do we want to panic here
+        }
+        let id = self.subchunk_id(pos.y());
+        if let Some(subchunk) = &mut self.sub_chunks[id] {
+            subchunk.set(pos.x(), ((pos.y() - self.range.min()) % 16) as u8, pos.z(), val)
+        } else {
+            let mut s = SubChunk::default();
+            s.set(pos.x(), ((pos.y() - self.range.min()) % 16) as u8, pos.z(), val);
+            self.sub_chunks[id] = Some(s);
+        }
     }
 
-    pub fn set(&mut self, x: u8, y: u8, z: u8, val: bool) {
-        Self::require_inside(x, y, z);
-        self.blocks[Self::index(x, y, z)] = val;
+    fn subchunk_id(&self, y: i16) -> usize {
+        ((y - self.range.min()) >> 4) as usize
     }
 
     pub fn build_mesh(&self) -> Mesh {
@@ -45,10 +54,10 @@ impl SubChunk {
 
         let mut vertices = Vec::<[f32; 3]>::new();
         let mut triangles = Vec::<u32>::new();
-        for x in 0..16 {
-            for y in 0..16 {
-                for z in 0..16 {
-                    if !self.at(x, y, z) {
+        for x in 0..(SUBCHUNKS_SIZE as u8) {
+            for y in self.range.min()..self.range.max() {
+                for z in 0..(SUBCHUNKS_SIZE as u8) {
+                    if !self.at(ChunkPos::new(x, y, z)) {
                         continue;
                     }
                     let start_index = vertices.len() as u32;
@@ -132,11 +141,11 @@ impl SubChunk {
         mesh
     }
 
-    fn face_visible(&self, x: u8, y: u8, z: u8, x_off: i8, y_off: i8, z_off: i8) -> bool {
+    fn face_visible(&self, x: u8, y: i16, z: u8, x_off: i8, y_off: i16, z_off: i8) -> bool {
         let max = SUBCHUNKS_SIZE as u8 - 1;
-        if x_off < 0 && x == 0 || x_off > 0 && x == max || y_off < 0 && y == 0 || y_off > 0 && y == max || z_off < 0 && z == 0 || z_off > 0 && z == max {
+        if x_off < 0 && x == 0 || x_off > 0 && x == max || y_off < 0 && y == self.range.min() || y_off > 0 && y == self.range.max() || z_off < 0 && z == 0 || z_off > 0 && z == max {
             return true;
         }
-        !self.at((x as i8 + x_off) as u8, (y as i8 + y_off) as u8, (z as i8 + z_off) as u8)
+        !self.at(ChunkPos::new((x as i8 + x_off) as u8, (y + y_off) as i16, (z as i8 + z_off) as u8))
     }
 }
