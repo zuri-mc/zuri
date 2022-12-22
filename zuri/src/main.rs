@@ -7,6 +7,7 @@ use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::window::{CursorGrabMode, PresentMode};
 use noise::{NoiseFn, Simplex};
 
+use crate::chunk::SubChunk;
 use crate::entity::Head;
 use crate::input::InputPlugin;
 use crate::player::{Local, LocalPlayerPlugin};
@@ -15,6 +16,7 @@ mod entity;
 mod player;
 mod input;
 mod io;
+mod chunk;
 
 fn main() {
     App::new()
@@ -68,24 +70,38 @@ fn setup(
 ) {
     wireframe_config.global = false;
     // cubes
+    let mut cube_count = 0;
     let noise = Simplex::new(1);
-    let size = 0.2;
-    for x in 0..32 {
-        for z in 0..32 {
-            let max = (noise.get([x as f64 / 50., z as f64 / 50.]) * 15.) as i32;
-            for y in -3..max {
-                commands.spawn((
-                    PbrBundle {
-                        mesh: meshes.add(Mesh::from(shape::Cube { size })),
-                        material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-                        transform: Transform::from_xyz(x as f32 * size - 3.2, y as f32 * size, z as f32 * size - 3.2),
-                        ..default()
-                    },
-                    Wireframe,
-                ));
+    for chunk_x in 0..4 {
+        for chunk_z in 0..4 {
+            let mut s = SubChunk::default();
+            for x in 0..16 {
+                let world_x = chunk_x * 16 + x;
+
+                for z in 0..16 {
+                    let world_z = chunk_z * 16 + z;
+
+                    let max = (noise.get([world_x as f64 / 50., world_z as f64 / 50.]) * 15.) as i32;
+                    for y in 0..max + 10 {
+                        cube_count += 1;
+                        s.set(x, y as u8, z, true);
+                    }
+                }
             }
+
+            commands.spawn((
+                PbrBundle {
+                    mesh: meshes.add(s.build_mesh()),
+                    material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+                    transform: Transform::from_xyz(chunk_x as f32 * 16., 0., chunk_z as f32 * 16.),
+                    ..default()
+                },
+                Wireframe,
+            ));
         }
     }
+    println!("Placed {} cubes", cube_count);
+
     // light
     commands.spawn(PointLightBundle {
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
