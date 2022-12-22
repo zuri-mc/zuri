@@ -1,12 +1,27 @@
 use std::collections::VecDeque;
+
 use bytes::{
-    BufMut,
     Buf,
+    BufMut,
+    Bytes,
+    BytesMut,
 };
 
 #[derive(Default)]
 pub struct Writer {
-    buf: Vec<u8>,
+    buf: BytesMut,
+}
+
+impl Into<BytesMut> for Writer {
+    fn into(self) -> BytesMut {
+        self.buf
+    }
+}
+
+impl Into<Bytes> for Writer {
+    fn into(self) -> Bytes {
+        self.buf.into()
+    }
 }
 
 impl Writer {
@@ -112,12 +127,24 @@ impl Writer {
 
 #[derive(Default)]
 pub struct Reader {
-    buf: VecDeque<u8>,
+    buf: Bytes,
+}
+
+impl Into<Bytes> for Reader {
+    fn into(self) -> Bytes {
+        self.buf
+    }
 }
 
 impl Reader {
+    pub fn from_bytes(buf: Bytes) -> Self {
+        Reader {
+            buf,
+        }
+    }
+
     pub fn read_u8(&mut self) -> u8 {
-        return self.buf.get_u8()
+        return self.buf.get_u8();
     }
 
     pub fn read_i8(&mut self) -> i8 {
@@ -212,5 +239,56 @@ impl Reader {
             }
         }
         panic!("varint overflows integer");
+    }
+
+    pub fn read_f32(&mut self) -> f32 {
+        return self.buf.get_f32_le();
+    }
+
+    pub fn read_bool(&mut self) -> bool {
+        return self.read_u8() != 0;
+    }
+
+    pub fn read_string(&mut self) -> String {
+        let len = self.read_var_u32() as usize;
+        let s = String::from_utf8(self.buf.slice(0..len).into()).expect("could not decode string");
+        self.buf.advance(len);
+        s
+    }
+
+    pub fn read_string_utf(&mut self) -> String {
+        let len = self.read_i16() as usize;
+        let s = String::from_utf8(self.buf.slice(0..len).into()).expect("could not decode string");
+        self.buf.advance(len);
+        s
+    }
+
+    pub fn read_slice(&mut self) -> Bytes {
+        let len = self.read_var_u32() as usize;
+        let b = self.buf.slice(0..len);
+        self.buf.advance(len);
+        b
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use bytes::BytesMut;
+
+    use crate::io::{Reader, Writer};
+
+    #[test]
+    fn test_read() {
+        let mut buf = Writer::default();
+        buf.write_bool(true);
+        buf.write_i32(23974);
+        buf.write_string_utf("This is a test!".into());
+        buf.write_var_i32(243563456);
+
+        let mut reader = Reader::from_bytes(buf.into());
+        assert_eq!(reader.read_bool(), true);
+        assert_eq!(reader.read_i32(), 23974);
+        assert_eq!(reader.read_string_utf(), <&str as Into<String>>::into("This is a test!"));
+        assert_eq!(reader.read_var_i32(), 243563456);
     }
 }

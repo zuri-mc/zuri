@@ -1,3 +1,5 @@
+extern crate core;
+
 use bevy::{
     pbr::wireframe::{Wireframe, WireframeConfig, WireframePlugin},
     prelude::*,
@@ -17,6 +19,7 @@ mod player;
 mod input;
 mod io;
 mod chunk;
+mod protocol;
 
 fn main() {
     App::new()
