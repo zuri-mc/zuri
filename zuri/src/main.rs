@@ -70,13 +70,17 @@ fn setup(
     mut wireframe_config: ResMut<WireframeConfig>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
 ) {
     wireframe_config.global = false;
+
+    let texture_handle = asset_server.load("dirt.png");
+
     // cubes
     let mut cube_count = 0;
     let noise = Simplex::new(1);
-    for chunk_x in 0..4 {
-        for chunk_z in 0..4 {
+    for chunk_x in 0..16 {
+        for chunk_z in 0..16 {
             let mut s = SubChunk::default();
             for x in 0..16 {
                 let world_x = chunk_x * 16 + x;
@@ -95,7 +99,12 @@ fn setup(
             commands.spawn((
                 PbrBundle {
                     mesh: meshes.add(s.build_mesh()),
-                    material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+                    material: materials.add(StandardMaterial{
+                        base_color_texture: Some(texture_handle.clone()),
+                        alpha_mode: AlphaMode::Opaque,
+                        unlit: true,
+                        ..default()
+                    }),
                     transform: Transform::from_xyz(chunk_x as f32 * 16., 0., chunk_z as f32 * 16.),
                     ..default()
                 },

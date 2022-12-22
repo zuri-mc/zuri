@@ -23,7 +23,7 @@ fn move_system(time: Res<Time>, input: Res<ClientInput>, mut query: Query<(&mut 
         head.rot *= Quat::from_rotation_x(-input.rotation.y);
 
         let rotation = tr.rotation;
-        let speed = 4. * if input.sprint { 2. } else { 1. };
+        let speed = 10. * if input.sprint { 2. } else { 1. };
         tr.translation += rotation * Vec3::new(
             input.movement.x,
             if input.jump { 0.8 } else if input.sneak { -0.8 } else { 0. },
