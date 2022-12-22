@@ -53,7 +53,6 @@ impl SubChunk {
                     }
                     let start_index = vertices.len() as u32;
                     if self.face_visible(x, y, z, 0, -1, 0) {
-                        faces |= 0b00000001;
                         // Down 1
                         triangles.push(start_index);
                         triangles.push(start_index + 1);
