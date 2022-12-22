@@ -166,14 +166,51 @@ impl Reader {
     }
 
     pub fn read_var_i32(&mut self) -> i32 {
-        return 0;
+        let mut v: u32 = 0;
+        for i in (0..35).step_by(7) {
+            let b = self.read_u8();
+
+            v |= ((b & 0x7f) as u32) << i;
+            if b & 0x80 == 0 {
+                let x = (v >> 1) as i32;
+                return if v & 1 != 0 {
+                    -x
+                } else {
+                    x
+                };
+            }
+        }
+        panic!("varint overflows integer");
     }
 
     pub fn read_var_u64(&mut self) -> u64 {
-        return 0;
+        let mut v: u64 = 0;
+        for i in (0..70).step_by(7) {
+            let b = self.read_u8();
+
+            v |= ((b & 0x7f) as u64) << i;
+            if b & 0x80 == 0 {
+                return v;
+            }
+        }
+        panic!("varint overflows integer");
     }
 
     pub fn read_var_i64(&mut self) -> i64 {
-        return 0;
+        let mut v: u64 = 0;
+        for i in (0..70).step_by(7) {
+            let b = self.read_u8();
+
+            v |= ((b & 0x7f) as u64) << i;
+            if b & 0x80 == 0 {
+                let x = (v >> 1) as i64;
+                return if v & 1 != 0 {
+                    -x
+                } else {
+                    x
+                };
+            }
+        }
+        panic!("varint overflows integer");
     }
 }
