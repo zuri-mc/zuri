@@ -12,6 +12,7 @@ use noise::{NoiseFn, Simplex};
 use zuri_world::chunk::Chunk;
 use zuri_world::pos::ChunkPos;
 use zuri_world::range::YRange;
+use zuri_world::WorldPlugin;
 
 use crate::entity::Head;
 use crate::input::InputPlugin;
@@ -43,6 +44,7 @@ fn main() {
 
         .add_plugin(InputPlugin)
         .add_plugin(LocalPlayerPlugin)
+        .add_plugin(WorldPlugin)
 
         .add_startup_system(setup)
         .add_system(cursor_grab_system)
@@ -81,7 +83,7 @@ fn setup(
     let noise = Simplex::new(1);
     for chunk_x in 0..16 {
         for chunk_z in 0..16 {
-            let mut s = Chunk::empty(YRange::new(0, 64));
+            let mut s = Chunk::empty(YRange::new(0, 63));
             for x in 0..16 {
                 let world_x = chunk_x * 16 + x;
 
@@ -109,6 +111,7 @@ fn setup(
                     ..default()
                 },
                 Wireframe,
+                s,
             ));
         }
     }

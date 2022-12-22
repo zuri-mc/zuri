@@ -14,7 +14,7 @@ impl YRange {
         if max <= min {
             panic!("range maximum has to be smaller than minimum");
         }
-        if (max - min) % (SUBCHUNKS_SIZE as i16) != 0 {
+        if (max - min + 1) % (SUBCHUNKS_SIZE as i16) != 0 {
             panic!("range height needs to be a multiple of {}", SUBCHUNKS_SIZE);
         }
         YRange { min, max }
@@ -29,7 +29,7 @@ impl YRange {
     }
 
     pub fn height(&self) -> i16 {
-        self.max - self.min
+        self.max - self.min + 1
     }
 
     pub fn is_inside(&self, pos: impl Into<ChunkPos>) -> bool {

@@ -7,6 +7,7 @@ use crate::pos::{BlockPos, ChunkPos};
 use crate::range::YRange;
 use crate::subchunk::*;
 
+#[derive(Component)]
 pub struct Chunk {
     range: YRange,
     sub_chunks: Vec<Option<SubChunk>>,
@@ -55,7 +56,7 @@ impl Chunk {
         let mut vertices = Vec::<[f32; 3]>::new();
         let mut triangles = Vec::<u32>::new();
         for x in 0..(SUBCHUNKS_SIZE as u8) {
-            for y in self.range.min()..self.range.max() {
+            for y in self.range.min()..=self.range.max() {
                 for z in 0..(SUBCHUNKS_SIZE as u8) {
                     if !self.at(ChunkPos::new(x, y, z)) {
                         continue;
