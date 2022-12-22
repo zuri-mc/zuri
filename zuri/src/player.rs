@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use rust_raknet::RaknetSocket;
 
 use crate::entity::Head;
 use crate::input::ClientInput;
@@ -10,7 +9,6 @@ impl Plugin for LocalPlayerPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_system(move_system)
-            .add_system(network_system)
             .add_system(camera_sync_system);
     }
 }
@@ -43,7 +41,8 @@ fn camera_sync_system(player_query: Query<(&Transform, &Head), (With<Local>, Wit
     }
 }
 
-async fn network_system() {
+// todo: why is this in player.rs
+fn network_system() {
     // let socket = RaknetSocket::connect("127.0.0.1:19132".parse().unwrap()).await.unwrap();
     // TODO: :skull:
 }
