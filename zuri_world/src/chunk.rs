@@ -3,7 +3,7 @@ use std::iter;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 
-use crate::pos::{BlockPos, ChunkPos};
+use crate::pos::{ChunkPos};
 use crate::range::YRange;
 use crate::subchunk::*;
 
@@ -218,8 +218,6 @@ impl Chunk {
                         triangles.push(start_index + 2);
                         triangles.push(start_index + 1);
                         triangles.push(start_index + 3);
-
-                        start_index += 4;
                     }
                 }
             }

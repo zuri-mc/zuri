@@ -1,15 +1,14 @@
 extern crate core;
 
 use std::f32::consts::PI;
+
 use bevy::{
-    pbr::wireframe::{Wireframe, WireframeConfig, WireframePlugin},
+    pbr::wireframe::{WireframeConfig, WireframePlugin},
     prelude::*,
     render::{render_resource::WgpuFeatures, settings::WgpuSettings},
 };
 use bevy::core_pipeline::clear_color::ClearColorConfig;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
-use bevy::prelude::shape::Cube;
-use bevy::render::render_resource::Texture;
 use bevy::window::{CursorGrabMode, PresentMode};
 use noise::{NoiseFn, Simplex};
 

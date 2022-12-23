@@ -32,7 +32,7 @@ fn move_system(time: Res<Time>, input: Res<ClientInput>, mut query: Query<(&mut 
     }
 }
 
-fn camera_sync_system(player_query: Query<(&Transform, &Head), (With<Local>, Without<Camera3d>)>, mut cam_query: Query<(&mut Transform), With<Camera3d>>) {
+fn camera_sync_system(player_query: Query<(&Transform, &Head), (With<Local>, Without<Camera3d>)>, mut cam_query: Query<&mut Transform, With<Camera3d>>) {
     if let Ok((tr, head)) = player_query.get_single() {
         let mut cam_transform = cam_query.single_mut();
 
