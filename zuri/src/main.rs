@@ -1,11 +1,15 @@
 extern crate core;
 
+use std::f32::consts::PI;
 use bevy::{
     pbr::wireframe::{Wireframe, WireframeConfig, WireframePlugin},
     prelude::*,
     render::{render_resource::WgpuFeatures, settings::WgpuSettings},
 };
+use bevy::core_pipeline::clear_color::ClearColorConfig;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+use bevy::prelude::shape::Cube;
+use bevy::render::render_resource::Texture;
 use bevy::window::{CursorGrabMode, PresentMode};
 use noise::{NoiseFn, Simplex};
 
@@ -35,7 +39,7 @@ fn main() {
                 ..default()
             },
             ..default()
-        }))
+        }).set(ImagePlugin::default_nearest()))
         .add_plugin(WireframePlugin)
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin)
@@ -76,6 +80,8 @@ fn setup(
 ) {
     wireframe_config.global = false;
 
+    let texture_handle = asset_server.load("dirt.png");
+
     // cubes
     let mut cube_count = 0;
     let noise = Simplex::new(1);
@@ -100,15 +106,18 @@ fn setup(
                 PbrBundle {
                     mesh: meshes.add(s.build_mesh()),
                     material: materials.add(StandardMaterial {
-                        base_color: Color::RED,
+                        base_color_texture: Some(texture_handle.clone()),
+                        base_color: Color::WHITE,
                         alpha_mode: AlphaMode::Opaque,
-                        unlit: true,
+                        //reflectance: 0.01,
+                        perceptual_roughness: 0.94,
+                        //unlit: true,
                         ..default()
                     }),
                     transform: Transform::from_xyz(chunk_x as f32 * 16., -32., chunk_z as f32 * 16.),
                     ..default()
                 },
-                Wireframe,
+                //Wireframe,
                 s,
             ));
         }
@@ -120,8 +129,42 @@ fn setup(
         transform: Transform::from_xyz(4.0, 8.0, 4.0),
         ..default()
     });
+    // ambient light
+    commands.insert_resource(AmbientLight {
+        color: Color::WHITE,
+        brightness: 0.3,
+    });
+    // sunlight
+    const HALF_SIZE: f32 = 10.0;
+    commands.spawn(DirectionalLightBundle {
+        directional_light: DirectionalLight {
+            // Configure the projection to better fit the scene
+            shadow_projection: OrthographicProjection {
+                left: -HALF_SIZE,
+                right: HALF_SIZE,
+                bottom: -HALF_SIZE,
+                top: HALF_SIZE,
+                near: -10.0 * HALF_SIZE,
+                far: 10.0 * HALF_SIZE,
+                ..default()
+            },
+            shadows_enabled: true,
+            illuminance: 3600.,
+            ..default()
+        },
+        transform: Transform {
+            translation: Vec3::new(0.0, 2.0, 0.0),
+            rotation: Quat::from_rotation_x(-PI / 4.),
+            ..default()
+        },
+        ..default()
+    });
     // camera
     commands.spawn(Camera3dBundle {
+        camera_3d: Camera3d {
+            clear_color: ClearColorConfig::Custom(Color::rgb(0.5, 0.6, 0.8)),
+            ..default()
+        },
         transform: Transform::from_xyz(-5.0, 2.5, 5.0),
         ..default()
     });

@@ -53,6 +53,8 @@ impl Chunk {
     pub fn build_mesh(&self) -> Mesh {
         let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
 
+        let mut uv = Vec::<[f32; 2]>::new();
+        let mut normals = Vec::<[f32; 3]>::new();
         let mut vertices = Vec::<[f32; 3]>::new();
         let mut triangles = Vec::<u32>::new();
         for x in 0..(SUBCHUNKS_SIZE as u8) {
@@ -61,82 +63,170 @@ impl Chunk {
                     if !self.at(ChunkPos::new(x, y, z)) {
                         continue;
                     }
-                    let start_index = vertices.len() as u32;
+                    let mut start_index = vertices.len() as u32;
                     if self.face_visible(x, y, z, 0, -1, 0) {
+                        vertices.push([x as f32, y as f32, z as f32]);
+                        vertices.push([(x + 1) as f32, y as f32, z as f32]);
+                        vertices.push([x as f32, y as f32, (z + 1) as f32]);
+                        vertices.push([(x + 1) as f32, y as f32, (z + 1) as f32]);
+
+                        uv.push([0., 0.]);
+                        uv.push([1., 0.]);
+                        uv.push([0., 1.]);
+                        uv.push([1., 1.]);
+
+                        normals.push([0., -1., 0.]);
+                        normals.push([0., -1., 0.]);
+                        normals.push([0., -1., 0.]);
+                        normals.push([0., -1., 0.]);
+
                         // Down 1
-                        triangles.push(start_index);
+                        triangles.push(start_index + 0);
                         triangles.push(start_index + 1);
                         triangles.push(start_index + 2);
                         // Down 2
                         triangles.push(start_index + 2);
+                        triangles.push(start_index + 1);
                         triangles.push(start_index + 3);
-                        triangles.push(start_index);
+
+                        start_index += 4;
                     }
                     if self.face_visible(x, y, z, 0, 1, 0) {
+                        vertices.push([x as f32, (y + 1) as f32, z as f32]);
+                        vertices.push([(x + 1) as f32, (y + 1) as f32, z as f32]);
+                        vertices.push([x as f32, (y + 1) as f32, (z + 1) as f32]);
+                        vertices.push([(x + 1) as f32, (y + 1) as f32, (z + 1) as f32]);
+
+                        uv.push([0., 0.]);
+                        uv.push([1., 0.]);
+                        uv.push([0., 1.]);
+                        uv.push([1., 1.]);
+
+                        normals.push([0., 1.0, 0.]);
+                        normals.push([0., 1.0, 0.]);
+                        normals.push([0., 1.0, 0.]);
+                        normals.push([0., 1.0, 0.]);
+
                         // Up 1
-                        triangles.push(start_index + 4 + 2);
-                        triangles.push(start_index + 4 + 1);
-                        triangles.push(start_index + 4);
+                        triangles.push(start_index + 2);
+                        triangles.push(start_index + 1);
+                        triangles.push(start_index + 0);
                         // Up 2
-                        triangles.push(start_index + 4);
-                        triangles.push(start_index + 4 + 3);
-                        triangles.push(start_index + 4 + 2);
+                        triangles.push(start_index + 3);
+                        triangles.push(start_index + 1);
+                        triangles.push(start_index + 2);
+
+                        start_index += 4;
                     }
                     if self.face_visible(x, y, z, 0, 0, -1) {
-                        // North 1
-                        triangles.push(start_index + 4 + 1);
+                        vertices.push([x as f32, y as f32, z as f32]);
+                        vertices.push([(x + 1) as f32, y as f32, z as f32]);
+                        vertices.push([x as f32, (y + 1) as f32, z as f32]);
+                        vertices.push([(x + 1) as f32, (y + 1) as f32, z as f32]);
+
+                        uv.push([0., 0.]);
+                        uv.push([1., 0.]);
+                        uv.push([0., 1.]);
+                        uv.push([1., 1.]);
+
+                        normals.push([0., 0., -1.0]);
+                        normals.push([0., 0., -1.0]);
+                        normals.push([0., 0., -1.0]);
+                        normals.push([0., 0., -1.0]);
+
+                        triangles.push(start_index + 2);
                         triangles.push(start_index + 1);
                         triangles.push(start_index + 0);
-                        // North 2
-                        triangles.push(start_index + 0);
-                        triangles.push(start_index + 4 + 0);
-                        triangles.push(start_index + 4 + 1);
+
+                        triangles.push(start_index + 3);
+                        triangles.push(start_index + 1);
+                        triangles.push(start_index + 2);
+
+                        start_index += 4;
                     }
                     if self.face_visible(x, y, z, 0, 0, 1) {
-                        // South 1
-                        triangles.push(start_index + 4 + 3);
+                        vertices.push([x as f32, y as f32, (z + 1) as f32]);
+                        vertices.push([(x + 1) as f32, y as f32, (z + 1) as f32]);
+                        vertices.push([x as f32, (y + 1) as f32, (z + 1) as f32]);
+                        vertices.push([(x + 1) as f32, (y + 1) as f32, (z + 1) as f32]);
+
+                        uv.push([0., 0.]);
+                        uv.push([1., 0.]);
+                        uv.push([0., 1.]);
+                        uv.push([1., 1.]);
+
+                        normals.push([0., 0., 1.0]);
+                        normals.push([0., 0., 1.0]);
+                        normals.push([0., 0., 1.0]);
+                        normals.push([0., 0., 1.0]);
+                        triangles.push(start_index + 0);
+                        triangles.push(start_index + 1);
+                        triangles.push(start_index + 2);
+
+                        triangles.push(start_index + 2);
+                        triangles.push(start_index + 1);
                         triangles.push(start_index + 3);
-                        triangles.push(start_index + 2);
-                        // South 2
-                        triangles.push(start_index + 2);
-                        triangles.push(start_index + 4 + 2);
-                        triangles.push(start_index + 4 + 3);
+
+                        start_index += 4;
                     }
                     if self.face_visible(x, y, z, 1, 0, 0) {
-                        // West 1
-                        triangles.push(start_index + 4 + 2);
+                        vertices.push([(x + 1) as f32, y as f32, z as f32]);
+                        vertices.push([(x + 1) as f32, y as f32, (z + 1) as f32]);
+                        vertices.push([(x + 1) as f32, (y + 1) as f32, z as f32]);
+                        vertices.push([(x + 1) as f32, (y + 1) as f32, (z + 1) as f32]);
+
+                        uv.push([0., 0.]);
+                        uv.push([1., 0.]);
+                        uv.push([0., 1.]);
+                        uv.push([1., 1.]);
+
+                        normals.push([1., 0., 0.]);
+                        normals.push([1., 0., 0.]);
+                        normals.push([1., 0., 0.]);
+                        normals.push([1., 0., 0.]);
+
                         triangles.push(start_index + 2);
                         triangles.push(start_index + 1);
-                        // West 2
+                        triangles.push(start_index + 0);
+
+                        triangles.push(start_index + 3);
                         triangles.push(start_index + 1);
-                        triangles.push(start_index + 4 + 1);
-                        triangles.push(start_index + 4 + 2);
+                        triangles.push(start_index + 2);
+
+                        start_index += 4;
                     }
                     if self.face_visible(x, y, z, -1, 0, 0) {
-                        // East 1
-                        triangles.push(start_index + 4 + 0);
-                        triangles.push(start_index + 0);
-                        triangles.push(start_index + 3);
-                        // East 2
-                        triangles.push(start_index + 3);
-                        triangles.push(start_index + 4 + 3);
-                        triangles.push(start_index + 4 + 0);
-                    }
+                        vertices.push([x as f32, y as f32, z as f32]);
+                        vertices.push([x as f32, y as f32, (z + 1) as f32]);
+                        vertices.push([x as f32, (y + 1) as f32, z as f32]);
+                        vertices.push([x as f32, (y + 1) as f32, (z + 1) as f32]);
 
-                    // Bottom half
-                    vertices.push([x as f32, y as f32, z as f32]);
-                    vertices.push([(x + 1) as f32, y as f32, z as f32]);
-                    vertices.push([(x + 1) as f32, y as f32, (z + 1) as f32]);
-                    vertices.push([x as f32, y as f32, (z + 1) as f32]);
-                    // Top half
-                    vertices.push([x as f32, (y + 1) as f32, z as f32]);
-                    vertices.push([(x + 1) as f32, (y + 1) as f32, z as f32]);
-                    vertices.push([(x + 1) as f32, (y + 1) as f32, (z + 1) as f32]);
-                    vertices.push([x as f32, (y + 1) as f32, (z + 1) as f32]);
+                        uv.push([1., 1.]);
+                        uv.push([1., 0.]);
+                        uv.push([0., 1.]);
+                        uv.push([0., 0.]);
+
+                        normals.push([-1., 0., 0.]);
+                        normals.push([-1., 0., 0.]);
+                        normals.push([-1., 0., 0.]);
+                        normals.push([-1., 0., 0.]);
+
+                        triangles.push(start_index + 0);
+                        triangles.push(start_index + 1);
+                        triangles.push(start_index + 2);
+
+                        triangles.push(start_index + 2);
+                        triangles.push(start_index + 1);
+                        triangles.push(start_index + 3);
+
+                        start_index += 4;
+                    }
                 }
             }
         }
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
+        mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uv);
+        mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
         mesh.set_indices(Some(Indices::U32(triangles)));
 
         mesh

@@ -4,7 +4,7 @@ use bevy_math::Vec3;
 
 /// An axis-aligned bounding box. Defines an area in the world. This area is always parallel with
 /// the X, Y and Z axis and cannot be rotated.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct AABB {
     min: Vec3,
     max: Vec3,
