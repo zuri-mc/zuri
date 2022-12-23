@@ -2,7 +2,8 @@
 resolver = "2"
 members = [
     "zuri",
-    "zuri_world"
+    "zuri_math",
+    "zuri_world",
 ]
 
 # Enable a small amount of optimization in debug mode

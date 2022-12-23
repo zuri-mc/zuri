@@ -3571,7 +3571,15 @@ dependencies = [
  "bevy",
  "bytes",
  "noise",
+ "zuri_math",
  "zuri_world",
+]
+
+[[package]]
+name = "zuri_math"
+version = "0.1.0"
+dependencies = [
+ "bevy_math",
 ]
 
 [[package]]
