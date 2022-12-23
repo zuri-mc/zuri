@@ -40,9 +40,3 @@ fn camera_sync_system(player_query: Query<(&Transform, &Head), (With<Local>, Wit
         cam_transform.rotation = tr.rotation * head.rot;
     }
 }
-
-// todo: why is this in player.rs
-fn network_system() {
-    // let socket = RaknetSocket::connect("127.0.0.1:19132".parse().unwrap()).await.unwrap();
-    // TODO: :skull:
-}

@@ -21,8 +21,6 @@ use crate::player::{Local, LocalPlayerPlugin};
 mod entity;
 mod player;
 mod input;
-mod io;
-mod protocol;
 
 fn main() {
     App::new()
