@@ -1,4 +1,21 @@
+use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{ToPrimitive, FromPrimitive};
 use crate::io::{Reader, Writer};
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum AttributeModifierOperand {
+    Min,
+    Max,
+    Current,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum AttributeModifierOperation {
+    Addition,
+    MultiplyBase,
+    MultiplyTotal,
+    Cap,
+}
 
 #[derive(Debug, Default)]
 pub struct Attribute {
@@ -39,8 +56,8 @@ pub struct AttributeModifier {
     pub id: String,
     pub name: String,
     pub amount: f32,
-    pub operation: i32,
-    pub operand: i32,
+    pub operation: AttributeModifierOperation,
+    pub operand: AttributeModifierOperand,
     pub serializable: bool,
 }
 
@@ -49,8 +66,8 @@ impl AttributeModifier {
         writer.string(self.id.as_str());
         writer.string(self.name.as_str());
         writer.f32(self.amount);
-        writer.i32(self.operation);
-        writer.i32(self.operand);
+        writer.i32(self.operation.to_i32().unwrap());
+        writer.i32(self.operand.to_i32().unwrap());
         writer.bool(self.serializable);
     }
 
@@ -59,8 +76,8 @@ impl AttributeModifier {
             id: reader.string(),
             name: reader.string(),
             amount: reader.f32(),
-            operation: reader.i32(),
-            operand: reader.i32(),
+            operation: AttributeModifierOperation::from_i32(reader.i32()).unwrap(),
+            operand: AttributeModifierOperand::from_i32(reader.i32()).unwrap(),
             serializable: reader.bool(),
         }
     }

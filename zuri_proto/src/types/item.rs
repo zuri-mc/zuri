@@ -1,6 +1,39 @@
 use bytes::BytesMut;
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Writer, Reader};
 use zuri_nbt::{Value, encoding::LittleEndian};
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum UseItemAction {
+    ClickBlock,
+    ClickAir,
+    BreakBlock,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum UseItemMethod {
+    EquipArmour,
+    Eat,
+    Attack,
+    Consume,
+    Throw,
+    Shoot,
+    Place,
+    FillBottle,
+    FillBucket,
+    PourBucket,
+    UseTool,
+    Interact,
+    Retrieved,
+    Dyed,
+    Traded,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum UseItemOnEntityAction {
+    Interact,
+    Attack,
+}
 
 #[derive(Debug, Default)]
 pub struct ItemInstance {

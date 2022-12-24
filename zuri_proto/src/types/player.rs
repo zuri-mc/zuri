@@ -51,6 +51,31 @@ pub enum MoveMode {
     Rotation,
 }
 
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum InputMode {
+    None,
+    Mouse,
+    Touch,
+    GamePad,
+    MotionController,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum InteractionModel {
+    Touch,
+    Crosshair,
+    Classic,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum TeleportCause {
+    None,
+    Projectile,
+    ChorusFruit,
+    Command,
+    Behaviour,
+}
+
 #[derive(Debug)]
 pub struct PlayerMovementSettings {
     pub movement_type: i32,

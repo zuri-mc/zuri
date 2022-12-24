@@ -85,6 +85,15 @@ pub enum SoftEnumAction {
     Set,
 }
 
+// todo: figure out where this is used
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum ParamOption {
+    None,
+    CollapseEnum,
+    HasSemanticConstraint,
+    AsChainedCommand,
+}
+
 #[derive(Debug)]
 pub struct Command {
     pub name: String,

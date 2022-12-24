@@ -2,6 +2,7 @@ use bytes::Bytes;
 use std::fmt::Debug;
 use glam::{IVec3, Vec3};
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::io::{Reader, Writer};
 use crate::types::item::ItemInstance;
@@ -23,7 +24,7 @@ pub enum InventoryActionSource {
 }
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
-pub enum InventoryTransactionType {
+pub enum InventoryTransactionType { // todo: get rid of this
     Normal,
     Mismatch,
     UseItem,
@@ -153,16 +154,22 @@ impl InventoryTransactionData for NormalTransactionData {
 
 #[derive(Debug)]
 pub struct ReleaseItemTransactionData {
-    pub action_type: u32,
+    pub action_type: ReleaseItemAction,
     pub hot_bar_slot: i32,
     pub held_item: ItemInstance,
     pub head_position: Vec3,
 }
 
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum ReleaseItemAction {
+    Release,
+    Consume,
+}
+
 impl ReleaseItemTransactionData {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
-            action_type: reader.var_u32(),
+            action_type: ReleaseItemAction::from_u32(reader.var_u32()).unwrap(),
             hot_bar_slot: reader.var_i32(),
             held_item: ItemInstance::read(reader),
             head_position: reader.vec3(),
@@ -172,7 +179,7 @@ impl ReleaseItemTransactionData {
 
 impl InventoryTransactionData for ReleaseItemTransactionData {
     fn write(&self, writer: &mut Writer) {
-        writer.var_u32(self.action_type);
+        writer.var_u32(self.action_type.to_u32().unwrap());
         writer.var_i32(self.hot_bar_slot);
         self.held_item.write(writer);
         writer.vec3(self.head_position);

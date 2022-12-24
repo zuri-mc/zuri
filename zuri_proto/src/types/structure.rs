@@ -1,5 +1,6 @@
 use glam::{IVec3, Vec3};
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{ToPrimitive, FromPrimitive};
 use crate::io::{Reader, Writer};
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
@@ -50,6 +51,13 @@ pub enum StructureTemplateDataResponseType {
     Import,
 }
 
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum AnimationMode {
+    None,
+    Layers,
+    Blocks,
+}
+
 #[derive(Debug)]
 pub struct StructureSettings {
     pub palette_name: String,
@@ -61,7 +69,7 @@ pub struct StructureSettings {
     pub last_editing_player_unique_id: i64,
     pub rotation: u8,
     pub mirror: u8,
-    pub animation_mode: u8,
+    pub animation_mode: AnimationMode,
     pub animation_duration: f32,
     pub integrity: f32,
     pub seed: u32,
@@ -79,7 +87,7 @@ impl StructureSettings {
         writer.var_i64(self.last_editing_player_unique_id);
         writer.u8(self.rotation);
         writer.u8(self.mirror);
-        writer.u8(self.animation_mode);
+        writer.u8(self.animation_mode.to_u8().unwrap());
         writer.f32(self.animation_duration);
         writer.f32(self.integrity);
         writer.u32(self.seed);
@@ -97,7 +105,7 @@ impl StructureSettings {
             last_editing_player_unique_id: reader.var_i64(),
             rotation: reader.u8(),
             mirror: reader.u8(),
-            animation_mode: reader.u8(),
+            animation_mode: AnimationMode::from_u8(reader.u8()).unwrap(),
             animation_duration: reader.f32(),
             integrity: reader.f32(),
             seed: reader.u32(),

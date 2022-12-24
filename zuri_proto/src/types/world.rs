@@ -92,6 +92,12 @@ pub enum EntityLinkType {
     Passenger,
 }
 
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum UpdateBlockTransition {
+    BlockToEntity,
+    EntityToBlock,
+}
+
 #[derive(Debug)]
 pub struct BlockEntry {
     pub name: String,

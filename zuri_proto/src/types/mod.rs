@@ -22,3 +22,4 @@ pub mod structure;
 pub mod world;
 pub mod item;
 pub mod attribute;
+pub mod device;

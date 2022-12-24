@@ -2,7 +2,6 @@
 extern crate core;
 
 mod io;
-mod enums;
 mod r#macro;
 mod packet;
 mod types;
