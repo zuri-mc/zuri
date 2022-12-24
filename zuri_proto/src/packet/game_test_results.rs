@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 #[derive(Debug)]
 pub struct GameTestResults {
     pub name: String,

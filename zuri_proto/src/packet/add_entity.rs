@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 #[derive(Debug)]
 pub struct AddEntity {
     pub entity_network_id: u64,

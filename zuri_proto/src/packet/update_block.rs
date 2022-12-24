@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the server to update a block client-side, without resending the entire chunk that the block is located in.
 /// It is particularly useful for small modifications like block breaking/placing.
 #[derive(Debug)]

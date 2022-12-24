@@ -9,3 +9,5 @@ mod scoreboard;
 mod sound_event;
 mod skin;
 mod item_stack;
+mod command;
+mod game_rule;

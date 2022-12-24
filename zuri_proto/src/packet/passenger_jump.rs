@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the client to the server when it jumps while riding an entity that has the WASDControlled entity flag set,
 /// for example when riding a horse.
 #[derive(Debug)]

@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the server to open a container client-side. This container must be physically present in the world, for the
 /// packet to have any effect. Unlike Java Edition, Bedrock Edition requires that chests for example must be present and
 /// in range to open its inventory.

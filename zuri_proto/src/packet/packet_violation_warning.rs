@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 #[derive(Debug)]
 pub struct PacketViolationWarning {
     pub violation_type: PacketViolationType,

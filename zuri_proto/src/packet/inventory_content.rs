@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the server to update the full content of a particular inventory. It is usually sent for the main inventory
 /// of the player, but also works for other inventories that are currently opened by the player.
 #[derive(Debug)]

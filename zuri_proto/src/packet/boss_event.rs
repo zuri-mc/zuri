@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 #[derive(Debug)]
 pub struct BossEvent {
     pub boss_entity_unique_id: i64,

@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the client to request data of a structure.
 #[derive(Debug)]
 pub struct StructureTemplateDataRequest {

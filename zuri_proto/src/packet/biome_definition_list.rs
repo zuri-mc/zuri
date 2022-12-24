@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 #[derive(Debug)]
 pub struct BiomeDefinitionList {
     pub serialised_biome_definitions: Bytes,

@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the client to the server to send chat messages, and by the server to the client to forward or send messages,
 /// which may be chat, popups, tips etc.
 #[derive(Debug)]

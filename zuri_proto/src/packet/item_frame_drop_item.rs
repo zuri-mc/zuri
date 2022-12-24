@@ -1,6 +1,9 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 #[derive(Debug)]
 pub struct ItemFrameDropItem {
-    pub position: BlockPos,
+    pub position: Bloc,
 }
 
 impl Packet for ItemFrameDropItem {

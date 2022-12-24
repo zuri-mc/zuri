@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the server to inform the client on what resource packs the server has. It sends a list of the resource packs
 /// it has and basic information on them like the version and description.
 #[derive(Debug)]

@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the server to send the order in which resource packs and behaviour packs should be applied (and downloaded)
 /// by the client.
 #[derive(Debug)]

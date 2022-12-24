@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the server to change the client-side velocity of an entity. It is usually used in combination with
 /// server-side movement calculation.
 #[derive(Debug)]

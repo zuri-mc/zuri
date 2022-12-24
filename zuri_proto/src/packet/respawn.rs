@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the server to make a player respawn client-side. It is sent in response to a PlayerAction packet with the
 /// action type Respawn. As of 1.13, the server sends two of these packets with different states, and the client sends
 /// one of these back in order to complete the respawn.

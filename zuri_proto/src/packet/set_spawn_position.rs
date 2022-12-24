@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the server to update the spawn position of a player, for example when sleeping in a bed.
 #[derive(Debug)]
 pub struct SetSpawnPosition {

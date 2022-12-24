@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 #[derive(Debug)]
 pub struct SyncActorProperty {
     //pub property_data: dyn Any, // TODO: NBT

@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the server to initiate a certain event that has to do with blocks in specific, for example opening chests.
 #[derive(Debug)]
 pub struct BlockEvent {

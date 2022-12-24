@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the server to update the entity metadata of an entity. It includes flags such as if the entity is on fire,
 /// but also properties such as the air it has left until it starts drowning.
 #[derive(Debug)]

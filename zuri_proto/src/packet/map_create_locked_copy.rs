@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the server to create a locked copy of one map into another map. In vanilla, it is used in the cartography
 /// table to create a map that is locked and cannot be modified.
 #[derive(Debug)]

@@ -1,3 +1,7 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+use glam::Vec3;
+
 /// Sent by the server to the client to make a painting entity show up. It is one of the few entities that cannot be
 /// sent using the AddActor packet.
 #[derive(Debug)]

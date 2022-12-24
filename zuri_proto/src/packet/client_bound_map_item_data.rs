@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 #[derive(Debug, Default)]
 pub struct ClientBoundMapItemData {
     pub map_id: i64,

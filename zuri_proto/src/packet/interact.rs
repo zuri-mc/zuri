@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the client when it interacts with another entity in some way. It used to be used for normal entity and block
 /// interaction, but this is no longer the case now.
 #[derive(Debug)]

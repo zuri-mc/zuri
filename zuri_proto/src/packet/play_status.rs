@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the server to update a player on the play status. This includes failed statuses due to a mismatched version,
 /// but also success statuses.
 #[derive(Debug)]

@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the server to update an amount of attributes of any entity in the world. These attributes include ones such
 /// as the health or the movement speed of the entity.
 #[derive(Debug)]

@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the server to disconnect the client using an optional message to send as the disconnect screen.
 #[derive(Debug)]
 pub struct Disconnect {

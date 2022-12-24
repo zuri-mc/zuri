@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the client when it tries to pick an entity, so that it gets a spawn egg which can spawn that entity.
 #[derive(Debug)]
 pub struct ActorPickRequest {

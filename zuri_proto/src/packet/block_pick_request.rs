@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the client when it requests to pick a block in the world and place its item in their inventory.
 #[derive(Debug)]
 pub struct BlockPickRequest {

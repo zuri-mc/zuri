@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the client when it executes any action, for example starting to sprint, swim, starting the breaking of a
 /// block, dropping an item, etc.
 #[derive(Debug)]

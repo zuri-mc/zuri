@@ -155,52 +155,6 @@ pub enum CommandBlock {
     Chain,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
-pub enum CommandConstraint {
-    CheatsEnabled,
-    OperatorPermissions,
-    HostPermissions,
-}
-
-#[derive(Debug, FromPrimitive, ToPrimitive)]
-pub enum CommandOriginType {
-    Player,
-    Block,
-    MinecartBlock,
-    DevConsole,
-    Test,
-    AutomationPlayer,
-    ClientAutomation,
-    DedicatedServer,
-    Entity,
-    Virtual,
-    GameArgument,
-    EntityServer,
-    Precompiled,
-    GameDirectorEntityServer,
-    Script,
-    Executor,
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
-pub enum CommandOutputType {
-    None,
-    LastOutput,
-    Silent,
-    AllOutput,
-    DataSet,
-}
-
-#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
-pub enum CommandPermissionLevel {
-    Normal,
-    GameDirectors,
-    Admin,
-    Host,
-    Owner,
-    Internal,
-}
-
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum CompressionType {
     Flate,
@@ -869,30 +823,6 @@ pub enum SpawnBiomeType {
 pub enum SpawnType {
     Player,
     World,
-}
-
-#[derive(Debug, FromPrimitive, ToPrimitive)]
-pub enum StackRequestActionType {
-    Take,
-    Place,
-    Swap,
-    Drop,
-    Destroy,
-    Consume,
-    Create,
-    PlaceInContainer,
-    TakeOutContainer,
-    LabTableCombine,
-    BeaconPayment,
-    MineBlock,
-    CraftRecipe,
-    CraftRecipeAuto,
-    CraftCreative,
-    CraftRecipeOptional,
-    CraftGrindstone,
-    CraftLoom,
-    CraftNonImplementedDeprecated,
-    CraftResultsDeprecated,
 }
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]

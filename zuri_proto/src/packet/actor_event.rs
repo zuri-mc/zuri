@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the server when a particular event happens that has to do with an entity. Some of these events are
 /// entity-specific, for example a wolf shaking itself dry, but others are used for each entity, such as dying.
 #[derive(Debug)]

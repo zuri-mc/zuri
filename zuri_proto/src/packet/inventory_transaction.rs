@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the client. It essentially exists out of multiple sub-packets, each of which have something to do with the
 /// inventory in one way or another. Some of these sub-packets directly relate to the inventory, others relate to
 /// interaction with the world, that could potentially result in a change in the inventory.

@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by players to send their movement to the server, and by the server to update the movement of player entities
 /// to other players. When using the new movement system, this is only sent by the server.
 #[derive(Debug)]

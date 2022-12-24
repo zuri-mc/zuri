@@ -1,3 +1,6 @@
+use crate::io::{Reader, Writer};
+use crate::packet::Packet;
+
 /// Sent by the server to close a container the player currently has opened, which was opened using the ContainerOpen
 /// packet, or by the client to tell the server it closed a particular container, such as the crafting grid.
 #[derive(Debug)]
