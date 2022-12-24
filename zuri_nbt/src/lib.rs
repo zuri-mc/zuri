@@ -145,16 +145,27 @@ impl Value {
 #[cfg(test)]
 mod tests {
     use bytes::{Bytes, BytesMut};
-    use crate::encoding::LittleEndian;
+    use crate::decode::Reader;
+    use crate::encode::Writer;
+    use crate::encoding::{LittleEndian, NetworkLittleEndian};
     use crate::Value;
 
     #[test]
     fn test_little_endian() {
+        test::<LittleEndian>();
+    }
+
+    #[test]
+    fn test_network_little_endian() {
+        test::<NetworkLittleEndian>();
+    }
+
+    fn test<T: Reader + Writer + Sized + Default>() {
         let nbt = Value::Compound(vec![("test".to_string(), Value::Long(10)), ("test".to_string(), Value::List(vec![Value::Byte(1), Value::Byte(3)]))].iter().cloned().collect());
         let mut buf_writer = BytesMut::default();
-        nbt.write(&mut buf_writer, &mut LittleEndian).unwrap();
+        nbt.write(&mut buf_writer, &mut T::default()).unwrap();
 
         let mut buf: Bytes = buf_writer.into();
-        assert_eq!(Value::read(&mut buf, &mut LittleEndian).unwrap(), nbt);
+        assert_eq!(Value::read(&mut buf, &mut T::default()).unwrap(), nbt);
     }
 }
