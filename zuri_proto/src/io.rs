@@ -27,88 +27,92 @@ impl Into<Bytes> for Writer {
 }
 
 impl Writer {
-    pub fn write_u8(&mut self, x: u8) {
+    pub fn u8(&mut self, x: u8) {
         self.buf.put_u8(x);
     }
 
-    pub fn write_i8(&mut self, x: i8) {
+    pub fn i8(&mut self, x: i8) {
         self.buf.put_i8(x);
     }
 
-    pub fn write_u16(&mut self, x: u16) {
+    pub fn u16(&mut self, x: u16) {
         self.buf.put_u16_le(x);
     }
 
-    pub fn write_i16(&mut self, x: i16) {
+    pub fn i16(&mut self, x: i16) {
         self.buf.put_i16_le(x);
     }
 
-    pub fn write_u32(&mut self, x: u32) {
+    pub fn u32(&mut self, x: u32) {
         self.buf.put_u32_le(x);
     }
 
-    pub fn write_i32(&mut self, x: i32) {
+    pub fn i32(&mut self, x: i32) {
         self.buf.put_i32_le(x);
     }
 
-    pub fn write_be32(&mut self, x: i32) {
+    pub fn i32_be(&mut self, x: i32) {
         self.buf.put_i32(x);
     }
 
-    pub fn write_u64(&mut self, x: u64) {
+    pub fn u64(&mut self, x: u64) {
         self.buf.put_u64_le(x);
     }
 
-    pub fn write_i64(&mut self, x: i64) {
+    pub fn i64(&mut self, x: i64) {
         self.buf.put_i64_le(x);
     }
 
-    pub fn write_var_u32(&mut self, mut x: u32) {
+    pub fn var_u32(&mut self, mut x: u32) {
         while x >= 0x80 {
-            self.write_u8(x as u8 | 0x80);
+            self.u8(x as u8 | 0x80);
             x >>= 7;
         }
-        self.write_u8(x as u8);
+        self.u8(x as u8);
     }
 
-    pub fn write_var_i32(&mut self, x: i32) {
+    pub fn var_i32(&mut self, x: i32) {
         let mut u = (x as u32) << 1;
         if x < 0 {
             u = !u;
         }
         while u >= 0x80 {
-            self.write_u8(u as u8 | 0x80);
+            self.u8(u as u8 | 0x80);
             u >>= 7;
         }
-        self.write_u8(u as u8);
+        self.u8(u as u8);
     }
 
-    pub fn write_var_u64(&mut self, mut x: u64) {
+    pub fn var_u64(&mut self, mut x: u64) {
         while x >= 0x80 {
-            self.write_u8(x as u8 | 0x80);
+            self.u8(x as u8 | 0x80);
             x >>= 7;
         }
-        self.write_u8(x as u8);
+        self.u8(x as u8);
     }
 
-    pub fn write_var_i64(&mut self, x: i64) {
+    pub fn var_i64(&mut self, x: i64) {
         let mut u = (x as u64) << 1;
         if x < 0 {
             u = !u;
         }
         while u >= 0x80 {
-            self.write_u8(u as u8 | 0x80);
+            self.u8(u as u8 | 0x80);
             u >>= 7;
         }
-        self.write_u8(u as u8);
+        self.u8(u as u8);
     }
 
-    pub fn write_f32(&mut self, x: f32) {
+    pub fn f32(&mut self, x: f32) {
         self.buf.put_f32_le(x)
     }
 
-    pub fn write_bool(&mut self, x: bool) {
-        self.write_u8(x as u8);
+    pub fn byte_f32(&mut self, x: f32) {
+        self.u8((x / (360.0 / 256.0)) as u8)
+    }
+
+    pub fn bool(&mut self, x: bool) {
+        self.u8(x as u8);
     }
 
     pub fn string(&mut self, x: &str) {
@@ -125,8 +129,8 @@ impl Writer {
         self.buf.put_slice(x);
     }
 
-    pub fn write_slice(&mut self, x: &[u8]) {
-        self.write_var_u32(x.len() as u32);
+    pub fn byte_slice(&mut self, x: &[u8]) {
+        self.var_u32(x.len() as u32);
         self.buf.put_slice(x);
     }
 
@@ -314,8 +318,8 @@ impl Reader {
         b
     }
 
-    pub fn read_slice(&mut self) -> Bytes {
-        let len = self.read_var_u32() as usize;
+    pub fn byte_slice(&mut self) -> Bytes {
+        let len = self.var_u32() as usize;
         let b = self.buf.slice(0..len);
         self.buf.advance(len);
         b
@@ -376,10 +380,10 @@ mod tests {
     #[test]
     fn test_read() {
         let mut buf = Writer::default();
-        buf.write_bool(true);
-        buf.write_i32(23974);
-        buf.write_string_utf("This is a test!".into());
-        buf.write_var_i32(243563456);
+        buf.bool(true);
+        buf.i32(23974);
+        buf.string_utf("This is a test!".into());
+        buf.var_i32(243563456);
 
         let mut reader = Reader::from_bytes(buf.into());
         assert_eq!(reader.bool(), true);
