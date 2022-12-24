@@ -324,7 +324,7 @@ impl Packet for ClientToServerHandshake {
 }
 
 /// Sent by the server to disconnect the client using an optional message to send as the disconnect screen.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Disconnect {
     /// An optional message to show when disconnected. If left empty, the disconnection screen will be hidden.
     pub message: Option<String>,
@@ -339,12 +339,9 @@ impl Packet for Disconnect {
     }
 
     fn read(reader: &mut Reader) -> Self {
-        let mut packet = Self::default();
-        if !reader.bool() {
-            packet.message = Some(reader.string());
+        Self {
+            message: if reader.bool() { None } else { Some(reader.string()) },
         }
-
-        packet
     }
 }
 
@@ -375,10 +372,10 @@ impl Packet for ResourcePacksInfo {
         writer.bool(self.has_scripts);
 
         writer.u16(self.behaviour_packs.len() as u16);
-        self.behaviour_packs.iter().for_each(|p| p.write(writer));
+        self.behaviour_packs.iter().for_each(|pack| pack.write(writer));
 
         writer.u16(self.texture_packs.len() as u16);
-        self.texture_packs.iter().for_each(|t| t.write(writer));
+        self.texture_packs.iter().for_each(|pack| pack.write(writer));
 
         writer.bool(self.forcing_server_packs);
     }
@@ -423,15 +420,15 @@ impl Packet for ResourcePackStack {
         writer.bool(self.texture_pack_required);
 
         writer.var_u32(self.behaviour_packs.len() as u32);
-        self.behaviour_packs.iter().for_each(|p| p.write(writer));
+        self.behaviour_packs.iter().for_each(|pack| pack.write(writer));
 
         writer.var_u32(self.texture_packs.len() as u32);
-        self.texture_packs.iter().for_each(|t| t.write(writer));
+        self.texture_packs.iter().for_each(|pack| pack.write(writer));
 
         writer.string(self.base_game_version.as_str());
 
         writer.u32(self.experiments.len() as u32);
-        self.experiments.iter().for_each(|e| e.write(writer));
+        self.experiments.iter().for_each(|experiment| experiment.write(writer));
 
         writer.bool(self.experiments_previously_toggled);
     }
@@ -464,7 +461,7 @@ impl Packet for ResourcePackClientResponse {
         writer.u8(num::ToPrimitive::to_u8(&self.response).unwrap());
 
         writer.u16(self.packs_to_download.len() as u16);
-        self.packs_to_download.iter().for_each(|p| writer.string(p.as_str()));
+        self.packs_to_download.iter().for_each(|pack| writer.string(pack.as_str()));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -517,7 +514,7 @@ impl Packet for Text {
             TextType::Translation | TextType::Popup | TextType::JukeboxPopup => {
                 writer.string(self.message.as_str());
                 writer.var_u32(self.parameters.len() as u32);
-                self.parameters.iter().for_each(|p| writer.string(p.as_str()));
+                self.parameters.iter().for_each(|parameter| writer.string(parameter.as_str()));
             }
         }
         writer.string(self.xuid.as_str());
@@ -525,32 +522,24 @@ impl Packet for Text {
     }
 
     fn read(reader: &mut Reader) -> Self {
-        let mut pk = Self {
-            text_type: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+        let text_type = num::FromPrimitive::from_u8(reader.u8()).unwrap();
+        Self {
+            text_type,
             needs_translation: reader.bool(),
-            source_name: "".to_string(),
-            message: "".to_string(),
-            parameters: Vec::new(),
-            xuid: "".to_string(),
-            platform_chat_id: "".to_string(),
-        };
-        match pk.text_type {
-            TextType::Chat | TextType::Whisper | TextType::Announcement => {
-                pk.source_name = reader.string();
-                pk.message = reader.string();
-            }
-            TextType::Raw | TextType::Tip | TextType::System | TextType::Object | TextType::ObjectWhisper | TextType::ObjectAnnouncement => {
-                pk.message = reader.string();
-            }
-            TextType::Translation | TextType::Popup | TextType::JukeboxPopup => {
-                pk.message = reader.string();
-                pk.parameters = (0..reader.var_u32()).map(|_| reader.string()).collect();
-            }
+            source_name: if text_type == TextType::Chat || text_type == TextType::Whisper || text_type == TextType::Announcement {
+                reader.string()
+            } else {
+                "".to_string()
+            },
+            message: reader.string(),
+            parameters: if text_type == TextType::Translation || text_type == TextType::Popup || text_type == TextType::JukeboxPopup {
+                (0..reader.var_u32()).map(|_| reader.string()).collect()
+            } else {
+                Vec::new()
+            },
+            xuid: reader.string(),
+            platform_chat_id: reader.string(),
         }
-        pk.xuid = reader.string();
-        pk.platform_chat_id = reader.string();
-
-        pk
     }
 }
 
@@ -845,10 +834,10 @@ impl Packet for StartGame {
         writer.var_i32(self.enchantment_seed);
 
         writer.var_u32(self.blocks.len() as u32);
-        self.blocks.iter().for_each(|b| b.write(writer));
+        self.blocks.iter().for_each(|entry| entry.write(writer));
 
         writer.var_u32(self.items.len() as u32);
-        self.items.iter().for_each(|i| i.write(writer));
+        self.items.iter().for_each(|entry| entry.write(writer));
 
         writer.string(self.multi_player_correlation_id.as_str());
 
@@ -1052,7 +1041,7 @@ impl Packet for AddPlayer {
         self.ability_data.write(writer);
 
         writer.var_u32(self.entity_links.len() as u32);
-        self.entity_links.iter().for_each(|e| e.write(writer));
+        self.entity_links.iter().for_each(|link| link.write(writer));
 
         writer.string(self.device_id.as_str());
         writer.i32(self.build_platform);
@@ -1149,13 +1138,13 @@ impl Packet for AddActor {
         writer.f32(self.body_yaw);
 
         writer.var_u32(self.attributes.len() as u32);
-        self.attributes.iter().for_each(|a| a.write(writer));
+        self.attributes.iter().for_each(|attribute| attribute.write(writer));
 
         // TODO: Entity metadata.
         // TODO: Entity properties.
 
         writer.var_u32(self.entity_links.len() as u32);
-        self.entity_links.iter().for_each(|e| e.write(writer));
+        self.entity_links.iter().for_each(|link| link.write(writer));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -1681,7 +1670,7 @@ impl Packet for UpdateAttributes {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.entity_runtime_id);
         writer.var_u32(self.attributes.len() as u32);
-        self.attributes.iter().for_each(|a| a.write(writer));
+        self.attributes.iter().for_each(|attribute| attribute.write(writer));
         writer.var_u64(self.tick);
     }
 
@@ -1724,39 +1713,37 @@ impl Packet for InventoryTransaction {
         writer.var_i32(self.legacy_request_id);
         if self.legacy_request_id != 0 {
             writer.var_u32(self.legacy_set_item_slots.len() as u32);
-            self.legacy_set_item_slots.iter().for_each(|s| s.write(writer));
+            self.legacy_set_item_slots.iter().for_each(|slot| slot.write(writer));
         }
 
         writer.var_u32(num::ToPrimitive::to_u32(&self.transaction_data.transaction_type()).unwrap());
 
         writer.var_u32(self.actions.len() as u32);
-        self.actions.iter().for_each(|a| a.write(writer));
+        self.actions.iter().for_each(|action| action.write(writer));
 
         self.transaction_data.write(writer);
     }
 
     fn read(reader: &mut Reader) -> Self {
-        let mut transaction = Self {
-            legacy_request_id: reader.var_i32(),
-            legacy_set_item_slots: Vec::new(),
-            actions: Vec::new(),
-            transaction_data: Box::new(NormalTransactionData {}),
+        let legacy_request_id = reader.var_i32();
+        let legacy_set_item_slots = if legacy_request_id != 0 {
+            (0..reader.var_u32()).map(|_| LegacySetItemSlot::read(reader)).collect()
+        } else {
+            Vec::new()
         };
-        if transaction.legacy_request_id != 0 {
-            transaction.legacy_set_item_slots = (0..reader.var_u32()).map(|_| LegacySetItemSlot::read(reader)).collect();
-        }
-
         let transaction_type = num::FromPrimitive::from_u32(reader.var_u32()).unwrap();
-        transaction.actions = (0..reader.var_u32()).map(|_| InventoryAction::read(reader)).collect();
-        transaction.transaction_data = match transaction_type {
-            InventoryTransactionType::Normal => Box::from(NormalTransactionData::read(reader)),
-            InventoryTransactionType::Mismatch => Box::from(MismatchTransactionData::read(reader)),
-            InventoryTransactionType::UseItem => Box::from(UseItemTransactionData::read(reader)),
-            InventoryTransactionType::UseItemOnEntity => Box::from(UseItemOnEntityTransactionData::read(reader)),
-            InventoryTransactionType::ReleaseItem => Box::from(ReleaseItemTransactionData::read(reader)),
-        };
-
-        transaction
+        Self {
+            legacy_request_id,
+            legacy_set_item_slots,
+            actions: (0..reader.var_u32()).map(|_| InventoryAction::read(reader)).collect(),
+            transaction_data: match transaction_type {
+                InventoryTransactionType::Normal => Box::from(NormalTransactionData::read(reader)),
+                InventoryTransactionType::Mismatch => Box::from(MismatchTransactionData::read(reader)),
+                InventoryTransactionType::UseItem => Box::from(UseItemTransactionData::read(reader)),
+                InventoryTransactionType::UseItemOnEntity => Box::from(UseItemOnEntityTransactionData::read(reader)),
+                InventoryTransactionType::ReleaseItem => Box::from(ReleaseItemTransactionData::read(reader)),
+            },
+        }
     }
 }
 
@@ -1872,18 +1859,16 @@ impl Packet for Interact {
     }
 
     fn read(reader: &mut Reader) -> Self {
-        let mut pk = Self {
-            action_type: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+        let action_type = num::FromPrimitive::from_u8(reader.u8()).unwrap();
+        Self {
+            action_type,
             target_entity_runtime_id: reader.var_u64(),
-            position: Vec3::default(),
-        };
-        match pk.action_type {
-            InteractionAction::MouseOverEntity | InteractionAction::LeaveVehicle => {
-                pk.position = reader.vec3();
-            }
-            _ => {}
+            position: if action_type == InteractionAction::MouseOverEntity || action_type == InteractionAction::LeaveVehicle {
+                reader.vec3()
+            } else {
+                Vec3::default()
+            },
         }
-        pk
     }
 }
 
@@ -2177,18 +2162,16 @@ impl Packet for Animate {
     }
 
     fn read(reader: &mut Reader) -> Self {
-        let mut pk = Self {
-            action_type: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+        let action_type = num::FromPrimitive::from_i32(reader.var_i32()).unwrap();
+        Self {
+            action_type,
             entity_runtime_id: reader.var_u64(),
-            boat_rowing_time: 0.0,
-        };
-        match pk.action_type {
-            AnimateAction::RowRight | AnimateAction::RowLeft => {
-                pk.boat_rowing_time = reader.f32();
-            }
-            _ => {}
+            boat_rowing_time: if action_type == AnimateAction::RowRight || action_type == AnimateAction::RowLeft {
+                reader.f32()
+            } else {
+                0.0
+            },
         }
-        pk
     }
 }
 
@@ -2332,7 +2315,7 @@ impl Packet for InventoryContent {
         writer.var_u32(num::ToPrimitive::to_u32(&self.window).unwrap());
 
         writer.var_u32(self.content.len() as u32);
-        self.content.iter().for_each(|i| i.write(writer));
+        self.content.iter().for_each(|item| item.write(writer));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -2475,10 +2458,10 @@ impl Packet for CraftingEvent {
         writer.uuid(self.recipe_uuid);
 
         writer.var_u32(self.input.len() as u32);
-        self.input.iter().for_each(|i| i.write(writer));
+        self.input.iter().for_each(|item| item.write(writer));
 
         writer.var_u32(self.output.len() as u32);
-        self.output.iter().for_each(|i| i.write(writer));
+        self.output.iter().for_each(|item| item.write(writer));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -3007,7 +2990,7 @@ pub struct GameRulesChanged {
 impl Packet for GameRulesChanged {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.game_rules.len() as u32);
-        self.game_rules.iter().for_each(|r| r.write(writer));
+        self.game_rules.iter().for_each(|game_rule| game_rule.write(writer));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -3082,46 +3065,30 @@ impl Packet for BossEvent {
     }
 
     fn read(reader: &mut Reader) -> Self {
-        let mut packet = Self {
-            boss_entity_unique_id: reader.i64(),
-            event_type: num::FromPrimitive::from_u32(reader.u32()).unwrap(),
-            player_unique_id: 0,
-            boss_bar_title: "".to_string(),
-            health_percentage: 0.0,
-            screen_darkening: 0,
-            colour: 0,
-            overlay: 0,
-        };
-        match packet.event_type {
-            BossEventType::Show => {
-                packet.boss_bar_title = reader.string();
-                packet.health_percentage = reader.f32();
-                packet.screen_darkening = reader.i16();
-                packet.colour = reader.u32();
-                packet.overlay = reader.u32();
-            }
-            BossEventType::RegisterPlayer | BossEventType::UnregisterPlayer | BossEventType::Request => {
-                packet.player_unique_id = reader.i64();
-            }
-            BossEventType::Hide => {}
-            BossEventType::HealthPercentage => {
-                packet.health_percentage = reader.f32();
-            }
-            BossEventType::Title => {
-                packet.boss_bar_title = reader.string();
-            }
-            BossEventType::AppearanceProperties => {
-                packet.screen_darkening = reader.i16();
-                packet.colour = reader.u32();
-                packet.overlay = reader.u32();
-            }
-            BossEventType::Texture => {
-                packet.colour = reader.u32();
-                packet.overlay = reader.u32();
-            }
+        let boss_entity_unique_id = reader.i64();
+        let event_type = num::FromPrimitive::from_u32(reader.u32()).unwrap();
+        Self {
+            boss_entity_unique_id,
+            event_type,
+            player_unique_id: if event_type == BossEventType::RegisterPlayer || event_type == BossEventType::UnregisterPlayer || event_type == BossEventType::Request {
+                reader.i64()
+            } else {
+                0
+            },
+            boss_bar_title: if event_type == BossEventType::Show || event_type == BossEventType::Title { reader.string() } else { "".to_string() },
+            health_percentage: if event_type == BossEventType::Show || event_type == BossEventType::HealthPercentage { reader.f32() } else { 0.0 },
+            screen_darkening: if event_type == BossEventType::Show || event_type == BossEventType::AppearanceProperties { reader.i16() } else { 0 },
+            colour: if event_type == BossEventType::Show || event_type == BossEventType::AppearanceProperties || event_type == BossEventType::Texture {
+                reader.u32()
+            } else {
+                0
+            },
+            overlay: if event_type == BossEventType::Show || event_type == BossEventType::AppearanceProperties || event_type == BossEventType::Texture {
+                reader.u32()
+            } else {
+                0
+            },
         }
-
-        packet
     }
 }
 
@@ -3366,7 +3333,7 @@ impl Packet for CommandOutput {
         writer.var_u32(self.success_count);
 
         writer.var_u32(self.output_messages.len() as u32);
-        self.output_messages.iter().for_each(|m| m.write(writer));
+        self.output_messages.iter().for_each(|message| message.write(writer));
 
         if self.output_type == CommandOutputType::DataSet {
             writer.string(self.data_set.as_str());
@@ -3734,7 +3701,7 @@ pub struct PurchaseReceipt {
 impl Packet for PurchaseReceipt {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.receipts.len() as u32);
-        self.receipts.iter().for_each(|r| writer.string(r.as_str()));
+        self.receipts.iter().for_each(|receipt| writer.string(receipt.as_str()));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -3862,38 +3829,18 @@ impl Packet for BookEdit {
     }
 
     fn read(reader: &mut Reader) -> Self {
-        let mut packet = Self {
-            action_type: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+        let action_type = num::FromPrimitive::from_u8(reader.u8()).unwrap();
+        Self {
+            action_type,
             inventory_slot: reader.u8(),
-            page_number: 0,
-            secondary_page_number: 0,
-            text: "".to_string(),
-            photo_name: "".to_string(),
-            title: "".to_string(),
-            author: "".to_string(),
-            xuid: "".to_string(),
-        };
-        match packet.action_type {
-            BookAction::ReplacePage | BookAction::AddPage => {
-                packet.page_number = reader.u8();
-                packet.text = reader.string();
-                packet.photo_name = reader.string();
-            }
-            BookAction::DeletePage => {
-                packet.page_number = reader.u8();
-            }
-            BookAction::SwapPages => {
-                packet.page_number = reader.u8();
-                packet.secondary_page_number = reader.u8();
-            }
-            BookAction::Sign => {
-                packet.title = reader.string();
-                packet.author = reader.string();
-                packet.xuid = reader.string();
-            }
-        };
-
-        packet
+            page_number: if action_type != BookAction::Sign { reader.u8() } else { 0 },
+            secondary_page_number: if action_type == BookAction::SwapPages { reader.u8() } else { 0 },
+            text: if action_type == BookAction::ReplacePage || action_type == BookAction::AddPage { reader.string() } else { "".to_string() },
+            photo_name: if action_type == BookAction::ReplacePage || action_type == BookAction::AddPage { reader.string() } else { "".to_string() },
+            title: if action_type == BookAction::Sign { reader.string() } else { "".to_string() },
+            author: if action_type == BookAction::Sign { reader.string() } else { "".to_string() },
+            xuid: if action_type == BookAction::Sign { reader.string() } else { "".to_string() },
+        }
     }
 }
 
@@ -4126,7 +4073,7 @@ impl Packet for SetScore {
         writer.u8(num::ToPrimitive::to_u8(&self.action_type).unwrap());
 
         writer.var_u32(self.entries.len() as u32);
-        self.entries.iter().for_each(|e| e.write(writer, self.action_type));
+        self.entries.iter().for_each(|entry| entry.write(writer, self.action_type));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -4272,7 +4219,7 @@ impl Packet for SetScoreboardIdentity {
         writer.u8(num::ToPrimitive::to_u8(&self.action_type).unwrap());
 
         writer.var_u32(self.entries.len() as u32);
-        self.entries.iter().for_each(|e| e.write(writer, self.action_type));
+        self.entries.iter().for_each(|entry| entry.write(writer, self.action_type));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -4312,7 +4259,7 @@ impl Packet for UpdateSoftEnum {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.enum_type.as_str());
         writer.var_u32(self.options.len() as u32);
-        self.options.iter().for_each(|o| writer.string(o.as_str()));
+        self.options.iter().for_each(|option| writer.string(option.as_str()));
         writer.u8(self.action_type);
     }
 
@@ -4423,9 +4370,9 @@ impl Packet for NetworkChunkPublisherUpdate {
         writer.block_pos(self.position);
         writer.var_u32(self.radius);
         writer.u32(self.saved_chunks.len() as u32);
-        self.saved_chunks.iter().for_each(|c| {
-            writer.var_i32(c.x);
-            writer.var_i32(c.y);
+        self.saved_chunks.iter().for_each(|chunk| {
+            writer.var_i32(chunk.x);
+            writer.var_i32(chunk.y);
         });
     }
 
@@ -4680,17 +4627,14 @@ impl Packet for StructureTemplateDataResponse {
     }
 
     fn read(reader: &mut Reader) -> Self {
-        let mut packet = Self {
-            structure_name: reader.string(),
-            success: reader.bool(),
-            response_type: StructureTemplateDataResponseType::Export,
-        };
-        if packet.success {
-            // TODO: NBT (structure_template)
+        let struct_name = reader.string();
+        let success = reader.bool();
+        Self {
+            structure_name,
+            success,
+            // TODO: NBT (structure_template) if success
+            response_type: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
         }
-        packet.response_type = num::FromPrimitive::from_u8(reader.u8()).unwrap();
-
-        packet
     }
 }
 
@@ -4704,8 +4648,8 @@ impl Packet for ClientCacheBlobStatus {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.miss_hashes.len() as u32);
         writer.var_u32(self.hit_hashes.len() as u32);
-        self.miss_hashes.iter().for_each(|h| writer.u64(*h));
-        self.hit_hashes.iter().for_each(|h| writer.u64(*h));
+        self.miss_hashes.iter().for_each(|hash| writer.u64(*hash));
+        self.hit_hashes.iter().for_each(|hash| writer.u64(*hash));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -4726,7 +4670,7 @@ pub struct ClientCacheMissResponse {
 impl Packet for ClientCacheMissResponse {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.blobs.len() as u32);
-        self.blobs.iter().for_each(|b| b.write(writer));
+        self.blobs.iter().for_each(|blob| blob.write(writer));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -4951,7 +4895,7 @@ impl Packet for PlayerAuthInput {
         }
         if self.input_data & InputFlag::PerformBlockActions.flag() != 0 {
             writer.var_u32(self.block_actions.len() as u32);
-            self.block_actions.iter().for_each(|a| a.write(writer));
+            self.block_actions.iter().for_each(|action| action.write(writer));
         }
     }
 
@@ -4997,7 +4941,7 @@ pub struct CreativeContent {
 impl Packet for CreativeContent {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.items.len() as u32);
-        self.items.iter().for_each(|i| i.write(writer));
+        self.items.iter().for_each(|item| item.write(writer));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -5013,7 +4957,7 @@ pub struct PlayerEnchantOptions {
 impl Packet for PlayerEnchantOptions {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.options.len() as u32);
-        self.options.iter().for_each(|o| o.write(writer));
+        self.options.iter().for_each(|option| option.write(writer));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -5029,7 +4973,7 @@ pub struct ItemStackRequest {
 impl Packet for ItemStackRequest {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.requests.len() as u32);
-        self.requests.iter().for_each(|r| r.write(writer));
+        self.requests.iter().for_each(|entry| entry.write(writer));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -5045,7 +4989,7 @@ pub struct ItemStackResponse {
 impl Packet for ItemStackResponse {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.responses.len() as u32);
-        self.responses.iter().for_each(|r| r.write(writer));
+        self.responses.iter().for_each(|entry| entry.write(writer));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -5141,7 +5085,7 @@ impl Packet for EmoteList {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.player_runtime_id);
         writer.var_u32(self.emote_pieces.len() as u32);
-        self.emote_pieces.iter().for_each(|e| writer.uuid(*e));
+        self.emote_pieces.iter().for_each(|emote| writer.uuid(*emote));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -5286,7 +5230,7 @@ impl Packet for AnimateEntity {
         writer.string(self.controller.as_str());
         writer.f32(self.blend_out_time);
         writer.var_u32(self.entity_runtime_ids.len() as u32);
-        self.entity_runtime_ids.iter().for_each(|e| writer.var_u64(*e));
+        self.entity_runtime_ids.iter().for_each(|runtime_id| writer.var_u64(*runtime_id));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -5336,7 +5280,7 @@ pub struct PlayerFog {
 impl Packet for PlayerFog {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.stack.len() as u32);
-        self.stack.iter().for_each(|s| writer.string(s.as_str()));
+        self.stack.iter().for_each(|stack| writer.string(stack.as_str()));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -5378,7 +5322,7 @@ pub struct ItemComponent {
 impl Packet for ItemComponent {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.items.len() as u32);
-        self.items.iter().for_each(|i| i.write(writer));
+        self.items.iter().for_each(|entry| entry.write(writer));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -5625,9 +5569,9 @@ impl Packet for UpdateSubChunkBlocks {
     fn write(&self, writer: &mut Writer) {
         writer.block_pos(self.position);
         writer.var_u32(self.blocks.len() as u32);
-        self.blocks.iter().for_each(|e| e.write(writer));
+        self.blocks.iter().for_each(|entry| entry.write(writer));
         writer.var_u32(self.extra.len() as u32);
-        self.extra.iter().for_each(|e| e.write(writer));
+        self.extra.iter().for_each(|entry| entry.write(writer));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -5670,19 +5614,17 @@ impl Packet for SubChunk {
         writer.var_i32(num::ToPrimitive::to_i32(&self.dimension).unwrap());
         writer.block_pos(self.position);
         writer.u32(self.sub_chunk_entries.len() as u32);
-        self.sub_chunk_entries.iter().for_each(|e| e.write(writer, self.cache_enabled));
+        self.sub_chunk_entries.iter().for_each(|entry| entry.write(writer, self.cache_enabled));
     }
 
     fn read(reader: &mut Reader) -> Self {
-        let mut pk = Self {
-            cache_enabled: reader.bool(),
+        let cache_enabled = reader.bool();
+        Self {
+            cache_enabled,
             dimension: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
             position: reader.block_pos(),
-            sub_chunk_entries: Vec::new(),
-        };
-        pk.sub_chunk_entries = (0..reader.u32()).map(|_| SubChunkEntry::read(reader, pk.cache_enabled)).collect();
-
-        pk
+            sub_chunk_entries: (0..reader.u32()).map(|_| SubChunkEntry::read(reader, pk.cache_enabled)).collect(),
+        }
     }
 }
 
@@ -5699,7 +5641,7 @@ impl Packet for SubChunkRequest {
         writer.block_pos(self.position);
 
         writer.u32(self.offsets.len() as u32);
-        self.offsets.iter().for_each(|o| o.write(writer));
+        self.offsets.iter().for_each(|offset| offset.write(writer));
     }
 
     fn read(reader: &mut Reader) -> Self {

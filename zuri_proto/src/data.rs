@@ -20,9 +20,7 @@ impl AbilityData {
         writer.u8(self.player_permissions);
         writer.u8(self.command_permission);
         writer.u8(self.layers.len() as u8);
-        for layer in &self.layers {
-            layer.write(writer);
-        }
+        self.layers.iter().for_each(|layer| layer.write(writer));
     }
 
     pub fn read(reader: &mut Reader) -> Self {
@@ -30,13 +28,7 @@ impl AbilityData {
             entity_unique_id: reader.i64(),
             player_permissions: reader.u8(),
             command_permission: reader.u8(),
-            layers: {
-                let mut layers = Vec::new();
-                for _ in 0..reader.u8() {
-                    layers.push(AbilityLayer::read(reader));
-                }
-                layers
-            },
+            layers: (0..reader.u8()).map(|_| AbilityLayer::read(reader)).collect(),
         }
     }
 }
@@ -160,26 +152,22 @@ impl Attribute {
         writer.f32(self.default);
         writer.string(self.value.name.as_str());
         writer.var_u32(self.modifiers.len() as u32);
-        for modifier in self.modifiers {
-            modifier.write(writer);
-        }
+        self.modifiers.iter().for_each(|modifier| modifier.write(writer));
     }
 
     pub fn read(reader: &mut Reader) -> Self {
-        let mut value = Self::default();
-        value.value = AttributeValue {
+        let mut attribute = Self::default();
+        attribute.value = AttributeValue {
             min: reader.f32(),
             max: reader.f32(),
             value: reader.f32(),
             ..Default::default()
         };
-        value.default = reader.f32();
-        value.value.name = reader.string();
-        for _ in 0..reader.var_u32() {
-            value.modifiers.push(AttributeModifier::read(reader));
-        }
+        attribute.default = reader.f32();
+        attribute.value.name = reader.string();
+        attribute.modifiers = (0..reader.var_u32()).map(|_| AttributeModifier::read(reader)).collect();
 
-        value
+        attribute
     }
 }
 
@@ -253,13 +241,7 @@ impl AutoCraftRecipeStackRequestAction {
         Self {
             recipe_network_id: reader.u32(),
             times_crafted: reader.u8(),
-            ingredients: {
-                let mut ingredients = Vec::new();
-                for _ in 0..reader.var_u32() {
-                    ingredients.push(ItemDescriptorCount::read(reader));
-                }
-                ingredients
-            },
+            ingredients: (0..reader.var_u32()).map(|_| ItemDescriptorCount::read(reader)).collect(),
         }
     }
 }
@@ -269,9 +251,7 @@ impl StackRequestAction for AutoCraftRecipeStackRequestAction {
         writer.u32(self.recipe_network_id);
         writer.u8(self.times_crafted);
         writer.var_u32(self.ingredients.len() as u32);
-        for ingredient in self.ingredients {
-            ingredient.write(writer);
-        }
+        self.ingredients.iter().for_each(|ingredient| ingredient.write(writer));
     }
 
     fn action_type(&self) -> StackRequestActionType {
@@ -655,23 +635,14 @@ impl CommandOutputMessage {
         writer.bool(self.success);
         writer.string(self.message.as_str());
         writer.var_u32(self.parameters.len() as u32);
-        for parameter in self.parameters {
-            writer.string(parameter.as_str());
-        }
+        self.parameters.iter().for_each(|parameter| writer.string(parameter.as_str()));
     }
 
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             success: reader.bool(),
             message: reader.string(),
-            parameters: {
-                let len = reader.var_u32();
-                let mut parameters = Vec::with_capacity(len as usize);
-                for _ in 0..len {
-                    parameters.push(reader.string());
-                }
-                parameters
-            },
+            parameters: (0..reader.var_u32()).map(|_| reader.string()).collect(),
         }
     }
 }
@@ -684,21 +655,12 @@ pub struct CommandOverload {
 impl CommandOverload {
     pub fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.parameters.len() as u32);
-        for parameter in self.parameters {
-            parameter.write(writer);
-        }
+        self.parameters.iter().for_each(|parameter| parameter.write(writer));
     }
 
     pub fn read(reader: &mut Reader) -> Self {
         Self {
-            parameters: {
-                let len = reader.var_u32();
-                let mut parameters = Vec::with_capacity(len as usize);
-                for _ in 0..len {
-                    parameters.push(CommandParameter::read(reader));
-                }
-                parameters
-            },
+            parameters: (0..reader.var_u32()).map(|_| CommandParameter::read(reader)).collect(),
         }
     }
 }
@@ -951,14 +913,7 @@ pub struct CraftResultsDeprecatedStackRequestAction {
 impl CraftResultsDeprecatedStackRequestAction {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
-            result_items: {
-                let len = reader.var_u32();
-                let mut result_items = Vec::with_capacity(len as usize);
-                for _ in 0..len {
-                    result_items.push(ItemStack::read(reader));
-                }
-                result_items
-            },
+            result_items: (0..reader.var_u32()).map(|_| ItemStack::read(reader)).collect(),
             times_crafted: reader.u8(),
         }
     }
@@ -967,9 +922,7 @@ impl CraftResultsDeprecatedStackRequestAction {
 impl StackRequestAction for CraftResultsDeprecatedStackRequestAction {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.result_items.len() as u32);
-        for item in &self.result_items {
-            item.write(writer);
-        }
+        self.result_items.iter().for_each(|item| item.write(writer));
         writer.u8(self.times_crafted);
     }
 
@@ -1524,24 +1477,23 @@ impl InventoryAction {
     }
 
     pub fn read(reader: &mut Reader) -> Self {
-        let mut value = Self {
-            source_type: num::FromPrimitive::from_u32(reader.var_u32()).unwrap(),
-            ..Default::default()
-        };
-        match value.source_type {
-            InventoryActionSource::Container | InventoryActionSource::TODO => {
-                value.window = num::FromPrimitive::from_i32(reader.var_i32()).unwrap();
-            }
-            InventoryActionSource::World => {
-                value.source_flags = reader.var_u32();
-            }
-            _ => {}
+        let source_type = num::FromPrimitive::from_u32(reader.var_u32()).unwrap();
+        Self {
+            source_type,
+            window: if source_type == InventoryActionSource::Container || source_type == InventoryActionSource::TODO {
+                num::FromPrimitive::from_i32(reader.var_i32()).unwrap()
+            } else {
+                Window::Inventory
+            },
+            source_flags: if source_type == InventoryActionSource::World {
+                reader.var_u32()
+            } else {
+                0
+            },
+            inventory_slot: reader.var_u32(),
+            old_item: ItemInstance::read(reader),
+            new_item: ItemInstance::read(reader),
         }
-        value.inventory_slot = reader.var_u32();
-        value.old_item = ItemInstance::read(reader);
-        value.new_item = ItemInstance::read(reader);
-
-        value
     }
 }
 
@@ -1635,26 +1587,20 @@ pub struct ItemEnchantments {
 impl ItemEnchantments {
     pub fn write(&self, writer: &mut Writer) {
         writer.i32(self.slot);
-        for enchantments in self.enchantments.iter() {
-            writer.var_u32(enchantments.len() as u32);
-            for enchantment in enchantments.iter() {
-                enchantment.write(writer);
-            }
-        }
+        self.enchantments.iter().for_each(|enchantment| {
+            writer.var_u32(enchantment.len() as u32);
+            enchantment.iter().for_each(|enchantment| enchantment.write(writer));
+        });
     }
 
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             slot: reader.i32(),
-            enchantments: {
-                let mut value = [Vec::new(), Vec::new(), Vec::new()];
-                for enchantments in value.iter_mut() {
-                    for _ in 0..reader.var_u32() {
-                        enchantments.push(EnchantmentInstance::read(reader));
-                    }
-                }
-                value
-            },
+            enchantments: [
+                (0..reader.var_u32()).map(|_| EnchantmentInstance::read(reader)).collect(),
+                (0..reader.var_u32()).map(|_| EnchantmentInstance::read(reader)).collect(),
+                (0..reader.var_u32()).map(|_| EnchantmentInstance::read(reader)).collect(),
+            ],
         }
     }
 }
@@ -1746,11 +1692,10 @@ impl ItemStack {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct ItemStackRequestEntry {
     pub request_id: i32,
     pub actions: Vec<Box<dyn StackRequestAction>>,
-    // TODO: Make structs implement this still
     pub filter_strings: Vec<String>,
     pub filter_cause: i32,
 }
@@ -1759,53 +1704,46 @@ impl ItemStackRequestEntry {
     pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.request_id);
         writer.var_u32(self.actions.len() as u32);
-        for action in self.actions.iter() {
+        self.actions.iter().for_each(|action| => {
             writer.var_u32(num::ToPrimitive::to_u32(&action.action_type()).unwrap());
             action.write(writer);
-        }
+        });
         writer.var_u32(self.filter_strings.len() as u32);
-        for filter_string in self.filter_strings.iter() {
-            writer.string(filter_string.as_str());
-        }
+        self.filter_strings.iter().for_each(|filter_string| writer.string(filter_string.as_str()));
         writer.i32(self.filter_cause);
     }
 
     pub fn read(reader: &mut Reader) -> Self {
-        let mut value = Self {
+        Self {
             request_id: reader.var_i32(),
-            ..Default::default()
-        };
-        for _ in 0..reader.var_u32() {
-            let action_type: StackRequestActionType = num::FromPrimitive::from_u32(reader.var_u32()).unwrap();
-            value.actions.push(match action_type {
-                StackRequestActionType::Take => Box::from(TakeStackRequestAction::read(reader)),
-                StackRequestActionType::Place => Box::from(PlaceStackRequestAction::read(reader)),
-                StackRequestActionType::Swap => Box::from(SwapStackRequestAction::read(reader)),
-                StackRequestActionType::Drop => Box::from(DropStackRequestAction::read(reader)),
-                StackRequestActionType::Destroy => Box::from(DestroyStackRequestAction::read(reader)),
-                StackRequestActionType::Consume => Box::from(ConsumeStackRequestAction::read(reader)),
-                StackRequestActionType::Create => Box::from(CreateStackRequestAction::read(reader)),
-                StackRequestActionType::PlaceInContainer => Box::from(PlaceInContainerStackRequestAction::read(reader)),
-                StackRequestActionType::TakeOutContainer => Box::from(TakeOutContainerStackRequestAction::read(reader)),
-                StackRequestActionType::LabTableCombine => Box::from(LabTableCombineStackRequestAction::read(reader)),
-                StackRequestActionType::BeaconPayment => Box::from(BeaconPaymentStackRequestAction::read(reader)),
-                StackRequestActionType::MineBlock => Box::from(MineBlockStackRequestAction::read(reader)),
-                StackRequestActionType::CraftRecipe => Box::from(CraftRecipeStackRequestAction::read(reader)),
-                StackRequestActionType::CraftRecipeAuto => Box::from(AutoCraftRecipeStackRequestAction::read(reader)),
-                StackRequestActionType::CraftCreative => Box::from(CraftCreativeStackRequestAction::read(reader)),
-                StackRequestActionType::CraftRecipeOptional => Box::from(CraftRecipeOptionalStackRequestAction::read(reader)),
-                StackRequestActionType::CraftGrindstone => Box::from(CraftGrindstoneRecipeStackRequestAction::read(reader)),
-                StackRequestActionType::CraftLoom => Box::from(CraftLoomRecipeStackRequestAction::read(reader)),
-                StackRequestActionType::CraftNonImplementedDeprecated => Box::from(CraftNonImplementedStackRequestAction::read(reader)),
-                StackRequestActionType::CraftResultsDeprecated => Box::from(CraftResultsDeprecatedStackRequestAction::read(reader)),
-            })
+            actions: (0..reader.var_u32()).map(|_| {
+                let action_type: StackRequestActionType = num::FromPrimitive::from_u32(reader.var_u32()).unwrap();
+                match action_type {
+                    StackRequestActionType::Take => Box::from(TakeStackRequestAction::read(reader)),
+                    StackRequestActionType::Place => Box::from(PlaceStackRequestAction::read(reader)),
+                    StackRequestActionType::Swap => Box::from(SwapStackRequestAction::read(reader)),
+                    StackRequestActionType::Drop => Box::from(DropStackRequestAction::read(reader)),
+                    StackRequestActionType::Destroy => Box::from(DestroyStackRequestAction::read(reader)),
+                    StackRequestActionType::Consume => Box::from(ConsumeStackRequestAction::read(reader)),
+                    StackRequestActionType::Create => Box::from(CreateStackRequestAction::read(reader)),
+                    StackRequestActionType::PlaceInContainer => Box::from(PlaceInContainerStackRequestAction::read(reader)),
+                    StackRequestActionType::TakeOutContainer => Box::from(TakeOutContainerStackRequestAction::read(reader)),
+                    StackRequestActionType::LabTableCombine => Box::from(LabTableCombineStackRequestAction::read(reader)),
+                    StackRequestActionType::BeaconPayment => Box::from(BeaconPaymentStackRequestAction::read(reader)),
+                    StackRequestActionType::MineBlock => Box::from(MineBlockStackRequestAction::read(reader)),
+                    StackRequestActionType::CraftRecipe => Box::from(CraftRecipeStackRequestAction::read(reader)),
+                    StackRequestActionType::CraftRecipeAuto => Box::from(AutoCraftRecipeStackRequestAction::read(reader)),
+                    StackRequestActionType::CraftCreative => Box::from(CraftCreativeStackRequestAction::read(reader)),
+                    StackRequestActionType::CraftRecipeOptional => Box::from(CraftRecipeOptionalStackRequestAction::read(reader)),
+                    StackRequestActionType::CraftGrindstone => Box::from(CraftGrindstoneRecipeStackRequestAction::read(reader)),
+                    StackRequestActionType::CraftLoom => Box::from(CraftLoomRecipeStackRequestAction::read(reader)),
+                    StackRequestActionType::CraftNonImplementedDeprecated => Box::from(CraftNonImplementedStackRequestAction::read(reader)),
+                    StackRequestActionType::CraftResultsDeprecated => Box::from(CraftResultsDeprecatedStackRequestAction::read(reader)),
+                }
+            }).collect(),
+            filter_strings: (0..reader.var_u32()).map(|_| reader.string()).collect(),
+            filter_cause: reader.i32(),
         }
-        for _ in 0..reader.var_u32() {
-            value.filter_strings.push(reader.string());
-        }
-        value.filter_cause = reader.i32();
-
-        value
     }
 }
 
@@ -1822,25 +1760,17 @@ impl ItemStackResponseEntry {
         writer.var_i32(self.request_id);
         if self.status == ItemStackResponseStatus::Ok {
             writer.var_u32(self.container_info.len() as u32);
-            for container_info in self.container_info.iter() {
-                container_info.write(writer);
-            }
+            self.container_info.iter().for_each(|container_info| container_info.write(writer));
         }
     }
 
     pub fn read(reader: &mut Reader) -> Self {
-        let mut value = Self {
-            status: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+        let status = num::FromPrimitive::from_u8(reader.u8()).unwrap();
+        Self {
+            status,
             request_id: reader.var_i32(),
-            container_info: Vec::new(),
-        };
-        if value.status == ItemStackResponseStatus::Ok {
-            for _ in 0..reader.var_u32() {
-                value.container_info.push(StackResponseContainerInfo::read(reader));
-            }
+            container_info: if status == ItemStackResponseStatus::Ok { (0..reader.var_u32()).map(|_| StackResponseContainerInfo::read(reader)).collect() } else { Vec::new() },
         }
-
-        value
     }
 }
 
@@ -1970,22 +1900,14 @@ impl MaterialReducer {
     pub fn write(&self, writer: &mut Writer) {
         writer.var_i32((self.network_id << 16) | (self.metadata_value as i32));
         writer.var_u32(self.outputs.len() as u32);
-        for output in self.outputs.iter() {
-            output.write(writer);
-        }
+        self.outputs.iter().for_each(|output| output.write(writer));
     }
 
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             network_id: reader.var_i32() >> 16,
             metadata_value: (reader.var_i32() & 0xFFFF) as u32,
-            outputs: {
-                let mut outputs = Vec::new();
-                for _ in 0..reader.var_u32() {
-                    outputs.push(MaterialReducerOutput::read(reader));
-                }
-                outputs
-            },
+            outputs: (0..reader.var_u32()).map(|_| MaterialReducerOutput::read(reader)).collect(),
         }
     }
 }
@@ -2333,22 +2255,13 @@ impl PersonaPieceTintColour {
     pub fn write(&self, writer: &mut Writer) {
         writer.string(self.piece_type.as_str());
         writer.u32(self.colours.len() as u32);
-        for colour in &self.colours {
-            writer.string(colour.as_str());
-        }
+        self.colours.iter().for_each(|colour| writer.string(colour.as_str()));
     }
 
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             piece_type: reader.string(),
-            colours: {
-                let len = reader.u32();
-                let mut colours = Vec::with_capacity(len as usize);
-                for _ in 0..len {
-                    colours.push(reader.string());
-                }
-                colours
-            },
+            colours: (0..reader.u32()).map(|_| reader.string()).collect::<Vec<String>>(),
         }
     }
 }
@@ -2486,20 +2399,20 @@ impl PlayerBlockAction {
     }
 
     pub fn read(reader: &mut Reader) -> Self {
-        let mut value = Self {
+        let mut action = Self {
             action: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
             block_pos: BlockPos::default(),
             face: 0,
         };
-        match value.action {
+        match action.action {
             PlayerActionType::StartBreak | PlayerActionType::AbortBreak | PlayerActionType::CrackBreak | PlayerActionType::PredictDestroyBlock | PlayerActionType::ContinueDestroyBlock => {
-                value.block_pos = reader.block_pos();
-                value.face = reader.var_i32();
+                action.block_pos = reader.block_pos();
+                action.face = reader.var_i32();
             }
             _ => {}
         }
 
-        value
+        action
     }
 }
 
@@ -2856,7 +2769,7 @@ impl ScoreboardEntry {
     }
 
     pub fn read(reader: &mut Reader, action: ScoreboardAction) -> Self {
-        let mut value = Self {
+        let mut entry = Self {
             entry_id: reader.var_i64(),
             objective_name: reader.string(),
             score: reader.i32(),
@@ -2865,18 +2778,18 @@ impl ScoreboardEntry {
             display_name: "".into(),
         };
         if action == ScoreboardAction::Modify {
-            value.identity_type = num::FromPrimitive::from_u8(reader.u8()).unwrap();
-            match value.identity_type {
+            entry.identity_type = num::FromPrimitive::from_u8(reader.u8()).unwrap();
+            match entry.identity_type {
                 ScoreboardIdentity::Entity | ScoreboardIdentity::Player => {
-                    value.entity_unique_id = reader.var_i64();
+                    entry.entity_unique_id = reader.var_i64();
                 }
                 _ => {
-                    value.display_name = reader.string();
+                    entry.display_name = reader.string();
                 }
             }
         }
 
-        value
+        entry
     }
 }
 
@@ -2930,9 +2843,7 @@ impl ShapedRecipe {
             }
         }
         writer.var_u32(self.output.len() as u32);
-        for output in self.output {
-            output.write(writer);
-        }
+        self.output.iter().for_each(|stack| stack.write(writer));
         writer.uuid(self.uuid);
         writer.string(self.block.as_str());
         writer.var_i32(self.priority);
@@ -2940,24 +2851,20 @@ impl ShapedRecipe {
     }
 
     pub fn read(reader: &mut Reader) -> Self {
-        let mut value = Self {
-            recipe_id: reader.string(),
-            width: reader.i32(),
-            height: reader.i32(),
-            ..Default::default()
-        };
-        for _ in 0..(value.width * value.height) {
-            value.input.push(ItemDescriptorCount::read(reader));
+        let recipe_id = reader.string();
+        let width = reader.i32();
+        let height = reader.i32();
+        Self {
+            recipe_id,
+            width,
+            height,
+            input: (0..width * height).map(|_| ItemDescriptorCount::read(reader)).collect(),
+            output: (0..reader.var_u32()).map(|_| ItemStack::read(reader)).collect(),
+            uuid: reader.uuid(),
+            block: reader.string(),
+            priority: reader.var_i32(),
+            recipe_network_id: reader.var_u32(),
         }
-        for _ in 0..reader.var_u32() {
-            value.output.push(ItemStack::read(reader));
-        }
-        value.uuid = reader.uuid();
-        value.block = reader.string();
-        value.priority = reader.var_i32();
-        value.recipe_network_id = reader.var_u32();
-
-        value
     }
 }
 
@@ -2978,13 +2885,9 @@ impl ShapelessRecipe {
     pub fn write(&self, writer: &mut Writer) {
         writer.string(self.recipe_id.as_str());
         writer.var_u32(self.input.len() as u32);
-        for input in self.input {
-            input.write(writer);
-        }
+        self.input.iter().for_each(|input| input.write(writer));
         writer.var_u32(self.output.len() as u32);
-        for output in self.output {
-            output.write(writer);
-        }
+        self.output.iter().for_each(|stack| stack.write(writer));
         writer.uuid(self.uuid);
         writer.string(self.block.as_str());
         writer.var_i32(self.priority);
@@ -2994,20 +2897,8 @@ impl ShapelessRecipe {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             recipe_id: reader.string(),
-            input: {
-                let mut input = Vec::new();
-                for _ in 0..reader.var_u32() {
-                    input.push(ItemDescriptorCount::read(reader));
-                }
-                input
-            },
-            output: {
-                let mut output = Vec::new();
-                for _ in 0..reader.var_u32() {
-                    output.push(ItemStack::read(reader));
-                }
-                output
-            },
+            input: (0..reader.var_u32()).map(|_| ItemDescriptorCount::read(reader)).collect(),
+            output: (0..reader.var_u32()).map(|_| ItemStack::read(reader)).collect(),
             uuid: reader.uuid(),
             block: reader.string(),
             priority: reader.var_i32(),
@@ -3055,9 +2946,7 @@ impl Skin {
         writer.u32(self.skin_image_height);
         writer.byte_slice(&self.skin_data);
         writer.u32(self.animations.len() as u32);
-        for animation in self.animations {
-            animation.write(writer);
-        }
+        self.animations.iter().for_each(|animation| animation.write(writer));
         writer.u32(self.cape_image_width);
         writer.u32(self.cape_image_height);
         writer.byte_slice(&self.cape_data);
@@ -3069,13 +2958,9 @@ impl Skin {
         writer.string(self.arm_size.as_str());
         writer.string(self.skin_colour.as_str());
         writer.u32(self.persona_pieces.len() as u32);
-        for persona_piece in self.persona_pieces {
-            persona_piece.write(writer);
-        }
+        self.persona_pieces.iter().for_each(|piece| piece.write(writer));
         writer.u32(self.piece_tint_colours.len() as u32);
-        for piece_tint_colour in self.piece_tint_colours {
-            piece_tint_colour.write(writer);
-        }
+        self.piece_tint_colours.iter().for_each(|colour| colour.write(writer));
         writer.bool(self.premium_skin);
         writer.bool(self.persona_skin);
         writer.bool(self.persona_cape_on_classic_skin);
@@ -3090,13 +2975,7 @@ impl Skin {
             skin_image_width: reader.u32(),
             skin_image_height: reader.u32(),
             skin_data: reader.byte_slice(),
-            animations: {
-                let mut animations = Vec::new();
-                for _ in 0..reader.u32() {
-                    animations.push(SkinAnimation::read(reader));
-                }
-                animations
-            },
+            animations: (0..reader.u32()).map(|_| SkinAnimation::read(reader)).collect(),
             cape_image_width: reader.u32(),
             cape_image_height: reader.u32(),
             cape_data: reader.byte_slice(),
@@ -3107,20 +2986,8 @@ impl Skin {
             full_id: reader.string(),
             arm_size: reader.string(),
             skin_colour: reader.string(),
-            persona_pieces: {
-                let mut persona_pieces = Vec::new();
-                for _ in 0..reader.u32() {
-                    persona_pieces.push(PersonaPiece::read(reader));
-                }
-                persona_pieces
-            },
-            piece_tint_colours: {
-                let mut piece_tint_colours = Vec::new();
-                for _ in 0..reader.u32() {
-                    piece_tint_colours.push(PersonaPieceTintColour::read(reader));
-                }
-                piece_tint_colours
-            },
+            persona_pieces: (0..reader.u32()).map(|_| PersonaPiece::read(reader)).collect(),
+            piece_tint_colours: (0..reader.u32()).map(|_| PersonaPieceTintColour::read(reader)).collect(),
             premium_skin: reader.bool(),
             persona_skin: reader.bool(),
             persona_cape_on_classic_skin: reader.bool(),
@@ -3272,21 +3139,13 @@ impl StackResponseContainerInfo {
     pub fn write(&self, writer: &mut Writer) {
         writer.u8(self.container_id);
         writer.var_u32(self.slot_info.len() as u32);
-        for slot_info in &self.slot_info {
-            slot_info.write(writer);
-        }
+        self.slot_info.iter().for_each(|slot_info| slot_info.write(writer));
     }
 
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             container_id: reader.u8(),
-            slot_info: {
-                let mut slot_info = Vec::new();
-                for _ in 0..reader.var_u32() {
-                    slot_info.push(StackResponseSlotInfo::read(reader));
-                }
-                slot_info
-            },
+            slot_info: (0..reader.var_u32()).map(|_| StackResponseSlotInfo::read(reader)).collect(),
         }
     }
 }
@@ -3408,7 +3267,7 @@ impl SubChunkEntry {
     }
 
     pub fn read(reader: &mut Reader, cache_enabled: bool) -> Self {
-        let mut value = Self {
+        let mut entry = Self {
             offset: SubChunkOffset::read(reader),
             result: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
             raw_payload: Bytes::default(),
@@ -3416,20 +3275,20 @@ impl SubChunkEntry {
             height_map_data: [0; 256],
             blob_hash: 0,
         };
-        if value.result != SubChunkResult::SuccessAllAir || cache_enabled {
-            value.raw_payload = reader.byte_slice();
+        if entry.result != SubChunkResult::SuccessAllAir || cache_enabled {
+            entry.raw_payload = reader.byte_slice();
         }
-        value.height_map_type = num::FromPrimitive::from_u8(reader.u8()).unwrap();
-        if value.height_map_type == HeightMapType::HasData {
+        entry.height_map_type = num::FromPrimitive::from_u8(reader.u8()).unwrap();
+        if entry.height_map_type == HeightMapType::HasData {
             for i in 0..256 {
-                value.height_map_data[i] = reader.i8();
+                entry.height_map_data[i] = reader.i8();
             }
         }
         if !cache_enabled {
-            value.blob_hash = reader.u64();
+            entry.blob_hash = reader.u64();
         }
 
-        value
+        entry
     }
 }
 
@@ -3632,52 +3491,6 @@ pub struct UseItemTransactionData {
 }
 
 impl UseItemTransactionData {
-    pub fn write_player_action(&self, writer: &mut Writer) {
-        writer.var_i32(self.legacy_request_id);
-        if self.legacy_request_id < -1 && (self.legacy_request_id & 1) == 0 {
-            writer.var_u32(self.legacy_set_item_slots.len() as u32);
-            for slot in &self.legacy_set_item_slots {
-                slot.write(writer);
-            }
-        }
-        writer.var_u32(self.actions.len() as u32);
-        for action in &self.actions {
-            action.write(writer);
-        }
-        writer.var_u32(self.action_type);
-        writer.block_pos(self.block_position);
-        writer.var_i32(self.block_face);
-        writer.var_i32(self.hot_bar_slot);
-        self.held_item.write(writer);
-        writer.vec3(self.position);
-        writer.vec3(self.clicked_position);
-        writer.var_u32(self.block_runtime_id);
-    }
-
-    pub fn read_player_action(reader: &mut Reader) -> Self {
-        Self {
-            legacy_request_id: reader.var_i32(),
-            legacy_set_item_slots: if reader.var_i32() < -1 && (reader.var_i32() & 1) == 0 {
-                (0..reader.var_u32()).map(|_| LegacySetItemSlot::read(reader)).collect()
-            } else {
-                Vec::new()
-            },
-            actions: (0..reader.var_u32()).
-                map(|_| InventoryAction::read(reader)).
-                collect(),
-            action_type: reader.var_u32(),
-            block_position: reader.block_pos(),
-            block_face: reader.var_i32(),
-            hot_bar_slot: reader.var_i32(),
-            held_item: ItemInstance::read(reader),
-            position: reader.vec3(),
-            clicked_position: reader.vec3(),
-            block_runtime_id: reader.var_u32(),
-        }
-    }
-}
-
-impl UseItemTransactionData {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             action_type: reader.var_u32(),
@@ -3689,6 +3502,45 @@ impl UseItemTransactionData {
             clicked_position: reader.vec3(),
             block_runtime_id: reader.var_u32(),
             ..Default::default()
+        }
+    }
+
+    pub fn write_player_action(&self, writer: &mut Writer) {
+        writer.var_i32(self.legacy_request_id);
+        if self.legacy_request_id < -1 && (self.legacy_request_id & 1) == 0 {
+            writer.var_u32(self.legacy_set_item_slots.len() as u32);
+            self.legacy_set_item_slots.iter().for_each(|slot| slot.write(writer));
+        }
+        writer.var_u32(self.actions.len() as u32);
+        self.actions.iter().for_each(|action| action.write(writer));
+        writer.var_u32(self.action_type);
+        writer.block_pos(self.block_position);
+        writer.var_i32(self.block_face);
+        writer.var_i32(self.hot_bar_slot);
+        self.held_item.write(writer);
+        writer.vec3(self.position);
+        writer.vec3(self.clicked_position);
+        writer.var_u32(self.block_runtime_id);
+    }
+
+    pub fn read_player_action(reader: &mut Reader) -> Self {
+        let legacy_request_id = reader.var_i32();
+        Self {
+            legacy_request_id,
+            legacy_set_item_slots: if legacy_request_id < -1 && (legacy_request_id & 1) == 0 {
+                (0..reader.var_u32()).map(|_| LegacySetItemSlot::read(reader)).collect()
+            } else {
+                Vec::new()
+            },
+            actions: (0..reader.var_u32()).map(|_| InventoryAction::read(reader)).collect(),
+            action_type: reader.var_u32(),
+            block_position: reader.block_pos(),
+            block_face: reader.var_i32(),
+            hot_bar_slot: reader.var_i32(),
+            held_item: ItemInstance::read(reader),
+            position: reader.vec3(),
+            clicked_position: reader.vec3(),
+            block_runtime_id: reader.var_u32(),
         }
     }
 }
