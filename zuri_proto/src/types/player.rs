@@ -2,7 +2,7 @@ use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, FromPrimitive, ToPrimitive)]
 pub enum PlayerActionType {
     StartBreak,
     AbortBreak,

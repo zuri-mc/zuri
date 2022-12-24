@@ -4,11 +4,10 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use crate::packet::Packet;
 use crate::types::skin::Skin;
 use crate::io::{Reader, Writer};
-use crate::types::player::PlayerActionType;
 
 #[derive(Debug)]
 pub struct PlayerList {
-    pub action_type: PlayerActionType,
+    pub action_type: PlayerListAction,
     pub entries: Vec<PlayerListEntry>,
 }
 

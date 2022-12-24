@@ -5,6 +5,7 @@ use zuri_nbt::{Value, encoding::NetworkLittleEndian};
 use crate::encodable_enum;
 use crate::io::{Reader, Writer};
 use crate::types::item::ItemStack;
+use crate::types::item_descriptor::ItemDescriptorCount;
 
 encodable_enum!(
     #[derive(Debug)]
@@ -297,16 +298,10 @@ impl DestroyStackRequestAction {
             source: StackRequestSlotInfo::read(reader),
         }
     }
-}
 
-impl StackRequestAction for DestroyStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.u8(self.count);
         self.source.write(writer);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::Destroy
     }
 }
 
@@ -325,17 +320,11 @@ impl DropStackRequestAction {
             randomly: reader.bool(),
         }
     }
-}
 
-impl StackRequestAction for DropStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.u8(self.count);
         self.source.write(writer);
         writer.bool(self.randomly);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::Drop
     }
 }
 
@@ -354,18 +343,12 @@ impl AutoCraftRecipeStackRequestAction {
             ingredients: (0..reader.var_u32()).map(|_| ItemDescriptorCount::read(reader)).collect(),
         }
     }
-}
 
-impl StackRequestAction for AutoCraftRecipeStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.u32(self.recipe_network_id);
         writer.u8(self.times_crafted);
         writer.var_u32(self.ingredients.len() as u32);
         self.ingredients.iter().for_each(|ingredient| ingredient.write(writer));
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::CraftRecipeAuto
     }
 }
 
@@ -382,16 +365,10 @@ impl BeaconPaymentStackRequestAction {
             secondary_effect: reader.var_i32(),
         }
     }
-}
 
-impl StackRequestAction for BeaconPaymentStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.primary_effect);
         writer.var_i32(self.secondary_effect);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::BeaconPayment
     }
 }
 
@@ -410,17 +387,11 @@ impl MineBlockStackRequestAction {
             stack_network_id: reader.var_i32(),
         }
     }
-}
 
-impl StackRequestAction for MineBlockStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.hotbar_slot);
         writer.var_i32(self.predicted_durability);
         writer.var_i32(self.stack_network_id);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::MineBlock
     }
 }
 
@@ -431,14 +402,8 @@ impl LabTableCombineStackRequestAction {
     pub fn read(_: &mut Reader) -> Self {
         Self {}
     }
-}
 
-impl StackRequestAction for LabTableCombineStackRequestAction {
     fn write(&self, _: &mut Writer) {}
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::LabTableCombine
-    }
 }
 
 #[derive(Debug)]
@@ -456,17 +421,11 @@ impl TakeStackRequestAction {
             destination: StackRequestSlotInfo::read(reader),
         }
     }
-}
 
-impl StackRequestAction for TakeStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.u8(self.count);
         self.source.write(writer);
         self.destination.write(writer);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::Take
     }
 }
 
@@ -483,16 +442,10 @@ impl SwapStackRequestAction {
             destination: StackRequestSlotInfo::read(reader),
         }
     }
-}
 
-impl StackRequestAction for SwapStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         self.source.write(writer);
         self.destination.write(writer);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::Swap
     }
 }
 
@@ -511,17 +464,11 @@ impl TakeOutContainerStackRequestAction {
             destination: StackRequestSlotInfo::read(reader),
         }
     }
-}
 
-impl StackRequestAction for TakeOutContainerStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.u8(self.count);
         self.source.write(writer);
         self.destination.write(writer);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::TakeOutContainer
     }
 }
 
@@ -538,16 +485,10 @@ impl ConsumeStackRequestAction {
             source: StackRequestSlotInfo::read(reader),
         }
     }
-}
 
-impl StackRequestAction for ConsumeStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.u8(self.count);
         self.source.write(writer);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::Consume
     }
 }
 
@@ -562,15 +503,9 @@ impl CraftCreativeStackRequestAction {
             creative_item_network_id: reader.u32(),
         }
     }
-}
 
-impl StackRequestAction for CraftCreativeStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.creative_item_network_id);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::CraftCreative
     }
 }
 
@@ -587,16 +522,10 @@ impl CraftGrindstoneRecipeStackRequestAction {
             cost: reader.i32(),
         }
     }
-}
 
-impl StackRequestAction for CraftGrindstoneRecipeStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.recipe_network_id);
         writer.var_i32(self.cost);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::CraftGrindstone
     }
 }
 
@@ -611,15 +540,9 @@ impl CraftLoomRecipeStackRequestAction {
             pattern: reader.string(),
         }
     }
-}
 
-impl StackRequestAction for CraftLoomRecipeStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.string(self.pattern.as_str());
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::CraftLoom
     }
 }
 
@@ -630,14 +553,8 @@ impl CraftNonImplementedStackRequestAction {
     pub fn read(_reader: &mut Reader) -> Self {
         Self {}
     }
-}
 
-impl StackRequestAction for CraftNonImplementedStackRequestAction {
-    fn write(&self, _: &mut Writer) {}
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::Take
-    }
+    pub fn write(&self, _: &mut Writer) {}
 }
 
 #[derive(Debug)]
@@ -653,16 +570,10 @@ impl CraftRecipeOptionalStackRequestAction {
             filter_string_index: reader.i32(),
         }
     }
-}
 
-impl StackRequestAction for CraftRecipeOptionalStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.recipe_network_id);
         writer.i32(self.filter_string_index);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::CraftRecipeOptional
     }
 }
 
@@ -677,15 +588,9 @@ impl CraftRecipeStackRequestAction {
             recipe_network_id: reader.u32(),
         }
     }
-}
 
-impl StackRequestAction for CraftRecipeStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.recipe_network_id);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::CraftRecipe
     }
 }
 
@@ -702,17 +607,11 @@ impl CraftResultsDeprecatedStackRequestAction {
             times_crafted: reader.u8(),
         }
     }
-}
 
-impl StackRequestAction for CraftResultsDeprecatedStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.result_items.len() as u32);
         self.result_items.iter().for_each(|item| item.write(writer));
         writer.u8(self.times_crafted);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::CraftResultsDeprecated
     }
 }
 
@@ -727,15 +626,9 @@ impl CreateStackRequestAction {
             results_slot: reader.u8(),
         }
     }
-}
 
-impl StackRequestAction for CreateStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.u8(self.results_slot);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::Create
     }
 }
 
@@ -754,17 +647,11 @@ impl PlaceInContainerStackRequestAction {
             destination: StackRequestSlotInfo::read(reader),
         }
     }
-}
 
-impl StackRequestAction for PlaceInContainerStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.u8(self.count);
         self.source.write(writer);
         self.destination.write(writer);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::PlaceInContainer
     }
 }
 
@@ -783,17 +670,11 @@ impl PlaceStackRequestAction {
             destination: StackRequestSlotInfo::read(reader),
         }
     }
-}
 
-impl StackRequestAction for PlaceStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.u8(self.count);
         self.source.write(writer);
         self.destination.write(writer);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::Place
     }
 }
 

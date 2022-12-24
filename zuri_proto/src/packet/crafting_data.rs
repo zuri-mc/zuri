@@ -24,7 +24,7 @@ pub struct CraftingData {
 }
 
 impl Packet for CraftingData {
-    fn write(&self, writer: &mut Writer) {
+    fn write(&self, _writer: &mut Writer) {
         todo!()
         // writer.write_TODO(self.LEN);
         // writer.write_Recipe(self.recipes);
@@ -37,7 +37,7 @@ impl Packet for CraftingData {
         // writer.bool(self.clear_recipes);
     }
 
-    fn read(reader: &mut Reader) -> Self {
+    fn read(_reader: &mut Reader) -> Self {
         todo!()
         // Self {
         //     LEN: reader.read_TODO(),

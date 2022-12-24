@@ -1,8 +1,9 @@
 use bytes::Bytes;
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{ToPrimitive, FromPrimitive};
 
 use crate::packet::Packet;
-use crate::io::{Reader, Writer};
+use crate::io::{Read, Reader, Write, Writer};
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
 pub enum ModalFormCancelReason {
@@ -30,5 +31,17 @@ impl Packet for ModalFormResponse {
             response_data: reader.optional(),
             cancel_reason: reader.optional(),
         }
+    }
+}
+
+impl Write for ModalFormCancelReason {
+    fn write(&self, writer: &mut Writer) {
+        writer.u8(self.to_u8().unwrap())
+    }
+}
+
+impl Read<ModalFormCancelReason> for ModalFormCancelReason {
+    fn read(reader: &mut Reader) -> ModalFormCancelReason {
+        ModalFormCancelReason::from_u8(reader.u8()).unwrap()
     }
 }

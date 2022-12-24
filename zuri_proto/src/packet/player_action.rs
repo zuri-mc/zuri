@@ -1,4 +1,4 @@
-use glam::Vec3;
+use glam::IVec3;
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 use crate::types::player::PlayerActionType;
@@ -14,10 +14,10 @@ pub struct PlayerAction {
     pub action_type: PlayerActionType,
     /// The position of the target block, if the action with the ActionType set concerned a block. If that is not the
     /// case, the block position will be zero.
-    pub block_position: Vec3,
+    pub block_position: IVec3,
     /// The position of the action's result. When a UseItemOn action is sent, this is the position of the block clicked,
     /// but when a block is placed, this is the position at which the block will be placed.
-    pub result_position: Vec3,
+    pub result_position: IVec3,
     /// The face of the target block that was touched. If the action with the ActionType set concerned a block. If not,
     /// the face is always zero.
     pub block_face: i32,

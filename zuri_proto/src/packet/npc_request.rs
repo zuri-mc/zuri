@@ -1,4 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{ToPrimitive, FromPrimitive};
 
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
@@ -26,7 +27,7 @@ pub struct NPCRequest {
 impl Packet for NPCRequest {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.entity_runtime_id);
-        writer.u8(self.request_type);
+        writer.u8(self.request_type.to_u8().unwrap());
         writer.string(self.command_string.as_str());
         writer.u8(self.action_type);
         writer.string(self.scene_name.as_str());
@@ -35,7 +36,7 @@ impl Packet for NPCRequest {
     fn read(reader: &mut Reader) -> Self {
         Self {
             entity_runtime_id: reader.var_u64(),
-            request_type: reader.u8(),
+            request_type: NPCRequestAction::from_u8(reader.u8()).unwrap(),
             command_string: reader.string(),
             action_type: reader.u8(),
             scene_name: reader.string(),

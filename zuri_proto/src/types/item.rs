@@ -1,3 +1,4 @@
+use bytes::BytesMut;
 use crate::io::{Writer, Reader};
 use zuri_nbt::{Value, encoding::LittleEndian};
 
@@ -49,7 +50,7 @@ impl ItemInstance {
             extra_data.i64(0);
         }
 
-        writer.byte_slice(extra_data.into());
+        writer.byte_slice(Into::<BytesMut>::into(extra_data).as_ref());
     }
 
     pub fn read(reader: &mut Reader) -> Self {
@@ -147,7 +148,7 @@ impl ItemStack {
             extra_data.i64(0);
         }
 
-        writer.byte_slice(extra_data.into());
+        writer.byte_slice(Into::<BytesMut>::into(extra_data).as_ref());
     }
 
     pub fn read(reader: &mut Reader) -> Self {

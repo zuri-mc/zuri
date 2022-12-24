@@ -47,6 +47,12 @@ pub enum InputFlag {
     PerformItemStackRequest,
 }
 
+impl InputFlag {
+    pub fn flag(&self) -> u64 {
+        1 << (*self as u64)
+    }
+}
+
 #[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum PlayMode {
     Normal,

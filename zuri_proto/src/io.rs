@@ -180,8 +180,8 @@ impl Writer {
         self.buf.put(x.to_bytes_le().as_ref());
     }
 
-    pub fn nbt<T: encode::Writer + Sized + Default>(&mut self, val: &Value, &mut writer: T) {
-        val.write(&mut self.buf, writer).unwrap();
+    pub fn nbt<T: encode::Writer + Sized>(&mut self, val: &Value, mut writer: T) {
+        val.write(&mut self.buf, &mut writer).unwrap();
     }
 
     pub fn optional(&mut self, x: &Option<impl Write>) {
@@ -419,8 +419,8 @@ impl Reader {
         Uuid::from_slice_le(&b).unwrap()
     }
 
-    pub fn nbt<T: decode::Reader + Sized + Default>(&mut self, &mut reader: T) -> Value {
-        Value::read(&mut self.buf, reader).unwrap()
+    pub fn nbt<T: decode::Reader + Sized>(&mut self, mut reader: T) -> Value {
+        Value::read(&mut self.buf, &mut reader).unwrap()
     }
 
     pub fn optional<T: Read<T>>(&mut self) -> Option<T> {

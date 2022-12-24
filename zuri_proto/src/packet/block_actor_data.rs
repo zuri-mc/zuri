@@ -12,7 +12,7 @@ pub struct BlockActorData {
 impl Packet for BlockActorData {
     fn write(&self, writer: &mut Writer) {
         writer.u_block_pos(self.position);
-        writer.nbt(&self.payload, NetworkLittleEndian);
+        writer.nbt(&self.nbt_data, NetworkLittleEndian);
     }
 
     fn read(reader: &mut Reader) -> Self {

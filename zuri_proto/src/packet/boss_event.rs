@@ -1,4 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{ToPrimitive, FromPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
@@ -47,7 +48,7 @@ impl Packet for BossEvent {
                 writer.string(self.boss_bar_title.as_str());
                 writer.f32(self.health_percentage);
                 writer.i16(self.screen_darkening);
-                writer.u32(self.colour);
+                writer.u32(self.colour.to_u32().unwrap());
                 writer.u32(self.overlay);
             }
             BossEventType::RegisterPlayer | BossEventType::UnregisterPlayer | BossEventType::Request => {
@@ -61,12 +62,12 @@ impl Packet for BossEvent {
                 writer.string(self.boss_bar_title.as_str());
             }
             BossEventType::AppearanceProperties => {
-                writer.i16(self.screen_darkening);
-                writer.u32(self.colour);
+                writer.i16(self.screen_darkening.to_i16().unwrap());
+                writer.u32(self.colour.to_u32().unwrap());
                 writer.u32(self.overlay);
             }
             BossEventType::Texture => {
-                writer.u32(self.colour);
+                writer.u32(self.colour.to_u32().unwrap());
                 writer.u32(self.overlay);
             }
         }
@@ -87,9 +88,9 @@ impl Packet for BossEvent {
             health_percentage: if event_type == BossEventType::Show || event_type == BossEventType::HealthPercentage { reader.f32() } else { 0.0 },
             screen_darkening: if event_type == BossEventType::Show || event_type == BossEventType::AppearanceProperties { reader.i16() } else { 0 },
             colour: if event_type == BossEventType::Show || event_type == BossEventType::AppearanceProperties || event_type == BossEventType::Texture {
-                reader.u32()
+                BossEventColour::from_u32(reader.u32()).unwrap()
             } else {
-                0
+                BossEventColour::Purple
             },
             overlay: if event_type == BossEventType::Show || event_type == BossEventType::AppearanceProperties || event_type == BossEventType::Texture {
                 reader.u32()

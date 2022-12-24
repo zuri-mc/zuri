@@ -104,7 +104,7 @@ impl AvailableCommands {
 }
 
 impl Packet for AvailableCommands {
-    fn write(&self, writer: &mut Writer) {
+    fn write(&self, _writer: &mut Writer) {
         todo!()
         // (values, valueIndices) = self.enum_values();
         // (suffixes, suffixIndices) = self.suffixes();
@@ -120,7 +120,7 @@ impl Packet for AvailableCommands {
         // enums.iter().for_each(|command_enum| command_enum.write(writer));
     }
 
-    fn read(reader: &mut Reader) -> Self {
+    fn read(_reader: &mut Reader) -> Self {
         todo!()
         // Self {
         //     LEN: reader.read_TODO(),

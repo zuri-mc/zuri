@@ -4,71 +4,65 @@ use crate::io::{Reader, Writer};
 encodable_enum!(
     #[derive(Debug)]
     pub enum EventType {
-        AchievementAwardedEventType = 0,
-        EntityInteractEventType = 1,
-        PortalBuiltEventType = 2,
-        PortalUsedEventType = 3,
-        MobKilledEventType = 4,
-        CauldronUsedEventType = 5,
-        PlayerDiedEventType = 6,
-        BossKilledEventType = 7,
-        AgentCommandEventType = 8,
-        AgentCreatedEventType = 9,
-        PatternRemovedEventType = 10,
-        SlashCommandExecutedEventType = 11,
-        FishBucketedEventType = 12,
-        MobBornEventType = 13,
-        PetDiedEventType = 14,
-        CauldronInteractEventType = 15,
-        ComposterInteractEventType = 16,
-        BellUsedEventType = 17,
-        EntityDefinitionTriggerEventType = 18,
-        RaidUpdateEventType = 19,
-        MovementAnomalyEventType = 20,
-        MovementCorrectedEventType = 21,
-        //ExtractHoneyEventType = 22, todo
-        //TargetBlockHitEventType = 23, todo
-        //PiglinBarterEventType = 24, todo
-        PlayerWaxedOrUnwaxedCopperEventType = 25,
-        //CodeBuilderRuntimeActionEventType = 26, todo
-        //CodeBuilderScoreboardEventType = 27, todo
-        //StriderRiddenInLavaInOverworldEventType = 28, todo
-        SneakCloseToSculkSensorEventType = 29,
+        AchievementAwarded = 0,
+        EntityInteract = 1,
+        PortalBuilt = 2,
+        PortalUsed = 3,
+        MobKilled = 4,
+        CauldronUsed = 5,
+        PlayerDied = 6,
+        BossKilled = 7,
+        AgentCommand = 8,
+        AgentCreated = 9,
+        PatternRemoved = 10,
+        SlashCommandExecuted = 11,
+        FishBucketed = 12,
+        MobBorn = 13,
+        PetDied = 14,
+        CauldronInteract = 15,
+        ComposterInteract = 16,
+        BellUsed = 17,
+        EntityDefinitionTrigger = 18,
+        //RaidUpdate = 19, TODO
+        MovementAnomaly = 20,
+        MovementCorrected = 21,
+        //ExtractHoney = 22, todo
+        //TargetBlockHit = 23, todo
+        //PiglinBarter = 24, todo
+        PlayerWaxedOrUnwaxedCopper = 25,
+        //CodeBuilderRuntimeAction = 26, todo
+        //CodeBuilderScoreboard = 27, todo
+        //StriderRiddenInLavaInOverworld = 28, todo
+        SneakCloseToSculkSensor = 29,
     }
 );
 
 #[derive(Debug)]
-pub struct EntityDefinitionTriggerEventData {
+pub struct EntityDefinitionTrigger {
     pub event_name: String,
 }
 
-impl EntityDefinitionTriggerEventData {
+impl EntityDefinitionTrigger{
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             event_name: reader.string(),
         }
     }
-}
 
-impl EventData for EntityDefinitionTriggerEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.string(self.event_name.as_str());
-    }
-
-    fn event_type(&self) -> EventType {
-        EventType::EntityDefinitionTrigger
     }
 }
 
 #[derive(Debug)]
-pub struct EntityInteractEventData {
+pub struct EntityInteract {
     pub interaction_type: i32,
     pub interaction_entity_type: i32,
     pub entity_variant: i32,
     pub entity_colour: u8,
 }
 
-impl EntityInteractEventData {
+impl EntityInteract {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             interaction_type: reader.var_i32(),
@@ -77,55 +71,43 @@ impl EntityInteractEventData {
             entity_colour: reader.u8(),
         }
     }
-}
 
-impl EventData for EntityInteractEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.interaction_type);
         writer.var_i32(self.interaction_entity_type);
         writer.var_i32(self.entity_variant);
         writer.u8(self.entity_colour);
     }
-
-    fn event_type(&self) -> EventType {
-        EventType::EntityInteract
-    }
 }
 
 #[derive(Debug)]
-pub struct CauldronInteractEventData {
+pub struct CauldronInteract {
     pub block_interaction_type: i32,
     pub item_id: i32,
 }
 
-impl CauldronInteractEventData {
+impl CauldronInteract {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             block_interaction_type: reader.var_i32(),
             item_id: reader.var_i32(),
         }
     }
-}
 
-impl EventData for CauldronInteractEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.block_interaction_type);
         writer.var_i32(self.item_id);
-    }
-
-    fn event_type(&self) -> EventType {
-        EventType::CauldronInteract
     }
 }
 
 #[derive(Debug)]
-pub struct CauldronUsedEventData {
+pub struct CauldronUsed {
     pub potion_id: i32,
     pub colour: i32,
     pub fill_level: i32,
 }
 
-impl CauldronUsedEventData {
+impl CauldronUsed {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             potion_id: reader.var_i32(),
@@ -133,55 +115,42 @@ impl CauldronUsedEventData {
             fill_level: reader.var_i32(),
         }
     }
-}
 
-impl EventData for CauldronUsedEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.potion_id);
         writer.var_i32(self.colour);
         writer.var_i32(self.fill_level);
     }
-
-    fn event_type(&self) -> EventType {
-        EventType::CauldronUsed
-    }
 }
 
 #[derive(Debug)]
-pub struct ComposterInteractEventData {
+pub struct ComposterInteract {
     pub block_interaction_type: i32,
     pub item_id: i32,
 }
 
-impl ComposterInteractEventData {
+impl ComposterInteract {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             block_interaction_type: reader.var_i32(),
             item_id: reader.var_i32(),
         }
     }
-}
 
-impl EventData for ComposterInteractEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.block_interaction_type);
         writer.var_i32(self.item_id);
     }
-
-    fn event_type(&self) -> EventType {
-        EventType::ComposterInteract
-    }
 }
 
-
 #[derive(Debug)]
-pub struct BossKilledEventData {
+pub struct BossKilled {
     pub boss_entity_unique_id: i64,
     pub player_party_size: i32,
     pub interaction_entity_type: i32,
 }
 
-impl BossKilledEventData {
+impl BossKilled {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             boss_entity_unique_id: reader.var_i64(),
@@ -189,45 +158,33 @@ impl BossKilledEventData {
             interaction_entity_type: reader.var_i32(),
         }
     }
-}
 
-impl EventData for BossKilledEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i64(self.boss_entity_unique_id);
         writer.var_i32(self.player_party_size);
         writer.var_i32(self.interaction_entity_type);
     }
-
-    fn event_type(&self) -> EventType {
-        EventType::BossKilled
-    }
 }
 
 #[derive(Debug)]
-pub struct AchievementAwardedEventData {
+pub struct AchievementAwarded {
     pub achievement_id: i32,
 }
 
-impl AchievementAwardedEventData {
+impl AchievementAwarded {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             achievement_id: reader.var_i32(),
         }
     }
-}
 
-impl EventData for AchievementAwardedEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.achievement_id);
-    }
-
-    fn event_type(&self) -> EventType {
-        EventType::AchievementAwarded
     }
 }
 
 #[derive(Debug)]
-pub struct AgentCommandEventData {
+pub struct AgentCommand {
     pub agent_result: i32,
     pub data_value: i32,
     pub command: String,
@@ -235,7 +192,7 @@ pub struct AgentCommandEventData {
     pub output: String,
 }
 
-impl AgentCommandEventData {
+impl AgentCommand {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             agent_result: reader.var_i32(),
@@ -245,48 +202,36 @@ impl AgentCommandEventData {
             output: reader.string(),
         }
     }
-}
 
-impl EventData for AgentCommandEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.agent_result);
         writer.var_i32(self.data_value);
         writer.string(self.command.as_str());
         writer.string(self.data_key.as_str());
         writer.string(self.output.as_str());
     }
-
-    fn event_type(&self) -> EventType {
-        EventType::AgentCommand
-    }
 }
 
 #[derive(Debug)]
-pub struct AgentCreatedEventData {}
+pub struct AgentCreated {}
 
-impl AgentCreatedEventData {
+impl AgentCreated {
     pub fn read(_: &mut Reader) -> Self {
         Self {}
     }
-}
 
-impl EventData for AgentCreatedEventData {
-    fn write(&self, _: &mut Writer) {}
-
-    fn event_type(&self) -> EventType {
-        EventType::AgentCreated
-    }
+    pub fn write(&self, _: &mut Writer) {}
 }
 
 #[derive(Debug)]
-pub struct SlashCommandExecutedEventData {
+pub struct SlashCommandExecuted {
     pub success_count: i32,
     pub message_count: i32,
     pub command_name: String,
     pub output_messages: String,
 }
 
-impl SlashCommandExecutedEventData {
+impl SlashCommandExecuted {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             success_count: reader.var_i32(),
@@ -295,23 +240,17 @@ impl SlashCommandExecutedEventData {
             output_messages: reader.string(),
         }
     }
-}
 
-impl EventData for SlashCommandExecutedEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.success_count);
         writer.var_i32(self.message_count);
         writer.string(self.command_name.as_str());
         writer.string(self.output_messages.as_str());
     }
-
-    fn event_type(&self) -> EventType {
-        EventType::SlashCommandExecuted
-    }
 }
 
 #[derive(Debug)]
-pub struct MobKilledEventData {
+pub struct MobKilled {
     pub killer_entity_unique_id: i64,
     pub victim_entity_unique_id: i64,
     pub killer_entity_type: i32,
@@ -320,7 +259,7 @@ pub struct MobKilledEventData {
     pub villager_display_name: String,
 }
 
-impl MobKilledEventData {
+impl MobKilled {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             killer_entity_unique_id: reader.var_i64(),
@@ -331,10 +270,8 @@ impl MobKilledEventData {
             villager_display_name: reader.string(),
         }
     }
-}
 
-impl EventData for MobKilledEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i64(self.killer_entity_unique_id);
         writer.var_i64(self.victim_entity_unique_id);
         writer.var_i32(self.killer_entity_type);
@@ -342,14 +279,10 @@ impl EventData for MobKilledEventData {
         writer.var_i32(self.villager_trade_tier);
         writer.string(self.villager_display_name.as_str());
     }
-
-    fn event_type(&self) -> EventType {
-        EventType::MobKilled
-    }
 }
 
 #[derive(Debug)]
-pub struct MovementAnomalyEventData {
+pub struct MovementAnomaly {
     pub event_type: u8,
     pub cheating_score: f32,
     pub average_position_delta: f32,
@@ -358,7 +291,7 @@ pub struct MovementAnomalyEventData {
     pub max_position_delta: f32,
 }
 
-impl MovementAnomalyEventData {
+impl MovementAnomaly {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             event_type: reader.u8(),
@@ -369,10 +302,8 @@ impl MovementAnomalyEventData {
             max_position_delta: reader.f32(),
         }
     }
-}
 
-impl EventData for MovementAnomalyEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.u8(self.event_type);
         writer.f32(self.cheating_score);
         writer.f32(self.average_position_delta);
@@ -380,14 +311,10 @@ impl EventData for MovementAnomalyEventData {
         writer.f32(self.min_position_delta);
         writer.f32(self.max_position_delta);
     }
-
-    fn event_type(&self) -> EventType {
-        EventType::MovementAnomaly
-    }
 }
 
 #[derive(Debug)]
-pub struct MovementCorrectedEventData {
+pub struct MovementCorrected {
     pub position_delta: f32,
     pub cheating_score: f32,
     pub score_threshold: f32,
@@ -395,7 +322,7 @@ pub struct MovementCorrectedEventData {
     pub duration_threshold: i32,
 }
 
-impl MovementCorrectedEventData {
+impl MovementCorrected {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             position_delta: reader.f32(),
@@ -405,63 +332,51 @@ impl MovementCorrectedEventData {
             duration_threshold: reader.var_i32(),
         }
     }
-}
 
-impl EventData for MovementCorrectedEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.f32(self.position_delta);
         writer.f32(self.cheating_score);
         writer.f32(self.score_threshold);
         writer.f32(self.distance_threshold);
         writer.var_i32(self.duration_threshold);
     }
-
-    fn event_type(&self) -> EventType {
-        EventType::MovementCorrected
-    }
 }
 
 #[derive(Debug)]
-pub struct BellUsedEventData {
+pub struct BellUsed {
     pub item_id: i32,
 }
 
-impl BellUsedEventData {
+impl BellUsed {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             item_id: reader.var_i32(),
         }
     }
-}
 
-impl EventData for BellUsedEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.item_id);
-    }
-
-    fn event_type(&self) -> EventType {
-        EventType::BellUsed
     }
 }
 
 #[derive(Debug)]
-pub struct ExtractHoneyEventData {} // todo
+pub struct ExtractHoney {} // todo
 
-impl ExtractHoneyEventData {
-    pub fn read(reader: &mut Reader) -> Self {
+impl ExtractHoney {
+    pub fn read(_reader: &mut Reader) -> Self {
         Self {}
     }
 }
 
 #[derive(Debug)]
-pub struct FishBucketedEventData {
+pub struct FishBucketed {
     pub pattern: i32,
     pub preset: i32,
     pub bucketed_entity_type: i32,
     pub release: bool,
 }
 
-impl FishBucketedEventData {
+impl FishBucketed {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             pattern: reader.var_i32(),
@@ -470,29 +385,23 @@ impl FishBucketedEventData {
             release: reader.bool(),
         }
     }
-}
 
-impl EventData for FishBucketedEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.pattern);
         writer.var_i32(self.preset);
         writer.var_i32(self.bucketed_entity_type);
         writer.bool(self.release);
     }
-
-    fn event_type(&self) -> EventType {
-        EventType::FishBucketed
-    }
 }
 
 #[derive(Debug)]
-pub struct MobBornEventData {
+pub struct MobBorn {
     pub entity_type: i32,
     pub variant: i32,
     pub colour: u8,
 }
 
-impl MobBornEventData {
+impl MobBorn {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             entity_type: reader.var_i32(),
@@ -500,39 +409,27 @@ impl MobBornEventData {
             colour: reader.u8(),
         }
     }
-}
 
-impl EventData for MobBornEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.entity_type);
         writer.var_i32(self.variant);
         writer.u8(self.colour);
     }
-
-    fn event_type(&self) -> EventType {
-        EventType::AchievementAwarded
-    }
 }
 
 #[derive(Debug)]
-pub struct PlayerWaxedOrUnwaxedCopperEventData {}
+pub struct PlayerWaxedOrUnwaxedCopper {}
 
-impl PlayerWaxedOrUnwaxedCopperEventData {
-    pub fn read(reader: &mut Reader) -> Self {
+impl PlayerWaxedOrUnwaxedCopper {
+    pub fn read(_reader: &mut Reader) -> Self {
         Self {}
     }
-}
 
-impl EventData for PlayerWaxedOrUnwaxedCopperEventData {
-    fn write(&self, _: &mut Writer) {}
-
-    fn event_type(&self) -> EventType {
-        EventType::ExtractHoney
-    }
+    pub fn write(&self, _: &mut Writer) {}
 }
 
 #[derive(Debug)]
-pub struct PetDiedEventData {
+pub struct PetDied {
     pub killed_by_owner: bool,
     pub killer_entity_unique_id: i64,
     pub pet_entity_unique_id: i64,
@@ -540,7 +437,7 @@ pub struct PetDiedEventData {
     pub pet_entity_type: i32,
 }
 
-impl PetDiedEventData {
+impl PetDied {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             killed_by_owner: reader.bool(),
@@ -550,31 +447,25 @@ impl PetDiedEventData {
             pet_entity_type: reader.var_i32(),
         }
     }
-}
 
-impl EventData for PetDiedEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.bool(self.killed_by_owner);
         writer.var_i64(self.killer_entity_unique_id);
         writer.var_i64(self.pet_entity_unique_id);
         writer.var_i32(self.entity_damage_cause);
         writer.var_i32(self.pet_entity_type);
     }
-
-    fn event_type(&self) -> EventType {
-        EventType::PetDied
-    }
 }
 
 #[derive(Debug)]
-pub struct PlayerDiedEventData {
+pub struct PlayerDied {
     pub attacker_entity_id: i32,
     pub attacker_variant: i32,
     pub entity_damage_cause: i32,
     pub in_raid: bool,
 }
 
-impl PlayerDiedEventData {
+impl PlayerDied {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             attacker_entity_id: reader.var_i32(),
@@ -583,89 +474,65 @@ impl PlayerDiedEventData {
             in_raid: reader.bool(),
         }
     }
-}
 
-impl EventData for PlayerDiedEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.attacker_entity_id);
         writer.var_i32(self.attacker_variant);
         writer.var_i32(self.entity_damage_cause);
         writer.bool(self.in_raid);
     }
-
-    fn event_type(&self) -> EventType {
-        EventType::PlayerDied
-    }
 }
 
 #[derive(Debug)]
-pub struct PortalBuiltEventData {
+pub struct PortalBuilt {
     pub dimension_id: i32,
 }
 
-impl PortalBuiltEventData {
+impl PortalBuilt {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             dimension_id: reader.var_i32(),
         }
     }
-}
 
-impl EventData for PortalBuiltEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.dimension_id);
-    }
-
-    fn event_type(&self) -> EventType {
-        EventType::PortalBuilt
     }
 }
 
 #[derive(Debug)]
-pub struct PortalUsedEventData {
+pub struct PortalUsed {
     pub from_dimension_id: i32,
     pub to_dimension_id: i32,
 }
 
-impl PortalUsedEventData {
+impl PortalUsed {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             from_dimension_id: reader.var_i32(),
             to_dimension_id: reader.var_i32(),
         }
     }
-}
 
-impl EventData for PortalUsedEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.from_dimension_id);
         writer.var_i32(self.to_dimension_id);
     }
-
-    fn event_type(&self) -> EventType {
-        EventType::PortalUsed
-    }
 }
 
 #[derive(Debug)]
-pub struct SneakCloseToSculkSensorEventData {}
+pub struct SneakCloseToSculkSensor {}
 
-impl SneakCloseToSculkSensorEventData {
-    pub fn read(reader: &mut Reader) -> Self {
+impl SneakCloseToSculkSensor {
+    pub fn read(_reader: &mut Reader) -> Self {
         Self {}
     }
-}
 
-impl EventData for SneakCloseToSculkSensorEventData {
-    fn write(&self, _: &mut Writer) {}
-
-    fn event_type(&self) -> EventType {
-        EventType::ExtractHoney
-    }
+    pub fn write(&self, _: &mut Writer) {}
 }
 
 #[derive(Debug)]
-pub struct PatternRemovedEventData {
+pub struct PatternRemoved {
     pub item_id: i32,
     pub aux_value: i32,
     pub patterns_size: i32,
@@ -673,7 +540,7 @@ pub struct PatternRemovedEventData {
     pub pattern_colour: i32,
 }
 
-impl PatternRemovedEventData {
+impl PatternRemoved {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             item_id: reader.var_i32(),
@@ -683,18 +550,12 @@ impl PatternRemovedEventData {
             pattern_colour: reader.var_i32(),
         }
     }
-}
 
-impl EventData for PatternRemovedEventData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.item_id);
         writer.var_i32(self.aux_value);
         writer.var_i32(self.patterns_size);
         writer.var_i32(self.pattern_index);
         writer.var_i32(self.pattern_colour);
-    }
-
-    fn event_type(&self) -> EventType {
-        EventType::PatternRemoved
     }
 }

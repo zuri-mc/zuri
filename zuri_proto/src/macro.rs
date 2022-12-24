@@ -26,7 +26,6 @@ macro_rules! encodable_enum {
                         writer.var_u32($discrim);
                         pk.write(writer);
                     },)+
-                    _ => panic!("unknown enum variant"),
                 }
             }
         }

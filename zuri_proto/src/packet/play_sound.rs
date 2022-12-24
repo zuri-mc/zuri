@@ -15,7 +15,7 @@ pub struct PlaySound {
 impl Packet for PlaySound {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.sound_name.as_str());
-        writer.block_pos(self.position.mul(8).as_ivec3());
+        writer.block_pos(self.position.mul(8.).as_ivec3());
         writer.f32(self.volume);
         writer.f32(self.pitch);
     }
@@ -23,7 +23,7 @@ impl Packet for PlaySound {
     fn read(reader: &mut Reader) -> Self {
         Self {
             sound_name: reader.string(),
-            position: reader.block_pos().as_vec3().div(8),
+            position: reader.block_pos().as_vec3().div(8.),
             volume: reader.f32(),
             pitch: reader.f32(),
         }

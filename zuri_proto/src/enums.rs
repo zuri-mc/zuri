@@ -52,53 +52,6 @@ pub enum Device {
     Linux,
 }
 
-#[derive(Clone, Copy, Debug, FromPrimitive, ToPrimitive)]
-pub enum InputFlag {
-    Ascend,
-    Descend,
-    NorthJump,
-    JumpDown,
-    SprintDown,
-    ChangeHeight,
-    Jumping,
-    AutoJumpingInWater,
-    Sneaking,
-    SneakDown,
-    Up,
-    Down,
-    Left,
-    Right,
-    UpLeft,
-    UpRight,
-    WantUp,
-    WantDown,
-    WantDownSlow,
-    WantUpSlow,
-    Sprinting,
-    AscendBlock,
-    DescendBlock,
-    SneakToggleDown,
-    PersistSneak,
-    StartSprinting,
-    StopSprinting,
-    StartSneaking,
-    StopSneaking,
-    StartSwimming,
-    StopSwimming,
-    StartJumping,
-    StartGliding,
-    StopGliding,
-    PerformItemInteraction,
-    PerformBlockActions,
-    PerformItemStackRequest,
-}
-
-impl InputFlag {
-    pub fn flag(&self) -> u64 {
-        1 << (*self as u64)
-    }
-}
-
 #[derive(Debug, FromPrimitive, ToPrimitive)]
 pub enum InputMode {
     None,

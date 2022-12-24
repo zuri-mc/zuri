@@ -2,7 +2,6 @@ extern crate core;
 
 use std::f32::consts::PI;
 
-use std::collections::{BTreeMap};
 use bevy::{
     pbr::wireframe::{WireframeConfig, WireframePlugin},
     prelude::*,
@@ -11,7 +10,6 @@ use bevy::{
 use bevy::core_pipeline::clear_color::ClearColorConfig;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::window::{CursorGrabMode, PresentMode};
-use json::{Array, JsonValue};
 use noise::{NoiseFn, Simplex};
 
 use zuri_world::chunk::Chunk;
