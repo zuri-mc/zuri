@@ -1,4 +1,6 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{ToPrimitive, FromPrimitive};
+
 use crate::io::{Reader, Writer};
 
 #[derive(Clone, Copy, Debug, PartialEq, FromPrimitive, ToPrimitive)]
@@ -67,7 +69,7 @@ impl ScoreboardEntry {
         writer.string(self.objective_name.as_str());
         writer.i32(self.score);
         if action == ScoreboardAction::Modify {
-            writer.u8(num::ToPrimitive::to_u8(&self.identity_type).unwrap());
+            writer.u8(self.identity_type.to_u8().unwrap());
             match self.identity_type {
                 ScoreboardIdentity::Entity | ScoreboardIdentity::Player => {
                     writer.var_i64(self.entity_unique_id);
@@ -89,7 +91,7 @@ impl ScoreboardEntry {
             display_name: "".into(),
         };
         if action == ScoreboardAction::Modify {
-            entry.identity_type = num::FromPrimitive::from_u8(reader.u8()).unwrap();
+            entry.identity_type = ScoreboardIdentity::from_u8(reader.u8()).unwrap();
             match entry.identity_type {
                 ScoreboardIdentity::Entity | ScoreboardIdentity::Player => {
                     entry.entity_unique_id = reader.var_i64();

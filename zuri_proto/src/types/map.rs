@@ -1,7 +1,9 @@
 use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::types::colour::RGBA;
+use crate::io::{Reader, Writer};
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
 pub enum MapObjectType {
@@ -63,14 +65,14 @@ pub struct MapTrackedObject {
 
 impl MapTrackedObject {
     pub fn write(&self, writer: &mut Writer) {
-        writer.i32(num::ToPrimitive::to_i32(&self.object_type).unwrap());
+        writer.i32(self.object_type.to_i32().unwrap());
         writer.i64(self.entity_unique_id);
         writer.u_block_pos(self.block_position);
     }
 
     pub fn read(reader: &mut Reader) -> Self {
         Self {
-            object_type: num::FromPrimitive::from_i32(reader.i32()).unwrap(),
+            object_type: MapObjectType::from_i32(reader.i32()).unwrap(),
             entity_unique_id: reader.i64(),
             block_position: reader.u_block_pos(),
         }

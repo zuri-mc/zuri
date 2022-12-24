@@ -1,5 +1,7 @@
 use glam::Vec3;
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
@@ -61,11 +63,11 @@ impl Packet for MovePlayer {
         writer.f32(self.yaw);
         writer.f32(self.head_yaw);
 
-        writer.u8(num::ToPrimitive::to_u8(&self.mode).unwrap());
+        writer.u8(self.mode.to_u8().unwrap());
         writer.bool(self.on_ground);
         writer.var_u64(self.ridden_entity_runtime_id);
         if self.mode == MoveMode::Teleport {
-            writer.i32(num::ToPrimitive::to_i32(&self.teleport_cause).unwrap());
+            writer.i32(self.teleport_cause.to_i32().unwrap());
             writer.i32(self.teleport_source_entity_type);
         }
 
@@ -79,7 +81,7 @@ impl Packet for MovePlayer {
             pitch: reader.f32(),
             yaw: reader.f32(),
             head_yaw: reader.f32(),
-            mode: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            mode: MoveMode::from_u8(reader.u8()).unwrap(),
             on_ground: reader.bool(),
             ridden_entity_runtime_id: reader.var_u64(),
             teleport_cause: TeleportCause::None,
@@ -87,7 +89,7 @@ impl Packet for MovePlayer {
             tick: 0,
         };
         if packet.mode == MoveMode::Teleport {
-            packet.teleport_cause = num::FromPrimitive::from_i32(reader.i32()).unwrap();
+            packet.teleport_cause = TeleportCause::from_i32(reader.i32()).unwrap();
             packet.teleport_source_entity_type = reader.i32();
         }
         packet.tick = reader.var_u64();

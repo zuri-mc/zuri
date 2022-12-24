@@ -1,4 +1,6 @@
 use glam::IVec3;
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
 use crate::io::{Reader, Writer};
 use crate::types::world::{Dimension, SpawnType};
@@ -21,17 +23,17 @@ pub struct SetSpawnPosition {
 
 impl Packet for SetSpawnPosition {
     fn write(&self, writer: &mut Writer) {
-        writer.var_i32(num::ToPrimitive::to_i32(&self.spawn_type).unwrap());
+        writer.var_i32(self.spawn_type.to_i32().unwrap());
         writer.u_block_pos(self.position);
-        writer.var_i32(num::ToPrimitive::to_i32(&self.dimension).unwrap());
+        writer.var_i32(self.dimension.to_i32().unwrap());
         writer.u_block_pos(self.spawn_position);
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
-            spawn_type: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            spawn_type: SpawnType::from_i32(reader.var_i32()).unwrap(),
             position: reader.u_block_pos(),
-            dimension: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            dimension: Dimension::from_i32(reader.var_i32()).unwrap(),
             spawn_position: reader.u_block_pos(),
         }
     }

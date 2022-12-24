@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{ToPrimitive, FromPrimitive};
 use zuri_nbt::{Value, encoding::NetworkLittleEndian};
 
 use crate::encodable_enum;
@@ -244,7 +245,7 @@ pub struct ItemStackResponseEntry {
 
 impl ItemStackResponseEntry {
     pub fn write(&self, writer: &mut Writer) {
-        writer.u8(num::ToPrimitive::to_u8(&self.status).unwrap());
+        writer.u8(self.status.to_u8().unwrap());
         writer.var_i32(self.request_id);
         if self.status == ItemStackResponseStatus::Ok {
             writer.var_u32(self.container_info.len() as u32);
@@ -253,7 +254,7 @@ impl ItemStackResponseEntry {
     }
 
     pub fn read(reader: &mut Reader) -> Self {
-        let status: ItemStackResponseStatus = num::FromPrimitive::from_u8(reader.u8()).unwrap();
+        let status = ItemStackResponseStatus::from_u8(reader.u8()).unwrap();
         Self {
             status: status.clone(),
             request_id: reader.var_i32(),

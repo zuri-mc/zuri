@@ -1,7 +1,9 @@
 use bytes::Bytes;
-use num_derive::{FromPrimitive, ToPrimitive};
-use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_nbt::Value;
+use zuri_nbt::encoding::NetworkLittleEndian;
+use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::io::{Reader, Writer};
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
@@ -175,7 +177,7 @@ impl EntityLink {
     pub fn write(&self, writer: &mut Writer) {
         writer.var_i64(self.ridden_entity_unique_id);
         writer.var_i64(self.rider_entity_unique_id);
-        writer.u8(num::ToPrimitive::to_u8(&self.link_type).unwrap());
+        writer.u8(self.link_type.to_u8().unwrap());
         writer.bool(self.immediate);
         writer.bool(self.rider_initiated);
     }
@@ -184,7 +186,7 @@ impl EntityLink {
         Self {
             ridden_entity_unique_id: reader.i64(),
             rider_entity_unique_id: reader.i64(),
-            link_type: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            link_type: EntityLinkType::from_u8(reader.u8()).unwrap(),
             immediate: reader.bool(),
             rider_initiated: reader.bool(),
         }
@@ -204,11 +206,11 @@ pub struct SubChunkEntry {
 impl SubChunkEntry {
     pub fn write(&self, writer: &mut Writer, cache_enabled: bool) {
         self.offset.write(writer);
-        writer.u8(num::ToPrimitive::to_u8(&self.result).unwrap());
+        writer.u8(self.result.to_u8().unwrap());
         if self.result != SubChunkResult::SuccessAllAir || cache_enabled {
             writer.byte_slice(&self.raw_payload);
         }
-        writer.u8(num::ToPrimitive::to_u8(&self.height_map_type).unwrap());
+        writer.u8(self.height_map_type.to_u8().unwrap());
         if self.height_map_type == HeightMapType::HasData {
             for data in self.height_map_data {
                 writer.i8(data);
@@ -222,7 +224,7 @@ impl SubChunkEntry {
     pub fn read(reader: &mut Reader, cache_enabled: bool) -> Self {
         let mut entry = Self {
             offset: SubChunkOffset::read(reader),
-            result: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            result: SubChunkResult::from_u8(reader.u8()).unwrap(),
             raw_payload: Bytes::default(),
             height_map_type: HeightMapType::None,
             height_map_data: [0; 256],
@@ -231,7 +233,7 @@ impl SubChunkEntry {
         if entry.result != SubChunkResult::SuccessAllAir || cache_enabled {
             entry.raw_payload = reader.byte_slice();
         }
-        entry.height_map_type = num::FromPrimitive::from_u8(reader.u8()).unwrap();
+        entry.height_map_type = HeightMapType::from_u8(reader.u8()).unwrap();
         if entry.height_map_type == HeightMapType::HasData {
             for i in 0..256 {
                 entry.height_map_data[i] = reader.i8();

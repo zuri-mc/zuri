@@ -1,22 +1,24 @@
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 use crate::types::ability::Ability;
 
 #[derive(Debug)]
 pub struct RequestAbility {
     pub ability: Ability,
-    //pub value: dyn Any,
+    //pub value: dyn Any, // TODO
 }
 
 impl Packet for RequestAbility {
     fn write(&self, writer: &mut Writer) {
-        writer.var_i32(num::ToPrimitive::to_i32(&self.ability).unwrap());
+        writer.var_i32(self.ability.to_i32().unwrap());
         //writer.write_TODO(self.value);
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
-            ability: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            ability: Ability::from_i32(reader.var_i32()).unwrap(),
             //value: reader.read_TODO(),
         }
     }

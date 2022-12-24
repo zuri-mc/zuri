@@ -24,7 +24,8 @@ pub enum InventoryActionSource {
 }
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
-pub enum InventoryTransactionType { // todo: get rid of this
+pub enum InventoryTransactionType {
+    // todo: get rid of this
     Normal,
     Mismatch,
     UseItem,
@@ -44,10 +45,10 @@ pub struct InventoryAction {
 
 impl InventoryAction {
     pub fn write(&self, writer: &mut Writer) {
-        writer.var_u32(num::ToPrimitive::to_u32(&self.source_type).unwrap());
+        writer.var_u32(self.source_type.to_u32().unwrap());
         match self.source_type {
             InventoryActionSource::Container | InventoryActionSource::TODO => {
-                writer.var_i32(num::ToPrimitive::to_i32(&self.window).unwrap());
+                writer.var_i32(self.window.to_i32().unwrap());
             }
             InventoryActionSource::World => {
                 writer.var_u32(self.source_flags);
@@ -60,11 +61,11 @@ impl InventoryAction {
     }
 
     pub fn read(reader: &mut Reader) -> Self {
-        let source_type: InventoryActionSource = num::FromPrimitive::from_u32(reader.var_u32()).unwrap();
+        let source_type = InventoryActionSource::from_u32(reader.var_u32()).unwrap();
         Self {
             source_type: source_type.clone(),
             window: if source_type == InventoryActionSource::Container || source_type == InventoryActionSource::TODO {
-                num::FromPrimitive::from_i32(reader.var_i32()).unwrap()
+                Window::from_i32(reader.var_i32()).unwrap()
             } else {
                 Window::Inventory
             },

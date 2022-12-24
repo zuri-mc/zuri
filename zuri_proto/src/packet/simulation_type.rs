@@ -1,6 +1,8 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 
 #[derive(Debug)]
 pub struct SimulationType {
@@ -17,12 +19,12 @@ pub enum Simulation {
 
 impl Packet for SimulationType {
     fn write(&self, writer: &mut Writer) {
-        writer.u8(num::ToPrimitive::to_u8(&self.simulation_type).unwrap());
+        writer.u8(self.simulation_type.to_u8().unwrap());
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
-            simulation_type: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            simulation_type: Simulation::from_u8(reader.u8()).unwrap(),
         }
     }
 }

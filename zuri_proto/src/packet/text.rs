@@ -1,6 +1,8 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 
 /// Sent by the client to the server to send chat messages, and by the server to the client to forward or send messages,
 /// which may be chat, popups, tips etc.
@@ -31,7 +33,7 @@ pub struct Text {
 
 impl Packet for Text {
     fn write(&self, writer: &mut Writer) {
-        writer.u8(num::ToPrimitive::to_u8(&self.text_type).unwrap());
+        writer.u8(self.text_type.to_u8().unwrap());
         writer.bool(self.needs_translation);
         match self.text_type {
             TextType::Chat | TextType::Whisper | TextType::Announcement => {
@@ -52,7 +54,7 @@ impl Packet for Text {
     }
 
     fn read(reader: &mut Reader) -> Self {
-        let text_type = num::FromPrimitive::from_u8(reader.u8()).unwrap();
+        let text_type = TextType::from_u8(reader.u8()).unwrap();
         Self {
             text_type,
             needs_translation: reader.bool(),

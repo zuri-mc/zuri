@@ -1,3 +1,4 @@
+use num_traits::ToPrimitive;
 use num_derive::{FromPrimitive, ToPrimitive};
 
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
@@ -125,12 +126,12 @@ pub struct ContainerDataKey(pub i32);
 
 impl Into<ContainerDataKey> for ContainerDataFurnace {
     fn into(self) -> ContainerDataKey {
-        ContainerDataKey(num::ToPrimitive::to_i32(&self).unwrap())
+        ContainerDataKey(self.to_i32().unwrap())
     }
 }
 
 impl Into<ContainerDataKey> for ContainerDataBrewingStand {
     fn into(self) -> ContainerDataKey {
-        ContainerDataKey(num::ToPrimitive::to_i32(&self).unwrap())
+        ContainerDataKey(self.to_i32().unwrap())
     }
 }

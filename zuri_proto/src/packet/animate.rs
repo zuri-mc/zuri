@@ -1,6 +1,8 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::io::{Reader, Writer};
+use num_traits::{ToPrimitive, FromPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 
 #[derive(Debug, Clone, Copy, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum AnimateAction {
@@ -27,7 +29,7 @@ pub struct Animate {
 
 impl Packet for Animate {
     fn write(&self, writer: &mut Writer) {
-        writer.var_i32(num::ToPrimitive::to_i32(&self.action_type).unwrap());
+        writer.var_i32(self.action_type.to_i32().unwrap());
         writer.var_u64(self.entity_runtime_id);
         match self.action_type {
             AnimateAction::RowRight | AnimateAction::RowLeft => {
@@ -38,7 +40,7 @@ impl Packet for Animate {
     }
 
     fn read(reader: &mut Reader) -> Self {
-        let action_type = num::FromPrimitive::from_i32(reader.var_i32()).unwrap();
+        let action_type = AnimateAction::from_i32(reader.var_i32()).unwrap();
         Self {
             action_type,
             entity_runtime_id: reader.var_u64(),

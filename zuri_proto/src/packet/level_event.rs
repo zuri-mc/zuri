@@ -1,4 +1,5 @@
 use glam::Vec3;
+use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::packet::Packet;
 use crate::io::{Reader, Writer};
@@ -20,14 +21,14 @@ pub struct LevelEvent {
 
 impl Packet for LevelEvent {
     fn write(&self, writer: &mut Writer) {
-        writer.var_i32(num::ToPrimitive::to_i32(&self.event_type).unwrap());
+        writer.var_i32(self.event_type.to_i32().unwrap());
         writer.vec3(self.position);
         writer.var_i32(self.event_data);
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
-            event_type: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            event_type: LevelEventType::from_i32(reader.var_i32()).unwrap(),
             position: reader.vec3(),
             event_data: reader.var_i32(),
         }

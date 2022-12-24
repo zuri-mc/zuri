@@ -1,5 +1,7 @@
 use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::io::{Reader, Writer};
 
 #[derive(Debug, Clone, Copy, FromPrimitive, ToPrimitive)]
@@ -108,7 +110,7 @@ pub struct PlayerBlockAction {
 
 impl PlayerBlockAction {
     pub fn write(&self, writer: &mut Writer) {
-        writer.var_i32(num::ToPrimitive::to_i32(&self.action).unwrap());
+        writer.var_i32(self.action.to_i32().unwrap());
         match self.action {
             PlayerActionType::StartBreak | PlayerActionType::AbortBreak | PlayerActionType::CrackBreak | PlayerActionType::PredictDestroyBlock | PlayerActionType::ContinueDestroyBlock => {
                 writer.block_pos(self.block_pos);
@@ -120,7 +122,7 @@ impl PlayerBlockAction {
 
     pub fn read(reader: &mut Reader) -> Self {
         let mut action = Self {
-            action: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            action: PlayerActionType::from_i32(reader.var_i32()).unwrap(),
             block_pos: IVec3::default(),
             face: 0,
         };

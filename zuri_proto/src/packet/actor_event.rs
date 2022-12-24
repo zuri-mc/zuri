@@ -1,5 +1,7 @@
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 use crate::types::actor_event::ActorEventType;
 
 /// Sent by the server when a particular event happens that has to do with an entity. Some of these events are
@@ -19,14 +21,14 @@ pub struct ActorEvent {
 impl Packet for ActorEvent {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.entity_runtime_id);
-        writer.u8(num::ToPrimitive::to_u8(&self.event_type).unwrap());
+        writer.u8(self.event_type.to_u8().unwrap());
         writer.var_i32(self.event_data);
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
             entity_runtime_id: reader.var_u64(),
-            event_type: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            event_type: ActorEventType::from_u8(reader.u8()).unwrap(),
             event_data: reader.var_i32(),
         }
     }

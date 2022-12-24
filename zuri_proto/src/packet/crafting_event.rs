@@ -1,4 +1,6 @@
 use uuid::Uuid;
+use num_traits::{ToPrimitive, FromPrimitive};
+
 use crate::packet::Packet;
 use crate::io::{Reader, Writer};
 use crate::types::inventory::Window;
@@ -24,8 +26,8 @@ pub struct CraftingEvent {
 
 impl Packet for CraftingEvent {
     fn write(&self, writer: &mut Writer) {
-        writer.u8(num::ToPrimitive::to_u8(&self.window).unwrap());
-        writer.var_i32(num::ToPrimitive::to_i32(&self.container_type).unwrap());
+        writer.u8(self.window.to_u8().unwrap());
+        writer.var_i32(self.container_type.to_i32().unwrap());
         writer.uuid(self.recipe_uuid);
 
         writer.var_u32(self.input.len() as u32);
@@ -37,8 +39,8 @@ impl Packet for CraftingEvent {
 
     fn read(reader: &mut Reader) -> Self {
         Self {
-            window: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
-            container_type: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            window: Window::from_u8(reader.u8()).unwrap(),
+            container_type: ContainerType::from_i32(reader.var_i32()).unwrap(),
             recipe_uuid: reader.uuid(),
             input: (0..reader.var_u32()).map(|_| ItemInstance::read(reader)).collect(),
             output: (0..reader.var_u32()).map(|_| ItemInstance::read(reader)).collect(),

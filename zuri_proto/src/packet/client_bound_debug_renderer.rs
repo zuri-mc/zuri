@@ -1,7 +1,16 @@
 use glam::Vec3;
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+
+#[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
+pub enum ClientBoundDebugRendererType {
+    None,
+    Clear,
+    AddCube,
+}
 
 #[derive(Debug)]
 pub struct ClientBoundDebugRenderer {
@@ -17,7 +26,7 @@ pub struct ClientBoundDebugRenderer {
 
 impl Packet for ClientBoundDebugRenderer {
     fn write(&self, writer: &mut Writer) {
-        writer.i32(num::ToPrimitive::to_i32(&self.render_type).unwrap());
+        writer.i32(self.render_type.to_i32().unwrap());
         if self.render_type == ClientBoundDebugRendererType::AddCube {
             writer.string(self.text.as_str());
             writer.vec3(self.position);
@@ -30,7 +39,7 @@ impl Packet for ClientBoundDebugRenderer {
     }
 
     fn read(reader: &mut Reader) -> Self {
-        let render_type = num::FromPrimitive::from_i32(reader.i32()).unwrap();
+        let render_type = ClientBoundDebugRendererType::from_i32(reader.i32()).unwrap();
         Self {
             render_type,
             text: if render_type == ClientBoundDebugRendererType::AddCube { reader.string() } else { "".to_string() },
@@ -42,11 +51,4 @@ impl Packet for ClientBoundDebugRenderer {
             duration: if render_type == ClientBoundDebugRendererType::AddCube { reader.i64() } else { 0 },
         }
     }
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
-pub enum ClientBoundDebugRendererType {
-    None,
-    Clear,
-    AddCube,
 }

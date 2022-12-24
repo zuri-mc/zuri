@@ -1,4 +1,6 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
@@ -21,7 +23,7 @@ pub enum NPCDialogueAction {
 impl Packet for NPCDialogue {
     fn write(&self, writer: &mut Writer) {
         writer.u64(self.entity_unique_id);
-        writer.var_i32(num::ToPrimitive::to_i32(&self.action_type).unwrap());
+        writer.var_i32(self.action_type.to_i32().unwrap());
         writer.string(self.dialogue.as_str());
         writer.string(self.scene_name.as_str());
         writer.string(self.npc_name.as_str());
@@ -31,7 +33,7 @@ impl Packet for NPCDialogue {
     fn read(reader: &mut Reader) -> Self {
         Self {
             entity_unique_id: reader.u64(),
-            action_type: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            action_type: NPCDialogueAction::from_i32(reader.var_i32()).unwrap(),
             dialogue: reader.string(),
             scene_name: reader.string(),
             npc_name: reader.string(),

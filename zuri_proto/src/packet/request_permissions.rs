@@ -1,5 +1,7 @@
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 use crate::types::world::PermissionLevel;
 
 #[derive(Debug)]
@@ -12,14 +14,14 @@ pub struct RequestPermissions {
 impl Packet for RequestPermissions {
     fn write(&self, writer: &mut Writer) {
         writer.i64(self.entity_unique_id);
-        writer.u8(num::ToPrimitive::to_u8(&self.permission_level).unwrap());
+        writer.u8(self.permission_level.to_u8().unwrap());
         writer.u16(self.requested_permissions);
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
             entity_unique_id: reader.i64(),
-            permission_level: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            permission_level: PermissionLevel::from_u8(reader.u8()).unwrap(),
             requested_permissions: reader.u16(),
         }
     }

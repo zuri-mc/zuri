@@ -1,5 +1,6 @@
 use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::packet::Packet;
 use crate::io::{Reader, Writer};
@@ -28,7 +29,7 @@ impl Packet for GameTestRequest {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.max_tests_per_batch);
         writer.var_i32(self.repetitions);
-        writer.u8(num::ToPrimitive::to_u8(&self.rotation).unwrap());
+        writer.u8(self.rotation.to_u8().unwrap());
         writer.bool(self.stop_on_error);
         writer.block_pos(self.position);
         writer.var_i32(self.tests_per_row);
@@ -39,7 +40,7 @@ impl Packet for GameTestRequest {
         Self {
             max_tests_per_batch: reader.var_i32(),
             repetitions: reader.var_i32(),
-            rotation: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            rotation: GameTestRequestRotation::from_u8(reader.u8()).unwrap(),
             stop_on_error: reader.bool(),
             position: reader.block_pos(),
             tests_per_row: reader.var_i32(),

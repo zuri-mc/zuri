@@ -1,5 +1,6 @@
 use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{ToPrimitive, FromPrimitive};
 
 use crate::packet::Packet;
 use crate::io::{Reader, Writer};
@@ -25,14 +26,14 @@ pub enum BlockEventType {
 impl Packet for BlockEvent {
     fn write(&self, writer: &mut Writer) {
         writer.u_block_pos(self.position);
-        writer.var_i32(num::ToPrimitive::to_i32(&self.event_type).unwrap());
+        writer.var_i32(self.event_type.to_i32().unwrap());
         writer.var_i32(self.event_data);
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
             position: reader.u_block_pos(),
-            event_type: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            event_type: BlockEventType::from_i32(reader.var_i32()).unwrap(),
             event_data: reader.var_i32(),
         }
     }

@@ -1,5 +1,7 @@
 use std::fmt::Debug;
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::io::{Reader, Writer};
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
@@ -24,14 +26,14 @@ pub struct ItemDescriptorCount {
 
 impl ItemDescriptorCount {
     pub fn write(&self, writer: &mut Writer) {
-        writer.u8(num::ToPrimitive::to_u8(&(self.item_descriptor.descriptor_type())).unwrap());
+        writer.u8(self.item_descriptor.descriptor_type().to_u8().unwrap());
         self.item_descriptor.write(writer);
         writer.var_i32(self.count);
     }
 
     pub fn read(reader: &mut Reader) -> Self {
         Self {
-            item_descriptor: match num::FromPrimitive::from_u8(reader.u8()).unwrap() {
+            item_descriptor: match ItemDescriptorType::from_u8(reader.u8()).unwrap() {
                 ItemDescriptorType::Invalid => Box::from(InvalidItemDescriptor::read(reader)),
                 ItemDescriptorType::Default => Box::from(DefaultItemDescriptor::read(reader)),
                 ItemDescriptorType::MoLang => Box::from(MoLangItemDescriptor::read(reader)),

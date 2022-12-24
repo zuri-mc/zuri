@@ -1,8 +1,10 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::io::{Reader, Writer};
+use num_traits::{ToPrimitive, FromPrimitive};
+
 use crate::packet::Packet;
-use crate::types::command::CommandPermissionLevel;
+use crate::io::{Reader, Writer};
 use crate::types::world::PermissionLevel;
+use crate::types::command::CommandPermissionLevel;
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
 pub enum AdventureFlag {
@@ -45,9 +47,9 @@ pub struct AdventureSettings {
 impl Packet for AdventureSettings {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.flags);
-        writer.var_u32(num::ToPrimitive::to_u32(&self.command_permission_level).unwrap());
+        writer.var_u32(self.command_permission_level.to_u32().unwrap());
         writer.var_u32(self.action_permissions);
-        writer.var_u32(num::ToPrimitive::to_u32(&self.permission_level).unwrap());
+        writer.var_u32(self.permission_level.to_u32().unwrap());
         writer.var_u32(self.custom_stored_permissions);
         writer.i64(self.player_unique_id);
     }
@@ -55,9 +57,9 @@ impl Packet for AdventureSettings {
     fn read(reader: &mut Reader) -> Self {
         Self {
             flags: reader.var_u32(),
-            command_permission_level: num::FromPrimitive::from_u32(reader.var_u32()).unwrap(),
+            command_permission_level: CommandPermissionLevel::from_u32(reader.var_u32()).unwrap(),
             action_permissions: reader.var_u32(),
-            permission_level: num::FromPrimitive::from_u32(reader.var_u32()).unwrap(),
+            permission_level: PermissionLevel::from_u32(reader.var_u32()).unwrap(),
             custom_stored_permissions: reader.var_u32(),
             player_unique_id: reader.i64(),
         }

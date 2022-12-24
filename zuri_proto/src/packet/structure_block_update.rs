@@ -1,6 +1,8 @@
 use glam::IVec3;
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 use crate::types::structure::{StructureBlockType, StructureRedstoneSaveMode, StructureSettings};
 
 #[derive(Debug)]
@@ -24,9 +26,9 @@ impl Packet for StructureBlockUpdate {
         writer.string(self.data_field.as_str());
         writer.bool(self.include_players);
         writer.bool(self.show_bounding_box);
-        writer.var_i32(num::ToPrimitive::to_i32(&self.structure_block_type).unwrap());
+        writer.var_i32(self.structure_block_type.to_i32().unwrap());
         self.settings.write(writer);
-        writer.var_i32(num::ToPrimitive::to_i32(&self.redstone_save_mode).unwrap());
+        writer.var_i32(self.redstone_save_mode.to_i32().unwrap());
         writer.bool(self.should_trigger);
         writer.bool(self.waterlogged);
     }
@@ -38,9 +40,9 @@ impl Packet for StructureBlockUpdate {
             data_field: reader.string(),
             include_players: reader.bool(),
             show_bounding_box: reader.bool(),
-            structure_block_type: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            structure_block_type: StructureBlockType::from_i32(reader.var_i32()).unwrap(),
             settings: StructureSettings::read(reader),
-            redstone_save_mode: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            redstone_save_mode: StructureRedstoneSaveMode::from_i32(reader.var_i32()).unwrap(),
             should_trigger: reader.bool(),
             waterlogged: reader.bool(),
         }

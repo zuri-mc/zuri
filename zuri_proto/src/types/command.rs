@@ -1,7 +1,9 @@
-use std::collections::BTreeMap;
-use bytes::Bytes;
 use uuid::Uuid;
+use bytes::Bytes;
+use std::collections::BTreeMap;
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::io::{Reader, Writer};
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
@@ -201,7 +203,7 @@ pub struct CommandOrigin {
 
 impl CommandOrigin {
     pub fn write(&self, writer: &mut Writer) {
-        writer.var_u32(num::ToPrimitive::to_u32(&self.origin).unwrap());
+        writer.var_u32(self.origin.to_u32().unwrap());
         writer.uuid(self.uuid);
         writer.string(self.request_id.as_str());
         writer.i64(self.player_unique_id);
@@ -209,7 +211,7 @@ impl CommandOrigin {
 
     pub fn read(reader: &mut Reader) -> Self {
         Self {
-            origin: num::FromPrimitive::from_u32(reader.var_u32()).unwrap(),
+            origin: CommandOriginType::from_u32(reader.var_u32()).unwrap(),
             uuid: reader.uuid(),
             request_id: reader.string(),
             player_unique_id: reader.i64(),

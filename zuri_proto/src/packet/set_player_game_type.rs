@@ -1,5 +1,7 @@
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 use crate::types::world::GameType;
 
 #[derive(Debug)]
@@ -9,12 +11,10 @@ pub struct SetPlayerGameType {
 
 impl Packet for SetPlayerGameType {
     fn write(&self, writer: &mut Writer) {
-        writer.var_i32(num::ToPrimitive::to_i32(&self.game_type).unwrap());
+        writer.var_i32(self.game_type.to_i32().unwrap());
     }
 
     fn read(reader: &mut Reader) -> Self {
-        Self {
-            game_type: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
-        }
+        Self { game_type: GameType::from_i32(reader.var_i32()).unwrap() }
     }
 }

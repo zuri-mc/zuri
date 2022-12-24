@@ -1,8 +1,10 @@
 use glam::IVec3;
-use crate::io::{Reader, Writer};
+use num_traits::{ToPrimitive, FromPrimitive};
+
 use crate::packet::Packet;
-use crate::types::container::ContainerType;
+use crate::io::{Reader, Writer};
 use crate::types::inventory::Window;
+use crate::types::container::ContainerType;
 
 /// Sent by the server to open a container client-side. This container must be physically present in the world, for the
 /// packet to have any effect. Unlike Java Edition, Bedrock Edition requires that chests for example must be present and
@@ -25,16 +27,16 @@ pub struct ContainerOpen {
 
 impl Packet for ContainerOpen {
     fn write(&self, writer: &mut Writer) {
-        writer.u8(num::ToPrimitive::to_u8(&self.window).unwrap());
-        writer.u8(num::ToPrimitive::to_u8(&self.container_type).unwrap());
+        writer.u8(self.window.to_u8().unwrap());
+        writer.u8(self.container_type.to_u8().unwrap());
         writer.u_block_pos(self.container_position);
         writer.var_i64(self.container_entity_unique_id);
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
-            window: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
-            container_type: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            window: Window::from_u8(reader.u8()).unwrap(),
+            container_type: ContainerType::from_u8(reader.u8()).unwrap(),
             container_position: reader.u_block_pos(),
             container_entity_unique_id: reader.var_i64(),
         }

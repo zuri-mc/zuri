@@ -1,6 +1,8 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::io::{Reader, Writer};
+use num_traits::{ToPrimitive, FromPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 
 #[derive(Debug)]
 pub struct CameraShake {
@@ -26,16 +28,16 @@ impl Packet for CameraShake {
     fn write(&self, writer: &mut Writer) {
         writer.f32(self.intensity);
         writer.f32(self.duration);
-        writer.u8(num::ToPrimitive::to_u8(&self.shake_type).unwrap());
-        writer.u8(num::ToPrimitive::to_u8(&self.action).unwrap());
+        writer.u8(self.shake_type.to_u8().unwrap());
+        writer.u8(self.action.to_u8().unwrap());
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
             intensity: reader.f32(),
             duration: reader.f32(),
-            shake_type: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
-            action: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            shake_type: CameraShakeType::from_u8(reader.u8()).unwrap(),
+            action: CameraShakeAction::from_u8(reader.u8()).unwrap(),
         }
     }
 }

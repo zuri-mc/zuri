@@ -1,4 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::packet::Packet;
 use crate::io::{Reader, Writer};
@@ -65,8 +66,8 @@ pub struct MobEffect {
 impl Packet for MobEffect {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.entity_runtime_id);
-        writer.u8(num::ToPrimitive::to_u8(&self.operation).unwrap());
-        writer.var_i32(num::ToPrimitive::to_i32(&self.effect_type).unwrap());
+        writer.u8(self.operation.to_u8().unwrap());
+        writer.var_i32(self.effect_type.to_i32().unwrap());
         writer.var_i32(self.amplifier);
         writer.bool(self.particles);
         writer.var_i32(self.duration);
@@ -75,8 +76,8 @@ impl Packet for MobEffect {
     fn read(reader: &mut Reader) -> Self {
         Self {
             entity_runtime_id: reader.var_u64(),
-            operation: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
-            effect_type: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            operation: MobEffectOperation::from_u8(reader.u8()).unwrap(),
+            effect_type: MobEffectType::from_i32(reader.var_i32()).unwrap(),
             amplifier: reader.var_i32(),
             particles: reader.bool(),
             duration: reader.var_i32(),

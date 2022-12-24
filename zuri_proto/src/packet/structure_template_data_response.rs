@@ -1,5 +1,7 @@
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 use crate::types::structure::StructureTemplateDataRequestType;
 
 #[derive(Debug)]
@@ -18,7 +20,7 @@ impl Packet for StructureTemplateDataResponse {
         if self.success {
             // TODO: NBT (structure_template)
         }
-        writer.u8(num::ToPrimitive::to_u8(&self.response_type).unwrap());
+        writer.u8(self.response_type.to_u8().unwrap());
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -28,7 +30,7 @@ impl Packet for StructureTemplateDataResponse {
             structure_name,
             success,
             // TODO: NBT (structure_template) if success
-            response_type: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            response_type: StructureTemplateDataRequestType::from_u8(reader.u8()).unwrap(),
         }
     }
 }

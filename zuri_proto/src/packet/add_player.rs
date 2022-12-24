@@ -1,9 +1,12 @@
 use glam::Vec3;
 use uuid::Uuid;
+use num_traits::{ToPrimitive, FromPrimitive};
+
 use crate::packet::Packet;
 use crate::io::{Reader, Writer};
 use crate::types::item::ItemInstance;
 use crate::types::ability::AbilityData;
+use crate::types::device::Device;
 use crate::types::world::{EntityLink, GameType};
 
 /// Sent by the server to the client to make a player entity show up client-side. It is one of the few entities that
@@ -56,7 +59,7 @@ pub struct AddPlayer {
     /// freely, so it should not be relied on for anything.
     pub device_id: String,
     /// The build platform/device OS of the player that is about to be added, as sent in the Login packet.
-    pub build_platform: i32, // TODO: Use DeviceOS enum
+    pub build_platform: Device,
 }
 
 impl Packet for AddPlayer {
@@ -75,7 +78,7 @@ impl Packet for AddPlayer {
 
         self.held_item.write(writer);
 
-        writer.var_i32(num::ToPrimitive::to_i32(&self.game_type).unwrap());
+        writer.var_i32(self.game_type.to_i32().unwrap());
         // TODO: Entity metadata.
         // TODO: Entity properties.
         self.ability_data.write(writer);
@@ -84,7 +87,7 @@ impl Packet for AddPlayer {
         self.entity_links.iter().for_each(|link| link.write(writer));
 
         writer.string(self.device_id.as_str());
-        writer.i32(self.build_platform);
+        writer.i32(self.build_platform.to_i32().unwrap());
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -103,7 +106,7 @@ impl Packet for AddPlayer {
 
             held_item: ItemInstance::read(reader),
 
-            game_type: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            game_type: GameType::from_i32(reader.var_i32()).unwrap(),
             // entity_metadata: {
             //     // TODO: Entity metadata.
             // },
@@ -115,7 +118,7 @@ impl Packet for AddPlayer {
             entity_links: (0..reader.var_u32()).map(|_| EntityLink::read(reader)).collect(),
 
             device_id: reader.string(),
-            build_platform: reader.i32(),
+            build_platform: Device::from_i32(reader.i32()).unwrap(),
         }
     }
 }

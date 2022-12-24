@@ -1,7 +1,9 @@
-use crate::io::{Reader, Writer};
+use num_traits::{ToPrimitive, FromPrimitive};
+
 use crate::packet::Packet;
-use crate::types::container::ContainerDataKey;
+use crate::io::{Reader, Writer};
 use crate::types::inventory::Window;
+use crate::types::container::ContainerDataKey;
 
 /// Sent by the server to update specific data of a single container, meaning a block such as a furnace or a brewing
 /// stand. This data is usually used by the client to display certain features client-side.
@@ -18,14 +20,14 @@ pub struct ContainerSetData {
 
 impl Packet for ContainerSetData {
     fn write(&self, writer: &mut Writer) {
-        writer.u8(num::ToPrimitive::to_u8(&self.window).unwrap());
+        writer.u8(self.window.to_u8().unwrap());
         writer.var_i32(self.key.0);
         writer.var_i32(self.value);
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
-            window: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            window: Window::from_u8(reader.u8()).unwrap(),
             key: ContainerDataKey(reader.var_i32()),
             value: reader.var_i32(),
         }

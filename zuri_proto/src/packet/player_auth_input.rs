@@ -1,10 +1,12 @@
 use glam::{Vec2, Vec3};
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+use crate::types::player::PlayerBlockAction;
 use crate::types::inventory::UseItemTransactionData;
 use crate::types::item_stack::ItemStackRequestEntry;
-use crate::types::player::PlayerBlockAction;
 
 #[derive(Clone, Copy, Debug, FromPrimitive, ToPrimitive)]
 pub enum InputFlag {
@@ -95,7 +97,7 @@ impl Packet for PlayerAuthInput {
         writer.f32(self.head_yaw);
         writer.var_u64(self.input_data);
         writer.var_u32(self.input_mode);
-        writer.var_u32(num::ToPrimitive::to_u32(&self.play_mode).unwrap());
+        writer.var_u32(self.play_mode.to_u32().unwrap());
         writer.i32(self.interaction_model);
         if self.play_mode == PlayMode::Reality {
             writer.vec3(self.gaze_direction);
@@ -124,7 +126,7 @@ impl Packet for PlayerAuthInput {
             head_yaw: reader.f32(),
             input_data: reader.var_u64(),
             input_mode: reader.var_u32(),
-            play_mode: num::FromPrimitive::from_u32(reader.var_u32()).unwrap(),
+            play_mode: PlayMode::from_u32(reader.var_u32()).unwrap(),
             interaction_model: reader.i32(),
             gaze_direction: Vec3::default(),
             tick: reader.var_u64(),

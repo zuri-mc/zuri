@@ -1,5 +1,7 @@
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 use crate::types::inventory::Window;
 
 /// Sent by the server to the client. It used to be used to link hot bar slots of the player to actual slots in the
@@ -18,14 +20,14 @@ pub struct PlayerHotBar {
 impl Packet for PlayerHotBar {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.selected_hotbar_slot);
-        writer.u8(num::ToPrimitive::to_u8(&self.window).unwrap());
+        writer.u8(self.window.to_u8().unwrap());
         writer.bool(self.select_hotbar_slot);
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
             selected_hotbar_slot: reader.var_u32(),
-            window: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            window: Window::from_u8(reader.u8()).unwrap(),
             select_hotbar_slot: reader.bool(),
         }
     }

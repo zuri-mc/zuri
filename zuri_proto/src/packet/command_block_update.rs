@@ -1,7 +1,9 @@
 use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 
 #[derive(Debug)]
 pub struct CommandBlockUpdate {
@@ -24,7 +26,7 @@ impl Packet for CommandBlockUpdate {
         writer.bool(self.block);
         if self.block { // todo: make an enum for block/minecart
             writer.u_block_pos(self.position);
-            writer.var_u32(num::ToPrimitive::to_u32(&self.mode).unwrap()); // todo
+            writer.var_u32(self.mode.to_u32().unwrap()); // todo
             writer.bool(self.needs_redstone);
             writer.bool(self.conditional);
         } else {
@@ -43,7 +45,7 @@ impl Packet for CommandBlockUpdate {
         Self {
             block,
             position: if block { reader.u_block_pos() } else { IVec3::default() },
-            mode: if block { num::FromPrimitive::from_u32(reader.var_u32()).unwrap() } else { CommandBlock::Chain }, // todo
+            mode: if block { CommandBlock::from_u32(reader.var_u32()).unwrap() } else { CommandBlock::Chain }, // todo
             needs_redstone: if block { reader.bool() } else { false },
             conditional: if block { reader.bool() } else { false },
             minecart_entity_runtime_id: if !block { reader.u64() } else { 0 },

@@ -1,7 +1,9 @@
 use bytes::Bytes;
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::io::{Reader, Writer};
+use num_traits::{ToPrimitive, FromPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
 pub enum AgentActionType {
@@ -36,14 +38,14 @@ pub struct AgentAction {
 impl Packet for AgentAction {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.identifier.as_str());
-        writer.var_i32(num::ToPrimitive::to_i32(&self.action).unwrap());
+        writer.var_i32(self.action.to_i32().unwrap());
         writer.byte_slice(&self.response);
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
             identifier: reader.string(),
-            action: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            action: AgentActionType::from_i32(reader.var_i32()).unwrap(),
             response: reader.byte_slice(),
         }
     }

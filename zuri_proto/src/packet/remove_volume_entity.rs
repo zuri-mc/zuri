@@ -1,5 +1,7 @@
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 use crate::types::world::Dimension;
 
 #[derive(Debug)]
@@ -11,13 +13,13 @@ pub struct RemoveVolumeEntity {
 impl Packet for RemoveVolumeEntity {
     fn write(&self, writer: &mut Writer) {
         writer.u64(self.entity_runtime_id);
-        writer.var_i32(num::ToPrimitive::to_i32(&self.dimension).unwrap());
+        writer.var_i32(self.dimension.to_i32().unwrap());
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
             entity_runtime_id: reader.u64(),
-            dimension: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            dimension: Dimension::from_i32(reader.var_i32()).unwrap(),
         }
     }
 }

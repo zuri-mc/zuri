@@ -1,6 +1,8 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum CompressionType {
@@ -20,7 +22,7 @@ pub struct NetworkSettings {
 impl Packet for NetworkSettings {
     fn write(&self, writer: &mut Writer) {
         writer.u16(self.compression_threshold);
-        writer.u16(num::ToPrimitive::to_u16(&self.compression_algorithm).unwrap());
+        writer.u16(self.compression_algorithm.to_u16().unwrap());
         writer.bool(self.client_throttle);
         writer.u8(self.client_throttle_threshold);
         writer.f32(self.client_throttle_scalar);
@@ -29,7 +31,7 @@ impl Packet for NetworkSettings {
     fn read(reader: &mut Reader) -> Self {
         Self {
             compression_threshold: reader.u16(),
-            compression_algorithm: num::FromPrimitive::from_u16(reader.u16()).unwrap(),
+            compression_algorithm: CompressionType::from_u16(reader.u16()).unwrap(),
             client_throttle: reader.bool(),
             client_throttle_threshold: reader.u8(),
             client_throttle_scalar: reader.f32(),

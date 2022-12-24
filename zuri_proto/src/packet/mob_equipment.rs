@@ -1,3 +1,5 @@
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
 use crate::io::{Reader, Writer};
 use crate::types::inventory::Window;
@@ -32,7 +34,7 @@ impl Packet for MobEquipment {
 
         writer.u8(self.inventory_slot);
         writer.u8(self.hotbar_slot);
-        writer.u8(num::ToPrimitive::to_u8(&self.window).unwrap());
+        writer.u8(self.window.to_u8().unwrap());
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -43,7 +45,7 @@ impl Packet for MobEquipment {
 
             inventory_slot: reader.u8(),
             hotbar_slot: reader.u8(),
-            window: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            window: Window::from_u8(reader.u8()).unwrap(),
         }
     }
 }

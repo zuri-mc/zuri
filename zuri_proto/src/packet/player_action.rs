@@ -1,6 +1,8 @@
 use glam::IVec3;
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 use crate::types::player::PlayerActionType;
 
 /// Sent by the client when it executes any action, for example starting to sprint, swim, starting the breaking of a
@@ -26,7 +28,7 @@ pub struct PlayerAction {
 impl Packet for PlayerAction {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.entity_runtime_id);
-        writer.var_i32(num::ToPrimitive::to_i32(&self.action_type).unwrap());
+        writer.var_i32(self.action_type.to_i32().unwrap());
         writer.u_block_pos(self.block_position);
         writer.u_block_pos(self.result_position);
         writer.var_i32(self.block_face);
@@ -35,7 +37,7 @@ impl Packet for PlayerAction {
     fn read(reader: &mut Reader) -> Self {
         Self {
             entity_runtime_id: reader.var_u64(),
-            action_type: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            action_type: PlayerActionType::from_i32(reader.var_i32()).unwrap(),
             block_position: reader.u_block_pos(),
             result_position: reader.u_block_pos(),
             block_face: reader.var_i32(),

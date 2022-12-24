@@ -1,6 +1,7 @@
-use glam::{IVec3, Vec3};
 use uuid::Uuid;
+use glam::{IVec3, Vec3};
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
 use zuri_nbt::{Value, encoding::NetworkLittleEndian};
 
 use crate::packet::Packet;
@@ -226,7 +227,7 @@ impl Packet for StartGame {
         writer.var_i64(self.entity_unique_id);
         writer.var_u64(self.entity_runtime_id);
 
-        writer.var_i32(num::ToPrimitive::to_i32(&self.player_game_mode).unwrap());
+        writer.var_i32(self.player_game_mode.to_i32().unwrap());
         writer.vec3(self.player_position);
 
         writer.f32(self.pitch);
@@ -234,20 +235,20 @@ impl Packet for StartGame {
 
         writer.i64(self.world_seed);
 
-        writer.i16(num::ToPrimitive::to_i16(&self.spawn_biome_type).unwrap());
+        writer.i16(self.spawn_biome_type.to_i16().unwrap());
         writer.string(self.user_defined_biome_name.as_str());
 
-        writer.var_i32(num::ToPrimitive::to_i32(&self.dimension).unwrap());
-        writer.var_i32(num::ToPrimitive::to_i32(&self.generator).unwrap());
-        writer.var_i32(num::ToPrimitive::to_i32(&self.world_game_mode).unwrap());
-        writer.var_i32(num::ToPrimitive::to_i32(&self.difficulty).unwrap());
+        writer.var_i32(self.dimension.to_i32().unwrap());
+        writer.var_i32(self.generator.to_i32().unwrap());
+        writer.var_i32(self.world_game_mode.to_i32().unwrap());
+        writer.var_i32(self.difficulty.to_i32().unwrap());
 
         writer.u_block_pos(self.world_spawn);
         writer.bool(self.achievements_disabled);
         writer.bool(self.editor_world);
         writer.var_i32(self.day_cycle_lock_time);
 
-        writer.var_i32(num::ToPrimitive::to_i32(&self.education_edition_offer).unwrap());
+        writer.var_i32(self.education_edition_offer.to_i32().unwrap());
         writer.bool(self.education_features_enabled);
         writer.string(self.education_product_id.as_str());
 
@@ -258,14 +259,15 @@ impl Packet for StartGame {
         writer.bool(self.multi_player_game);
         writer.bool(self.lan_broadcast_enabled);
 
-        writer.var_i32(num::ToPrimitive::to_i32(&self.xbl_broadcast_mode).unwrap());
-        writer.var_i32(num::ToPrimitive::to_i32(&self.platform_broadcast_mode).unwrap());
+        writer.var_i32(self.xbl_broadcast_mode.to_i32().unwrap());
+        writer.var_i32(self.platform_broadcast_mode.to_i32().unwrap());
 
         writer.bool(self.commands_enabled);
         writer.bool(self.texture_pack_required);
 
         writer.var_u32(self.game_rules.len() as u32);
         self.game_rules.iter().for_each(|game_rule| game_rule.write(writer));
+
         writer.u32(self.experiments.len() as u32);
         self.experiments.iter().for_each(|experiment| experiment.write(writer));
 
@@ -273,7 +275,7 @@ impl Packet for StartGame {
         writer.bool(self.bonus_chest_enabled);
         writer.bool(self.start_with_map_enabled);
 
-        writer.var_i32(num::ToPrimitive::to_i32(&self.player_permissions).unwrap());
+        writer.var_i32(self.player_permissions.to_i32().unwrap());
 
         writer.i32(self.server_chunk_tick_radius);
 
@@ -298,7 +300,7 @@ impl Packet for StartGame {
 
         writer.optional(&self.force_experimental_gameplay);
 
-        writer.u8(num::ToPrimitive::to_u8(&self.chat_restriction_level).unwrap());
+        writer.u8(self.chat_restriction_level.to_u8().unwrap());
         writer.bool(self.disable_player_interactions);
 
         writer.string(self.level_id.as_str());
@@ -337,7 +339,7 @@ impl Packet for StartGame {
             entity_unique_id: reader.var_i64(),
             entity_runtime_id: reader.var_u64(),
 
-            player_game_mode: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            player_game_mode: GameType::from_i32(reader.var_i32()).unwrap(),
             player_position: reader.vec3(),
 
             pitch: reader.f32(),
@@ -345,20 +347,20 @@ impl Packet for StartGame {
 
             world_seed: reader.i64(),
 
-            spawn_biome_type: num::FromPrimitive::from_i16(reader.i16()).unwrap(),
+            spawn_biome_type: SpawnBiomeType::from_i16(reader.i16()).unwrap(),
             user_defined_biome_name: reader.string(),
 
-            dimension: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
-            generator: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
-            world_game_mode: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
-            difficulty: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            dimension: Dimension::from_i32(reader.var_i32()).unwrap(),
+            generator: Generator::from_i32(reader.var_i32()).unwrap(),
+            world_game_mode: GameType::from_i32(reader.var_i32()).unwrap(),
+            difficulty: Difficulty::from_i32(reader.var_i32()).unwrap(),
 
             world_spawn: reader.u_block_pos(),
             achievements_disabled: reader.bool(),
             editor_world: reader.bool(),
             day_cycle_lock_time: reader.var_i32(),
 
-            education_edition_offer: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            education_edition_offer: EducationEditionRegion::from_i32(reader.var_i32()).unwrap(),
             education_features_enabled: reader.bool(),
             education_product_id: reader.string(),
 
@@ -369,8 +371,8 @@ impl Packet for StartGame {
             multi_player_game: reader.bool(),
             lan_broadcast_enabled: reader.bool(),
 
-            xbl_broadcast_mode: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
-            platform_broadcast_mode: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            xbl_broadcast_mode: GamePublishSetting::from_i32(reader.var_i32()).unwrap(),
+            platform_broadcast_mode: GamePublishSetting::from_i32(reader.var_i32()).unwrap(),
 
             commands_enabled: reader.bool(),
             texture_pack_required: reader.bool(),
@@ -383,7 +385,7 @@ impl Packet for StartGame {
             bonus_chest_enabled: reader.bool(),
             start_with_map_enabled: reader.bool(),
 
-            player_permissions: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            player_permissions: PermissionLevel::from_i32(reader.var_i32()).unwrap(),
 
             server_chunk_tick_radius: reader.i32(),
 
@@ -408,7 +410,7 @@ impl Packet for StartGame {
 
             force_experimental_gameplay: reader.optional(),
 
-            chat_restriction_level: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            chat_restriction_level: ChatRestrictionLevel::from_u8(reader.u8()).unwrap(),
             disable_player_interactions: reader.bool(),
 
             level_id: reader.string(),

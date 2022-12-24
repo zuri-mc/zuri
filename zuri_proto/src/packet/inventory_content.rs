@@ -1,3 +1,5 @@
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
 use crate::io::{Reader, Writer};
 use crate::types::inventory::Window;
@@ -16,7 +18,7 @@ pub struct InventoryContent {
 
 impl Packet for InventoryContent {
     fn write(&self, writer: &mut Writer) {
-        writer.var_u32(num::ToPrimitive::to_u32(&self.window).unwrap());
+        writer.var_u32(self.window.to_u32().unwrap());
 
         writer.var_u32(self.content.len() as u32);
         self.content.iter().for_each(|item| item.write(writer));
@@ -24,7 +26,7 @@ impl Packet for InventoryContent {
 
     fn read(reader: &mut Reader) -> Self {
         Self {
-            window: num::FromPrimitive::from_u32(reader.var_u32()).unwrap(),
+            window: Window::from_u32(reader.var_u32()).unwrap(),
             content: (0..reader.var_u32()).map(|_| ItemInstance::read(reader)).collect(),
         }
     }

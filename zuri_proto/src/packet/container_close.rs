@@ -1,5 +1,7 @@
-use crate::io::{Reader, Writer};
+use num_traits::{ToPrimitive, FromPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 use crate::types::inventory::Window;
 
 /// Sent by the server to close a container the player currently has opened, which was opened using the ContainerOpen
@@ -16,13 +18,13 @@ pub struct ContainerClose {
 
 impl Packet for ContainerClose {
     fn write(&self, writer: &mut Writer) {
-        writer.u8(num::ToPrimitive::to_u8(&self.window).unwrap());
+        writer.u8(self.window.to_u8().unwrap());
         writer.bool(self.server_side);
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
-            window: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            window: Window::from_u8(reader.u8()).unwrap(),
             server_side: reader.bool(),
         }
     }

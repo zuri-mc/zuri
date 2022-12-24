@@ -1,4 +1,6 @@
 use glam::Vec3;
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 use crate::types::world::Dimension;
@@ -12,14 +14,14 @@ pub struct ChangeDimension {
 
 impl Packet for ChangeDimension {
     fn write(&self, writer: &mut Writer) {
-        writer.var_i32(num::ToPrimitive::to_i32(&self.dimension).unwrap());
+        writer.var_i32(self.dimension.to_i32().unwrap());
         writer.vec3(self.position);
         writer.bool(self.respawn);
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
-            dimension: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            dimension: Dimension::from_i32(reader.var_i32()).unwrap(),
             position: reader.vec3(),
             respawn: reader.bool(),
         }

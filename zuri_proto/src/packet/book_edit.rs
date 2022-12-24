@@ -1,6 +1,8 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 
 #[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum BookAction {
@@ -26,7 +28,7 @@ pub struct BookEdit {
 
 impl Packet for BookEdit {
     fn write(&self, writer: &mut Writer) {
-        writer.u8(num::ToPrimitive::to_u8(&self.action_type).unwrap());
+        writer.u8(self.action_type.to_u8().unwrap());
         writer.u8(self.inventory_slot);
         match self.action_type {
             BookAction::ReplacePage | BookAction::AddPage => {
@@ -50,7 +52,7 @@ impl Packet for BookEdit {
     }
 
     fn read(reader: &mut Reader) -> Self {
-        let action_type = num::FromPrimitive::from_u8(reader.u8()).unwrap();
+        let action_type = BookAction::from_u8(reader.u8()).unwrap();
         Self {
             action_type,
             inventory_slot: reader.u8(),

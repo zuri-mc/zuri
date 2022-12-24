@@ -1,7 +1,9 @@
 use glam::IVec3;
+use num_traits::{ToPrimitive, FromPrimitive};
 use zuri_nbt::{Value, encoding::NetworkLittleEndian};
-use crate::io::{Reader, Writer};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 use crate::types::world::Dimension;
 
 #[derive(Debug)]
@@ -23,7 +25,7 @@ impl Packet for AddVolumeEntity {
         writer.string(self.instance_identifier.as_str());
         writer.u_block_pos(self.bounds[0]);
         writer.u_block_pos(self.bounds[1]);
-        writer.var_i32(num::ToPrimitive::to_i32(&self.dimension).unwrap());
+        writer.var_i32(self.dimension.to_i32().unwrap());
         writer.string(self.engine_version.as_str());
     }
 
@@ -34,7 +36,7 @@ impl Packet for AddVolumeEntity {
             encoding_identifier: reader.string(),
             instance_identifier: reader.string(),
             bounds: [reader.u_block_pos(), reader.u_block_pos()],
-            dimension: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
+            dimension: Dimension::from_i32(reader.var_i32()).unwrap(),
             engine_version: reader.string(),
         }
     }

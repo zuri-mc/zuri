@@ -1,4 +1,6 @@
 use bytes::Bytes;
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
 use crate::io::{Reader, Writer};
 use crate::types::inventory::Window;
@@ -19,7 +21,7 @@ pub struct UpdateTrade {
 
 impl Packet for UpdateTrade {
     fn write(&self, writer: &mut Writer) {
-        writer.u8(num::ToPrimitive::to_u8(&self.window).unwrap());
+        writer.u8(self.window.to_u8().unwrap());
         writer.u8(self.window_type);
         writer.var_i32(self.size);
         writer.var_i32(self.trade_tier);
@@ -33,7 +35,7 @@ impl Packet for UpdateTrade {
 
     fn read(reader: &mut Reader) -> Self {
         Self {
-            window: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            window: Window::from_u8(reader.u8()).unwrap(),
             window_type: reader.u8(),
             size: reader.var_i32(),
             trade_tier: reader.var_i32(),

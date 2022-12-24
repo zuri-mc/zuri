@@ -1,7 +1,8 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{ToPrimitive, FromPrimitive};
-use crate::io::{Reader, Writer};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 
 #[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum BossEventType {
@@ -42,7 +43,7 @@ pub struct BossEvent {
 impl Packet for BossEvent {
     fn write(&self, writer: &mut Writer) {
         writer.i64(self.boss_entity_unique_id);
-        writer.u32(num::ToPrimitive::to_u32(&self.event_type).unwrap());
+        writer.u32(self.event_type.to_u32().unwrap());
         match self.event_type {
             BossEventType::Show => {
                 writer.string(self.boss_bar_title.as_str());
@@ -75,7 +76,7 @@ impl Packet for BossEvent {
 
     fn read(reader: &mut Reader) -> Self {
         let boss_entity_unique_id = reader.i64();
-        let event_type = num::FromPrimitive::from_u32(reader.u32()).unwrap();
+        let event_type = BossEventType::from_u32(reader.u32()).unwrap();
         Self {
             boss_entity_unique_id,
             event_type,

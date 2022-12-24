@@ -1,7 +1,9 @@
 use glam::Vec3;
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 
 /// Sent by the server to make a player respawn client-side. It is sent in response to a PlayerAction packet with the
 /// action type Respawn. As of 1.13, the server sends two of these packets with different states, and the client sends
@@ -29,14 +31,14 @@ pub enum RespawnState {
 impl Packet for Respawn {
     fn write(&self, writer: &mut Writer) {
         writer.vec3(self.position);
-        writer.u8(num::ToPrimitive::to_u8(&self.state).unwrap());
+        writer.u8(self.state.to_u8().unwrap());
         writer.var_u64(self.entity_runtime_id);
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
             position: reader.vec3(),
-            state: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            state: RespawnState::from_u8(reader.u8()).unwrap(),
             entity_runtime_id: reader.var_u64(),
         }
     }

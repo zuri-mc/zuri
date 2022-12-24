@@ -1,3 +1,5 @@
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 use crate::types::inventory::{
@@ -45,7 +47,7 @@ impl Packet for InventoryTransaction {
             self.legacy_set_item_slots.iter().for_each(|slot| slot.write(writer));
         }
 
-        writer.var_u32(num::ToPrimitive::to_u32(&self.transaction_data.transaction_type()).unwrap());
+        writer.var_u32(self.transaction_data.transaction_type().to_u32().unwrap());
 
         writer.var_u32(self.actions.len() as u32);
         self.actions.iter().for_each(|action| action.write(writer));
@@ -60,7 +62,7 @@ impl Packet for InventoryTransaction {
         } else {
             Vec::new()
         };
-        let transaction_type = num::FromPrimitive::from_u32(reader.var_u32()).unwrap();
+        let transaction_type = InventoryTransactionType::from_u32(reader.var_u32()).unwrap();
         Self {
             legacy_request_id,
             legacy_set_item_slots,

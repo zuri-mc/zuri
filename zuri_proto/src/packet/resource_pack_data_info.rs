@@ -1,6 +1,8 @@
 use bytes::Bytes;
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 use crate::types::resource_pack::ResourcePackType;
 
 #[derive(Debug)]
@@ -22,7 +24,7 @@ impl Packet for ResourcePackDataInfo {
         writer.u64(self.size);
         writer.byte_slice(&self.hash);
         writer.bool(self.premium);
-        writer.u8(num::ToPrimitive::to_u8(&self.pack_type).unwrap());
+        writer.u8(self.pack_type.to_u8().unwrap());
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -33,7 +35,7 @@ impl Packet for ResourcePackDataInfo {
             size: reader.u64(),
             hash: reader.byte_slice(),
             premium: reader.bool(),
-            pack_type: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            pack_type: ResourcePackType::from_u8(reader.u8()).unwrap(),
         }
     }
 }

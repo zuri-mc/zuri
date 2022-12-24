@@ -1,5 +1,7 @@
-use crate::io::{Reader, Writer};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 use crate::types::resource_pack::ResourcePackResponse;
 
 /// Sent by the client in response to resource packets sent by the server. It is used to let the server know what action
@@ -15,7 +17,7 @@ pub struct ResourcePackClientResponse {
 
 impl Packet for ResourcePackClientResponse {
     fn write(&self, writer: &mut Writer) {
-        writer.u8(num::ToPrimitive::to_u8(&self.response).unwrap());
+        writer.u8(self.response.to_u8().unwrap());
 
         writer.u16(self.packs_to_download.len() as u16);
         self.packs_to_download.iter().for_each(|pack| writer.string(pack.as_str()));
@@ -23,7 +25,7 @@ impl Packet for ResourcePackClientResponse {
 
     fn read(reader: &mut Reader) -> Self {
         Self {
-            response: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
+            response: ResourcePackResponse::from_u8(reader.u8()).unwrap(),
             packs_to_download: (0..reader.u16()).map(|_| reader.string()).collect(),
         }
     }
