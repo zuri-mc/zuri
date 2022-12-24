@@ -12,6 +12,7 @@ uuid = "1.2.2"
 zuri_proto = { path = "../zuri_proto" }
 zuri_math = { path = "../zuri_math" }
 zuri_world = { path = "../zuri_world" }
+rand = "0.8.5"
 
 [features]
 # Compiles the application for the wayland window system protocol instead of x11. Only for linux.
