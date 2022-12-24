@@ -816,7 +816,7 @@ impl Packet for StartGame {
 
         self.education_shared_resource_uri.write(writer);
 
-        writer.optional_func(&self.force_experimental_gameplay, writer.bool);
+        writer.optional_func(&self.force_experimental_gameplay, |x| writer.bool(*x));
 
         writer.u8(num::ToPrimitive::to_u8(&self.chat_restriction_level).unwrap());
         writer.bool(self.disable_player_interactions);
@@ -927,7 +927,7 @@ impl Packet for StartGame {
 
             education_shared_resource_uri: EducationSharedResourceURI::read(reader),
 
-            force_experimental_gameplay: reader.optional(reader.bool),
+            force_experimental_gameplay: reader.optional(|| reader.bool()),
 
             chat_restriction_level: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
             disable_player_interactions: reader.bool(),
@@ -3939,14 +3939,14 @@ impl Packet for ModalFormResponse {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.form_id);
         writer.optional_func(&self.response_data, |x| writer.byte_slice(&x));
-        writer.optional_func(&self.cancel_reason, writer.u8);
+        writer.optional_func(&self.cancel_reason, |x| writer.u8(*x));
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
             form_id: reader.var_u32(),
-            response_data: reader.optional(reader.byte_slice),
-            cancel_reason: reader.optional(reader.u8),
+            response_data: reader.optional(|| reader.byte_slice()),
+            cancel_reason: reader.optional(|| reader.u8()),
         }
     }
 }
@@ -4336,7 +4336,7 @@ impl Packet for SpawnParticleEffect {
             entity_unique_id: reader.var_i64(),
             position: reader.vec3(),
             particle_name: reader.string(),
-            molang_variables: reader.optional(reader.byte_slice),
+            molang_variables: reader.optional(|| reader.byte_slice()),
         }
     }
 }
@@ -4700,8 +4700,8 @@ impl Packet for EducationSettings {
         writer.bool(self.disable_legacy_title_bar);
         writer.string(self.post_process_filter.as_str());
         writer.string(self.screenshot_border_path.as_str());
-        writer.optional_func(&self.can_modify_blocks, writer.bool);
-        writer.optional_func(&self.override_uri, writer.string);
+        writer.optional_func(&self.can_modify_blocks, |x| writer.bool(*x));
+        writer.optional_func(&self.override_uri, |x| writer.string(x));
         writer.bool(self.has_quiz);
         writer.optional_func(&self.external_link_settings, |settings| settings.write(writer));
     }
@@ -4714,8 +4714,8 @@ impl Packet for EducationSettings {
             disable_legacy_title_bar: reader.bool(),
             post_process_filter: reader.string(),
             screenshot_border_path: reader.string(),
-            can_modify_blocks: reader.optional(reader.bool),
-            override_uri: reader.optional(reader.string),
+            can_modify_blocks: reader.optional(|| reader.bool()),
+            override_uri: reader.optional(|| reader.string()),
             has_quiz: reader.bool(),
             external_link_settings: reader.optional(|| EducationExternalLinkSettings::read(reader)),
         }
