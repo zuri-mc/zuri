@@ -146,7 +146,7 @@ pub enum AgentActionType {
     Turn,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum AnimateAction {
     SwingArm = 1,
     StopSleep = 3,
@@ -192,7 +192,7 @@ pub enum BlockUpdate {
     Priority,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum BookAction {
     ReplacePage,
     AddPage,
@@ -201,7 +201,7 @@ pub enum BookAction {
     Sign,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum BossEventType {
     Show,
     RegisterPlayer,
@@ -953,7 +953,7 @@ pub enum InputMode {
     MotionController,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum InteractionAction {
     LeaveVehicle = 3,
     MouseOverEntity = 4,
@@ -2028,7 +2028,7 @@ pub enum TeleportCause {
     Behaviour,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum TextType {
     Raw,
     Chat,

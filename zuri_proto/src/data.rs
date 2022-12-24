@@ -1704,7 +1704,7 @@ impl ItemStackRequestEntry {
     pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.request_id);
         writer.var_u32(self.actions.len() as u32);
-        self.actions.iter().for_each(|action| => {
+        self.actions.iter().for_each(|action| {
             writer.var_u32(num::ToPrimitive::to_u32(&action.action_type()).unwrap());
             action.write(writer);
         });

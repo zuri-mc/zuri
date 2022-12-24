@@ -3631,21 +3631,9 @@ dependencies = [
  "json",
  "noise",
  "uuid",
- "zuri_proto",
  "zuri_math",
+ "zuri_proto",
  "zuri_world",
-]
-
-[[package]]
-name = "zuri_proto"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "glam",
- "num",
- "num-derive",
- "num-traits",
- "uuid",
 ]
 
 [[package]]
@@ -3664,9 +3652,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "zuri_proto"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "glam",
+ "num",
+ "num-derive",
+ "num-traits",
+ "uuid",
+]
+
+[[package]]
 name = "zuri_world"
 version = "0.1.0"
 dependencies = [
  "bevy",
 ]
-

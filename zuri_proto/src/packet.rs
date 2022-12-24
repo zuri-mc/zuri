@@ -816,7 +816,7 @@ impl Packet for StartGame {
 
         self.education_shared_resource_uri.write(writer);
 
-        writer.optional(&self.force_experimental_gameplay, writer.bool);
+        writer.optional_func(&self.force_experimental_gameplay, writer.bool);
 
         writer.u8(num::ToPrimitive::to_u8(&self.chat_restriction_level).unwrap());
         writer.bool(self.disable_player_interactions);
@@ -3938,8 +3938,8 @@ pub struct ModalFormResponse {
 impl Packet for ModalFormResponse {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.form_id);
-        writer.optional(&self.response_data, |x| writer.byte_slice(&x));
-        writer.optional(&self.cancel_reason, writer.u8);
+        writer.optional_func(&self.response_data, |x| writer.byte_slice(&x));
+        writer.optional_func(&self.cancel_reason, writer.u8);
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -4327,7 +4327,7 @@ impl Packet for SpawnParticleEffect {
         writer.var_i64(self.entity_unique_id);
         writer.vec3(self.position);
         writer.string(self.particle_name.as_str());
-        writer.optional(&self.molang_variables, |x| writer.byte_slice(&x));
+        writer.optional_func(&self.molang_variables, |x| writer.byte_slice(&x));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -4627,7 +4627,7 @@ impl Packet for StructureTemplateDataResponse {
     }
 
     fn read(reader: &mut Reader) -> Self {
-        let struct_name = reader.string();
+        let structure_name = reader.string();
         let success = reader.bool();
         Self {
             structure_name,
@@ -4700,10 +4700,10 @@ impl Packet for EducationSettings {
         writer.bool(self.disable_legacy_title_bar);
         writer.string(self.post_process_filter.as_str());
         writer.string(self.screenshot_border_path.as_str());
-        writer.optional(&self.can_modify_blocks, writer.bool);
-        writer.optional(&self.override_uri, writer.string);
+        writer.optional_func(&self.can_modify_blocks, writer.bool);
+        writer.optional_func(&self.override_uri, writer.string);
         writer.bool(self.has_quiz);
-        writer.optional(&self.external_link_settings, |settings| settings.write(writer));
+        writer.optional_func(&self.external_link_settings, |settings| settings.write(writer));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -5623,7 +5623,7 @@ impl Packet for SubChunk {
             cache_enabled,
             dimension: num::FromPrimitive::from_i32(reader.var_i32()).unwrap(),
             position: reader.block_pos(),
-            sub_chunk_entries: (0..reader.u32()).map(|_| SubChunkEntry::read(reader, pk.cache_enabled)).collect(),
+            sub_chunk_entries: (0..reader.u32()).map(|_| SubChunkEntry::read(reader, cache_enabled)).collect(),
         }
     }
 }

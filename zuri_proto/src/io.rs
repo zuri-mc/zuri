@@ -161,12 +161,23 @@ impl Writer {
         self.buf.put(x.to_bytes_le());
     }
 
-    pub fn optional<T>(&mut self, x: &Option<T>, f: fn(&T)) {
+    pub fn optional_func<T>(&mut self, x: &Option<T>, f: impl Fn(&T)) {
         self.bool(x.is_some());
         if let Some(x) = x {
             f(x);
         }
     }
+
+    pub fn optional(&mut self, x: &Option<impl Write>) {
+        self.bool(x.is_some());
+        if let Some(x) = x {
+            x.write(&mut self.buf);
+        }
+    }
+}
+
+pub trait Write {
+    fn write(&self, buf: &mut impl BufMut);
 }
 
 #[derive(Default)]
@@ -362,7 +373,7 @@ impl Reader {
         Uuid::from_slice_le(&b).unwrap()
     }
 
-    pub fn optional<T>(&mut self, f: fn() -> T) -> Option<T> {
+    pub fn optional<T>(&mut self, f: impl Fn() -> T) -> Option<T> {
         if self.bool() {
             Some(f())
         } else {
