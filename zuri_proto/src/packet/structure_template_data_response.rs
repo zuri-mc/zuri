@@ -1,4 +1,5 @@
 use num_traits::{FromPrimitive, ToPrimitive};
+use zuri_nbt::{Value, encoding::NetworkLittleEndian};
 
 use crate::packet::Packet;
 use crate::io::{Reader, Writer};
@@ -8,8 +9,7 @@ use crate::types::structure::StructureTemplateDataRequestType;
 pub struct StructureTemplateDataResponse {
     pub structure_name: String,
     pub success: bool,
-    //pub structure_template: dyn Any,
-    // TODO: NBT
+    pub structure_template: Value,
     pub response_type: StructureTemplateDataRequestType,
 }
 
@@ -18,7 +18,7 @@ impl Packet for StructureTemplateDataResponse {
         writer.string(self.structure_name.as_str());
         writer.bool(self.success);
         if self.success {
-            // TODO: NBT (structure_template)
+            writer.nbt(&self.structure_template, NetworkLittleEndian);
         }
         writer.u8(self.response_type.to_u8().unwrap());
     }
@@ -29,7 +29,7 @@ impl Packet for StructureTemplateDataResponse {
         Self {
             structure_name,
             success,
-            // TODO: NBT (structure_template) if success
+            structure_template: if success { reader.nbt(NetworkLittleEndian) } else { Value::default() },
             response_type: StructureTemplateDataRequestType::from_u8(reader.u8()).unwrap(),
         }
     }

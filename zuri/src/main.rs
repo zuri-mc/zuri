@@ -10,7 +10,7 @@ use bevy::{
 use bevy::core_pipeline::clear_color::ClearColorConfig;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::window::{CursorGrabMode, PresentMode};
-use noise::{NoiseFn, Simplex};
+use noise::{NoiseFn, SuperSimplex};
 
 use zuri_world::chunk::Chunk;
 use zuri_world::pos::ChunkPos;
@@ -83,7 +83,7 @@ fn setup(
 
     // cubes
     let mut cube_count = 0;
-    let noise = Simplex::new(1);
+    let noise = SuperSimplex::new(rand::random());
     for chunk_x in 0..16 {
         for chunk_z in 0..16 {
             let mut s = Chunk::empty(YRange::new(0, 63));
@@ -93,7 +93,7 @@ fn setup(
                 for z in 0..16 {
                     let world_z = chunk_z * 16 + z;
 
-                    let max = (noise.get([world_x as f64 / 50., world_z as f64 / 50.]) * 15.) as i32;
+                    let max = (noise.get([world_x as f64 / 50., world_z as f64 / 50.]) * 10.) as i32;
                     for y in 0..max + 50 {
                         cube_count += 1;
                         s.set(ChunkPos::new(x, y as i16, z), true);
