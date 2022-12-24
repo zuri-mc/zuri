@@ -158,7 +158,7 @@ impl Writer {
     }
 
     pub fn uuid(&mut self, x: Uuid) {
-        self.buf.put(x.to_bytes_le());
+        self.buf.put(x.to_bytes_le().as_ref());
     }
 
     pub fn optional_func<T>(&mut self, x: &Option<T>, f: impl Fn(&T)) {

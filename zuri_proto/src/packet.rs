@@ -2757,55 +2757,26 @@ impl Packet for SimpleEvent {
 pub struct Event {
     pub entity_runtime_id: u64,
     pub use_player_id: u8,
-    pub event_data: Box<dyn EventData>,
+    pub event_data: EventData2,
 }
 
 impl Packet for Event {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.entity_runtime_id);
-        writer.var_i32(num::ToPrimitive::to_i32(&self.event_data.event_type()).unwrap());
+        // todo: THIS DOESNT WORK BECAUSE OF THE FUCKING USE_PLAYER_ID
+        //writer.var_i32(num::ToPrimitive::to_i32(&self.event_data.event_type()).unwrap());
         writer.u8(self.use_player_id);
-        self.event_data.write(writer);
+        //self.event_data.write(writer);
     }
 
     fn read(reader: &mut Reader) -> Self {
         let entity_runtime_id = reader.var_u64();
-        let event_type = num::FromPrimitive::from_i32(reader.var_i32()).unwrap();
+        // todo: FUCJKING USE_POLAYER_ID @#G@O*GF)*@GV#
+        //let event_type = num::FromPrimitive::from_i32(reader.var_i32()).unwrap();
         Self {
             entity_runtime_id,
             use_player_id: reader.u8(),
-            event_data: match event_type {
-                EventType::AchievementAwarded => Box::from(AchievementAwardedEventData::read(reader)),
-                EventType::EntityInteract => Box::from(EntityInteractEventData::read(reader)),
-                EventType::PortalBuilt => Box::from(PortalBuiltEventData::read(reader)),
-                EventType::PortalUsed => Box::from(PortalUsedEventData::read(reader)),
-                EventType::MobKilled => Box::from(MobKilledEventData::read(reader)),
-                EventType::CauldronUsed => Box::from(CauldronUsedEventData::read(reader)),
-                EventType::PlayerDied => Box::from(PlayerDiedEventData::read(reader)),
-                EventType::BossKilled => Box::from(BossKilledEventData::read(reader)),
-                EventType::AgentCommand => Box::from(AgentCommandEventData::read(reader)),
-                EventType::AgentCreated => Box::from(()),
-                EventType::PatternRemoved => Box::from(PatternRemovedEventData::read(reader)),
-                EventType::SlashCommandExecuted => Box::from(SlashCommandExecutedEventData::read(reader)),
-                EventType::FishBucketed => Box::from(FishBucketedEventData::read(reader)),
-                EventType::MobBorn => Box::from(MobBornEventData::read(reader)),
-                EventType::PetDied => Box::from(PetDiedEventData::read(reader)),
-                EventType::CauldronInteract => Box::from(CauldronInteractEventData::read(reader)),
-                EventType::ComposterInteract => Box::from(ComposterInteractEventData::read(reader)),
-                EventType::BellUsed => Box::from(BellUsedEventData::read(reader)),
-                EventType::EntityDefinitionTrigger => Box::from(EntityDefinitionTriggerEventData::read(reader)),
-                EventType::RaidUpdate => Box::from(RaidUpdateEventData::read(reader)),
-                EventType::MovementAnomaly => Box::from(MovementAnomalyEventData::read(reader)),
-                EventType::MovementCorrected => Box::from(MovementCorrectedEventData::read(reader)),
-                EventType::ExtractHoney => Box::from(ExtractHoneyEventData::read(reader)),
-                EventType::TargetBlockHit => Box::from(()), // TODO: TargetBlockHitEventData::read(reader),
-                EventType::PiglinBarter => Box::from(()), // TODO: PiglinBarterEventData::read(reader)
-                EventType::PlayerWaxedOrUnwaxedCopper => Box::from(PlayerWaxedOrUnwaxedCopperEventData::read(reader)),
-                EventType::CodeBuilderRuntimeAction => Box::from(()), // TODO: CodeBuilderRuntimeActionEventData::read(reader)
-                EventType::CodeBuilderScoreboard => Box::from(()), // TODO: CodeBuilderScoreboardEventData::read(reader)
-                EventType::StriderRiddenInLavaInOverworld => Box::from(()), // TODO: StriderRiddenInLavaInOverworldEventData::read(reader)
-                EventType::SneakCloseToSculkSensor => Box::from(SneakCloseToSculkSensorEventData::read(reader)),
-            },
+            event_data: EventData2::read(reader),
         }
     }
 }
@@ -4914,7 +4885,7 @@ impl Packet for PlayerAuthInput {
             tick: reader.var_u64(),
             delta: reader.vec3(),
             item_interaction_data: Default::default(),
-            item_stack_request: Default::default(),
+            item_stack_request: Default::default(), // todo
             block_actions: Vec::new(),
         };
         if packet.play_mode == PlayMode::Reality {

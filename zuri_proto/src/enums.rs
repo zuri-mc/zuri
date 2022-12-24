@@ -968,7 +968,7 @@ pub enum InteractionModel {
     Classic,
 }
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum InventoryActionSource {
     Container = 0,
     World = 2,

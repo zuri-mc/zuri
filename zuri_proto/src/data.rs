@@ -1,8 +1,11 @@
 use std::collections::BTreeMap;
 use std::fmt::Debug;
+
 use bytes::Bytes;
 use glam::{IVec3, Vec3};
 use uuid::Uuid;
+
+use crate::encodable_enum;
 use crate::enums::*;
 use crate::io::{Reader, Writer};
 
@@ -1317,6 +1320,42 @@ pub trait EventData: Debug {
     fn event_type(&self) -> EventType;
 }
 
+encodable_enum!(
+    #[derive(Debug)]
+    pub enum EventData2 {
+        AchievementAwardedEventData = 0,
+        EntityInteractEventData = 1,
+        PortalBuiltEventData = 2,
+        PortalUsedEventData = 3,
+        MobKilledEventData = 4,
+        CauldronUsedEventData = 5,
+        PlayerDiedEventData = 6,
+        BossKilledEventData = 7,
+        AgentCommandEventData = 8,
+        AgentCreatedEventData = 9,
+        PatternRemovedEventData = 10,
+        SlashCommandExecutedEventData = 11,
+        FishBucketedEventData = 12,
+        MobBornEventData = 13,
+        PetDiedEventData = 14,
+        CauldronInteractEventData = 15,
+        ComposterInteractEventData = 16,
+        BellUsedEventData = 17,
+        EntityDefinitionTriggerEventData = 18,
+        RaidUpdateEventData = 19,
+        MovementAnomalyEventData = 20,
+        MovementCorrectedEventData = 21,
+        //ExtractHoneyEventData = 22, todo
+        //TargetBlockHitEventData = 23, todo
+        //PiglinBarterEventData = 24, todo
+        PlayerWaxedOrUnwaxedCopperEventData = 25,
+        //CodeBuilderRuntimeActionEventData = 26, todo
+        //CodeBuilderScoreboardEventData = 27, todo
+        //StriderRiddenInLavaInOverworldEventData = 28, todo
+        SneakCloseToSculkSensorEventData = 29,
+    }
+);
+
 #[derive(Debug)]
 pub struct FishBucketedEventData {
     pub pattern: i32,
@@ -1479,7 +1518,7 @@ impl InventoryAction {
     pub fn read(reader: &mut Reader) -> Self {
         let source_type = num::FromPrimitive::from_u32(reader.var_u32()).unwrap();
         Self {
-            source_type,
+            source_type.clone(),
             window: if source_type == InventoryActionSource::Container || source_type == InventoryActionSource::TODO {
                 num::FromPrimitive::from_i32(reader.var_i32()).unwrap()
             } else {
@@ -1692,10 +1731,10 @@ impl ItemStack {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct ItemStackRequestEntry {
     pub request_id: i32,
-    pub actions: Vec<Box<dyn StackRequestAction>>,
+    pub actions: Vec<StackRequestAction2>,
     pub filter_strings: Vec<String>,
     pub filter_cause: i32,
 }
@@ -1705,8 +1744,9 @@ impl ItemStackRequestEntry {
         writer.var_i32(self.request_id);
         writer.var_u32(self.actions.len() as u32);
         self.actions.iter().for_each(|action| {
-            writer.var_u32(num::ToPrimitive::to_u32(&action.action_type()).unwrap());
             action.write(writer);
+            //writer.var_u32(num::ToPrimitive::to_u32(&action.action_type()).unwrap());
+            //action.write(writer);
         });
         writer.var_u32(self.filter_strings.len() as u32);
         self.filter_strings.iter().for_each(|filter_string| writer.string(filter_string.as_str()));
@@ -1717,7 +1757,7 @@ impl ItemStackRequestEntry {
         Self {
             request_id: reader.var_i32(),
             actions: (0..reader.var_u32()).map(|_| {
-                let action_type: StackRequestActionType = num::FromPrimitive::from_u32(reader.var_u32()).unwrap();
+                /*let action_type: StackRequestActionType = num::FromPrimitive::from_u32(reader.var_u32()).unwrap();
                 match action_type {
                     StackRequestActionType::Take => Box::from(TakeStackRequestAction::read(reader)),
                     StackRequestActionType::Place => Box::from(PlaceStackRequestAction::read(reader)),
@@ -1739,7 +1779,8 @@ impl ItemStackRequestEntry {
                     StackRequestActionType::CraftLoom => Box::from(CraftLoomRecipeStackRequestAction::read(reader)),
                     StackRequestActionType::CraftNonImplementedDeprecated => Box::from(CraftNonImplementedStackRequestAction::read(reader)),
                     StackRequestActionType::CraftResultsDeprecated => Box::from(CraftResultsDeprecatedStackRequestAction::read(reader)),
-                }
+                }*/
+                StackRequestAction2::read(reader)
             }).collect(),
             filter_strings: (0..reader.var_u32()).map(|_| reader.string()).collect(),
             filter_cause: reader.i32(),
@@ -3078,9 +3119,41 @@ impl EventData for SneakCloseToSculkSensorEventData {
     }
 }
 
-pub trait StackRequestAction: Debug {
+pub trait StackRequestAction: Debug { // todo: remove
     fn write(&self, writer: &mut Writer);
     fn action_type(&self) -> StackRequestActionType;
+}
+
+encodable_enum!(
+    #[derive(Debug)]
+    pub enum StackRequestAction2 {
+        TakeStackRequestAction = 0,
+        PlaceStackRequestAction = 1,
+        SwapStackRequestAction = 2,
+        DropStackRequestAction = 3,
+        DestroyStackRequestAction = 4,
+        ConsumeStackRequestAction = 5,
+        CreateStackRequestAction = 6,
+        PlaceInContainerStackRequestAction = 7,
+        TakeOutContainerStackRequestAction = 8,
+        LabTableCombineStackRequestAction = 9,
+        BeaconPaymentStackRequestAction = 10,
+        MineBlockStackRequestAction = 11,
+        CraftRecipeStackRequestAction = 12,
+        AutoCraftRecipeStackRequestAction = 13,
+        CraftCreativeStackRequestAction = 14,
+        CraftRecipeOptionalStackRequestAction = 15,
+        CraftGrindstoneRecipeStackRequestAction = 16,
+        CraftLoomRecipeStackRequestAction = 17,
+        CraftNonImplementedStackRequestAction = 18,
+        CraftResultsDeprecatedStackRequestAction = 19,
+    }
+);
+
+impl Default for StackRequestAction2 {
+    fn default() -> Self {
+        Self::CraftNonImplementedStackRequestAction(CraftNonImplementedStackRequestAction{})
+    }
 }
 
 #[derive(Debug)]
