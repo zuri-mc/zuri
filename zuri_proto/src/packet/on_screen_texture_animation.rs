@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 /// Sent by the server to show a certain animation on the screen of the player. The packet is used, as an example, for
 /// when a raid is triggered and when a raid is defeated.
@@ -10,7 +10,7 @@ pub struct OnScreenTextureAnimation {
     pub animation_type: i32,
 }
 
-impl Packet for OnScreenTextureAnimation {
+impl PacketType for OnScreenTextureAnimation {
     fn write(&self, writer: &mut Writer) {
         writer.i32(self.animation_type);
     }

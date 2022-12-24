@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use glam::Vec3;
 
 /// Sent by the server to the client to make a painting entity show up. It is one of the few entities that cannot be
@@ -21,7 +21,7 @@ pub struct AddPainting {
     pub title: String,
 }
 
-impl Packet for AddPainting {
+impl PacketType for AddPainting {
     fn write(&self, writer: &mut Writer) {
         writer.var_i64(self.entity_unique_id);
         writer.var_u64(self.entity_runtime_id);

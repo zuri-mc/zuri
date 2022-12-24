@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 /// Sent by the client to the server when it jumps while riding an entity that has the WASDControlled entity flag set,
 /// for example when riding a horse.
@@ -9,7 +9,7 @@ pub struct PassengerJump {
     pub jump_strength: i32,
 }
 
-impl Packet for PassengerJump {
+impl PacketType for PassengerJump {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.jump_strength);
     }

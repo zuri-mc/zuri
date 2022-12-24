@@ -1,4 +1,4 @@
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::colour::RGBA;
 use crate::io::{Reader, Writer};
 
@@ -8,7 +8,7 @@ pub struct MapInfoRequest {
     pub client_pixels: Vec<PixelRequest>,
 }
 
-impl Packet for MapInfoRequest {
+impl PacketType for MapInfoRequest {
     fn write(&self, writer: &mut Writer) {
         writer.var_i64(self.map_id);
         writer.var_u32(self.client_pixels.len() as u32);

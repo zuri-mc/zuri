@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 /// Sent by the client when it tries to pick an entity, so that it gets a spawn egg which can spawn that entity.
 #[derive(Debug)]
@@ -14,7 +14,7 @@ pub struct ActorPickRequest {
     pub with_data: bool,
 }
 
-impl Packet for ActorPickRequest {
+impl PacketType for ActorPickRequest {
     fn write(&self, writer: &mut Writer) {
         writer.i64(self.entity_unique_id);
         writer.u8(self.hotbar_slot);

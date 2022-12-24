@@ -2,7 +2,7 @@ use uuid::Uuid;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::skin::Skin;
 use crate::io::{Reader, Writer};
 
@@ -31,7 +31,7 @@ pub struct PlayerListEntry {
     pub host: bool,
 }
 
-impl Packet for PlayerList {
+impl PacketType for PlayerList {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.action_type.to_u8().unwrap());
 

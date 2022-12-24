@@ -1,4 +1,4 @@
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::item::ItemInstance;
 
@@ -20,7 +20,7 @@ pub struct MobArmourEquipment {
     pub boots: ItemInstance,
 }
 
-impl Packet for MobArmourEquipment {
+impl PacketType for MobArmourEquipment {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.entity_runtime_id);
 

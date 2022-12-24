@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct NetworkStackLatency {
@@ -7,7 +7,7 @@ pub struct NetworkStackLatency {
     pub needs_response: bool,
 }
 
-impl Packet for NetworkStackLatency {
+impl PacketType for NetworkStackLatency {
     fn write(&self, writer: &mut Writer) {
         writer.i64(self.timestamp);
         writer.bool(self.needs_response);

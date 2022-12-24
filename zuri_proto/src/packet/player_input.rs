@@ -1,6 +1,6 @@
 use glam::Vec2;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct PlayerInput {
@@ -9,7 +9,7 @@ pub struct PlayerInput {
     pub sneaking: bool,
 }
 
-impl Packet for PlayerInput {
+impl PacketType for PlayerInput {
     fn write(&self, writer: &mut Writer) {
         writer.vec2(self.movement);
         writer.bool(self.jumping);

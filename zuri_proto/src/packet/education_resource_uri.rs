@@ -1,4 +1,4 @@
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::education::EducationSharedResourceURI;
 
@@ -7,7 +7,7 @@ pub struct EducationResourceURI {
     pub resource: EducationSharedResourceURI,
 }
 
-impl Packet for EducationResourceURI {
+impl PacketType for EducationResourceURI {
     fn write(&self, writer: &mut Writer) {
         self.resource.write(writer);
     }

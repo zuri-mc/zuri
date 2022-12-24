@@ -1,6 +1,6 @@
 use uuid::Uuid;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::skin::Skin;
 
 #[derive(Debug)]
@@ -11,7 +11,7 @@ pub struct PlayerSkin {
     pub old_skin_name: String,
 }
 
-impl Packet for PlayerSkin {
+impl PacketType for PlayerSkin {
     fn write(&self, writer: &mut Writer) {
         writer.uuid(self.uuid);
         self.skin.write(writer);

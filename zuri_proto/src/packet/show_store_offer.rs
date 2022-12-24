@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct ShowStoreOffer {
@@ -7,7 +7,7 @@ pub struct ShowStoreOffer {
     pub show_all: bool,
 }
 
-impl Packet for ShowStoreOffer {
+impl PacketType for ShowStoreOffer {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.offer_id.as_str());
         writer.bool(self.show_all);

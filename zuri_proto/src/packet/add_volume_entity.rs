@@ -2,7 +2,7 @@ use glam::IVec3;
 use num_traits::{ToPrimitive, FromPrimitive};
 use zuri_nbt::{Value, encoding::NetworkLittleEndian};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::world::Dimension;
 
@@ -17,7 +17,7 @@ pub struct AddVolumeEntity {
     pub engine_version: String,
 }
 
-impl Packet for AddVolumeEntity {
+impl PacketType for AddVolumeEntity {
     fn write(&self, writer: &mut Writer) {
         writer.u64(self.entity_runtime_id);
         writer.nbt(&self.entity_metadata, NetworkLittleEndian);

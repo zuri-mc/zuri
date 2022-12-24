@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct ServerStats {
@@ -7,7 +7,7 @@ pub struct ServerStats {
     pub network_time: f32,
 }
 
-impl Packet for ServerStats {
+impl PacketType for ServerStats {
     fn write(&self, writer: &mut Writer) {
         writer.f32(self.server_time);
         writer.f32(self.network_time);

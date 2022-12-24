@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
@@ -19,7 +19,7 @@ pub struct NetworkSettings {
     pub client_throttle_scalar: f32,
 }
 
-impl Packet for NetworkSettings {
+impl PacketType for NetworkSettings {
     fn write(&self, writer: &mut Writer) {
         writer.u16(self.compression_threshold);
         writer.u16(self.compression_algorithm.to_u16().unwrap());

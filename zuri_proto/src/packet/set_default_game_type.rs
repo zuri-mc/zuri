@@ -1,12 +1,12 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct SetDefaultGameType {
     pub game_type: i32,
 }
 
-impl Packet for SetDefaultGameType {
+impl PacketType for SetDefaultGameType {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.game_type);
     }

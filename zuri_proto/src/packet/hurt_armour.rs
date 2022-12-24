@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 /// Sent by the server to damage the player's armour after being hit. The packet should never be used by servers as it
 /// hands the responsibility over to the player completely, while the server can easily reliably update the armour
@@ -15,7 +15,7 @@ pub struct HurtArmour {
     pub armour_slots: i64,
 }
 
-impl Packet for HurtArmour {
+impl PacketType for HurtArmour {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.cause);
         writer.var_i32(self.damage);

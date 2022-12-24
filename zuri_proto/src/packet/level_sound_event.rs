@@ -1,7 +1,7 @@
 use glam::Vec3;
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::sound_event::SoundEvent;
 
@@ -15,7 +15,7 @@ pub struct LevelSoundEvent {
     pub disable_relative_volume: bool,
 }
 
-impl Packet for LevelSoundEvent {
+impl PacketType for LevelSoundEvent {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.sound.to_u32().unwrap());
         writer.vec3(self.position);

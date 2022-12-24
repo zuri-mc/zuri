@@ -1,6 +1,6 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::world::Difficulty;
 
@@ -9,7 +9,7 @@ pub struct SetDifficulty {
     pub difficulty: Difficulty,
 }
 
-impl Packet for SetDifficulty {
+impl PacketType for SetDifficulty {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.difficulty.to_u32().unwrap());
     }

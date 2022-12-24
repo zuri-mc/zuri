@@ -1,7 +1,7 @@
 use bytes::Bytes;
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::inventory::Window;
 
@@ -19,7 +19,7 @@ pub struct UpdateTrade {
     pub serialised_offers: Bytes,
 }
 
-impl Packet for UpdateTrade {
+impl PacketType for UpdateTrade {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.window.to_u8().unwrap());
         writer.u8(self.window_type);

@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct MultiPlayerSettings {
@@ -15,7 +15,7 @@ pub enum MultiPlayerSettingsAction {
     RefreshJoinCode,
 }
 
-impl Packet for MultiPlayerSettings {
+impl PacketType for MultiPlayerSettings {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.action_type.to_i32().unwrap());
     }

@@ -2,7 +2,7 @@ use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct LabTable {
@@ -18,7 +18,7 @@ pub enum LabTableAction {
     Reset,
 }
 
-impl Packet for LabTable {
+impl PacketType for LabTable {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.action_type.to_u8().unwrap());
         writer.block_pos(self.position);

@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct UpdatePlayerGameType {
@@ -7,7 +7,7 @@ pub struct UpdatePlayerGameType {
     pub player_unique_id: i64,
 }
 
-impl Packet for UpdatePlayerGameType {
+impl PacketType for UpdatePlayerGameType {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.game_type);
         writer.var_i64(self.player_unique_id);

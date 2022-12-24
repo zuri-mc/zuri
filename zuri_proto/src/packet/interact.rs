@@ -2,7 +2,7 @@ use glam::Vec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 /// Sent by the client when it interacts with another entity in some way. It used to be used for normal entity and block
@@ -19,7 +19,7 @@ pub struct Interact {
     pub position: Vec3,
 }
 
-impl Packet for Interact {
+impl PacketType for Interact {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.action_type.to_u8().unwrap());
         writer.var_u64(self.target_entity_runtime_id);

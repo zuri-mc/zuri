@@ -1,6 +1,6 @@
 use bytes::Bytes;
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 #[derive(Debug)]
@@ -9,7 +9,7 @@ pub struct LevelEventGeneric {
     pub serialised_event_data: Bytes,
 }
 
-impl Packet for LevelEventGeneric {
+impl PacketType for LevelEventGeneric {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.event_id);
         writer.byte_slice(&self.serialised_event_data);

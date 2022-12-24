@@ -1,6 +1,6 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::ability::Ability;
 
@@ -10,7 +10,7 @@ pub struct RequestAbility {
     //pub value: dyn Any, // TODO
 }
 
-impl Packet for RequestAbility {
+impl PacketType for RequestAbility {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.ability.to_i32().unwrap());
         //writer.write_TODO(self.value);

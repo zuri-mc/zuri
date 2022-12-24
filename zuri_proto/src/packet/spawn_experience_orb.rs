@@ -1,6 +1,6 @@
 use glam::Vec3;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct SpawnExperienceOrb {
@@ -8,7 +8,7 @@ pub struct SpawnExperienceOrb {
     pub experience_amount: i32,
 }
 
-impl Packet for SpawnExperienceOrb {
+impl PacketType for SpawnExperienceOrb {
     fn write(&self, writer: &mut Writer) {
         writer.vec3(self.position);
         writer.var_i32(self.experience_amount);

@@ -1,7 +1,7 @@
 use bytes::Bytes;
 use glam::IVec2;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::world::SubChunkRequestMode;
 
 #[derive(Debug)]
@@ -15,7 +15,7 @@ pub struct LevelChunk {
     pub raw_payload: Bytes,
 }
 
-impl Packet for LevelChunk {
+impl PacketType for LevelChunk {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.position.x);
         writer.var_i32(self.position.y);

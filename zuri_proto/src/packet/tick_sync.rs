@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 /// Sent by the client and the server to maintain a synchronized, server-authoritative tick between the client and the
 /// server. The client sends this packet first, and the server should reply with another one of these packets, including
@@ -15,7 +15,7 @@ pub struct TickSync {
     pub server_reception_timestamp: i64,
 }
 
-impl Packet for TickSync {
+impl PacketType for TickSync {
     fn write(&self, writer: &mut Writer) {
         writer.i64(self.client_request_timestamp);
         writer.i64(self.server_reception_timestamp);

@@ -1,6 +1,6 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::world::Dimension;
 
@@ -10,7 +10,7 @@ pub struct RemoveVolumeEntity {
     pub dimension: Dimension,
 }
 
-impl Packet for RemoveVolumeEntity {
+impl PacketType for RemoveVolumeEntity {
     fn write(&self, writer: &mut Writer) {
         writer.u64(self.entity_runtime_id);
         writer.var_i32(self.dimension.to_i32().unwrap());

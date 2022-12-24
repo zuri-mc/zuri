@@ -1,7 +1,7 @@
 use glam::Vec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
 pub enum MoveFlag {
@@ -25,7 +25,7 @@ pub struct MoveActorAbsolute {
     pub rotation: Vec3,
 }
 
-impl Packet for MoveActorAbsolute {
+impl PacketType for MoveActorAbsolute {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.entity_runtime_id);
 

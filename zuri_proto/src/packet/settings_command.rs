@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct SettingsCommand {
@@ -7,7 +7,7 @@ pub struct SettingsCommand {
     pub suppress_output: bool,
 }
 
-impl Packet for SettingsCommand {
+impl PacketType for SettingsCommand {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.command_line.as_str());
         writer.bool(self.suppress_output);

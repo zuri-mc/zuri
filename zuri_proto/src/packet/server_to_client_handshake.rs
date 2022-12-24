@@ -1,6 +1,6 @@
 use bytes::Bytes;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 /// Sent by the server to the client to complete the key exchange in order to initialise encryption on client and server
 /// side. It is followed up by a ClientToServerHandshake packet from the client.
@@ -11,7 +11,7 @@ pub struct ServerToClientHandshake {
     pub jwt: Bytes,
 }
 
-impl Packet for ServerToClientHandshake {
+impl PacketType for ServerToClientHandshake {
     fn write(&self, writer: &mut Writer) {
         writer.byte_slice(&self.jwt);
     }

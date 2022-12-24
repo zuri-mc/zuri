@@ -1,6 +1,6 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
@@ -27,7 +27,7 @@ pub struct SetTitle {
     pub platform_online_id: String,
 }
 
-impl Packet for SetTitle {
+impl PacketType for SetTitle {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.action_type);
         writer.string(self.text.as_str());

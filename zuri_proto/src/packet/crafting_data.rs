@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::recipe::{MaterialReducer, PotionContainerChangeRecipe, PotionRecipe, RecipeType};
 
 /// Sent by the server to let the client know all crafting data that the server maintains. This includes shapeless
@@ -23,7 +23,7 @@ pub struct CraftingData {
     pub clear_recipes: bool,
 }
 
-impl Packet for CraftingData {
+impl PacketType for CraftingData {
     fn write(&self, _writer: &mut Writer) {
         todo!()
         // writer.write_TODO(self.LEN);

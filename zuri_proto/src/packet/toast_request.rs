@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct ToastRequest {
@@ -7,7 +7,7 @@ pub struct ToastRequest {
     pub message: String,
 }
 
-impl Packet for ToastRequest {
+impl PacketType for ToastRequest {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.title.as_str());
         writer.string(self.message.as_str());

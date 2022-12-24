@@ -1,6 +1,6 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::inventory::Window;
 use crate::types::item::ItemInstance;
@@ -16,7 +16,7 @@ pub struct InventoryContent {
     pub content: Vec<ItemInstance>,
 }
 
-impl Packet for InventoryContent {
+impl PacketType for InventoryContent {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.window.to_u32().unwrap());
 

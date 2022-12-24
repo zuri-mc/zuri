@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{ToPrimitive, FromPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 #[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
@@ -40,7 +40,7 @@ pub struct BossEvent {
     pub overlay: u32,
 }
 
-impl Packet for BossEvent {
+impl PacketType for BossEvent {
     fn write(&self, writer: &mut Writer) {
         writer.i64(self.boss_entity_unique_id);
         writer.u32(self.event_type.to_u32().unwrap());

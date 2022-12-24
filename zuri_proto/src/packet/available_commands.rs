@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::command::{Command, CommandEnum, CommandEnumConstraint};
 
 #[derive(Debug)]
@@ -103,7 +103,7 @@ impl AvailableCommands {
     }
 }
 
-impl Packet for AvailableCommands {
+impl PacketType for AvailableCommands {
     fn write(&self, _writer: &mut Writer) {
         todo!()
         // (values, valueIndices) = self.enum_values();

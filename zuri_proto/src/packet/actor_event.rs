@@ -1,6 +1,6 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::actor_event::ActorEventType;
 
@@ -18,7 +18,7 @@ pub struct ActorEvent {
     pub event_data: i32,
 }
 
-impl Packet for ActorEvent {
+impl PacketType for ActorEvent {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.entity_runtime_id);
         writer.u8(self.event_type.to_u8().unwrap());

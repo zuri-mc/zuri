@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 #[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
@@ -26,7 +26,7 @@ pub struct BookEdit {
     pub xuid: String,
 }
 
-impl Packet for BookEdit {
+impl PacketType for BookEdit {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.action_type.to_u8().unwrap());
         writer.u8(self.inventory_slot);

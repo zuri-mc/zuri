@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct UpdateAdventureSettings {
@@ -10,7 +10,7 @@ pub struct UpdateAdventureSettings {
     pub auto_jump: bool,
 }
 
-impl Packet for UpdateAdventureSettings {
+impl PacketType for UpdateAdventureSettings {
     fn write(&self, writer: &mut Writer) {
         writer.bool(self.no_pvm);
         writer.bool(self.no_mvp);

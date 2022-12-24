@@ -2,7 +2,7 @@ use bytes::Bytes;
 use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::inventory::Window;
 
 #[derive(Debug)]
@@ -14,7 +14,7 @@ pub struct UpdateEquip {
     pub serialised_inventory_data: Bytes,
 }
 
-impl Packet for UpdateEquip {
+impl PacketType for UpdateEquip {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.window.to_u8().unwrap());
         writer.u8(self.window_type);

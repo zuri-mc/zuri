@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 /// Sent by the server to inform the client on what resource packs the server has. It sends a list of the resource packs
 /// it has and basic information on them like the version and description.
@@ -45,7 +45,7 @@ pub struct TexturePackInfo {
     pub rtx_enabled: bool,
 }
 
-impl Packet for ResourcePacksInfo {
+impl PacketType for ResourcePacksInfo {
     fn write(&self, writer: &mut Writer) {
         writer.bool(self.texture_pack_required);
         writer.bool(self.has_scripts);

@@ -1,4 +1,4 @@
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::education::EducationExternalLinkSettings;
 
@@ -16,7 +16,7 @@ pub struct EducationSettings {
     pub external_link_settings: Option<EducationExternalLinkSettings>,
 }
 
-impl Packet for EducationSettings {
+impl PacketType for EducationSettings {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.code_builder_default_uri.as_str());
         writer.string(self.code_builder_title.as_str());

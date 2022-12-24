@@ -1,7 +1,7 @@
 use glam::IVec3;
 use zuri_nbt::{Value, encoding::NetworkLittleEndian};
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct BlockActorData {
@@ -9,7 +9,7 @@ pub struct BlockActorData {
     pub nbt_data: Value,
 }
 
-impl Packet for BlockActorData {
+impl PacketType for BlockActorData {
     fn write(&self, writer: &mut Writer) {
         writer.u_block_pos(self.position);
         writer.nbt(&self.nbt_data, NetworkLittleEndian);

@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct CompletedUsingItem {
@@ -7,7 +7,7 @@ pub struct CompletedUsingItem {
     pub use_method: i32,
 }
 
-impl Packet for CompletedUsingItem {
+impl PacketType for CompletedUsingItem {
     fn write(&self, writer: &mut Writer) {
         writer.i16(self.used_item_id);
         writer.i32(self.use_method);

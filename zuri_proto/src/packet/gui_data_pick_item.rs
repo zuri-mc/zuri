@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct GUIDataPickItem {
@@ -8,7 +8,7 @@ pub struct GUIDataPickItem {
     pub hot_bar_slot: i32,
 }
 
-impl Packet for GUIDataPickItem {
+impl PacketType for GUIDataPickItem {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.item_name.as_str());
         writer.string(self.item_effects.as_str());

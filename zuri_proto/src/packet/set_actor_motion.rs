@@ -1,6 +1,6 @@
 use glam::Vec3;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 /// Sent by the server to change the client-side velocity of an entity. It is usually used in combination with
 /// server-side movement calculation.
@@ -13,7 +13,7 @@ pub struct SetActorMotion {
     pub velocity: Vec3,
 }
 
-impl Packet for SetActorMotion {
+impl PacketType for SetActorMotion {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.entity_runtime_id);
         writer.vec3(self.velocity);

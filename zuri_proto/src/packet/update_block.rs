@@ -1,7 +1,7 @@
 use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Clone, Copy, Debug, FromPrimitive, ToPrimitive)]
 pub enum BlockUpdate {
@@ -33,7 +33,7 @@ pub struct UpdateBlock {
     pub layer: u32,
 }
 
-impl Packet for UpdateBlock {
+impl PacketType for UpdateBlock {
     fn write(&self, writer: &mut Writer) {
         writer.u_block_pos(self.position);
         writer.var_u32(self.new_block_runtime_id);

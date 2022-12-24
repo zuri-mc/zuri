@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{ToPrimitive, FromPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::world::PermissionLevel;
 use crate::types::command::CommandPermissionLevel;
@@ -44,7 +44,7 @@ pub struct AdventureSettings {
     pub player_unique_id: i64,
 }
 
-impl Packet for AdventureSettings {
+impl PacketType for AdventureSettings {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.flags);
         writer.var_u32(self.command_permission_level.to_u32().unwrap());

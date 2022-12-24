@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct Camera {
@@ -7,7 +7,7 @@ pub struct Camera {
     pub target_player_unique_id: i64,
 }
 
-impl Packet for Camera {
+impl PacketType for Camera {
     fn write(&self, writer: &mut Writer) {
         writer.var_i64(self.camera_entity_unique_id);
         writer.var_i64(self.target_player_unique_id);

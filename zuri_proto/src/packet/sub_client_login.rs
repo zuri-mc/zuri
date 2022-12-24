@@ -1,13 +1,13 @@
 use bytes::Bytes;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct SubClientLogin {
     pub connection_request: Bytes,
 }
 
-impl Packet for SubClientLogin {
+impl PacketType for SubClientLogin {
     fn write(&self, writer: &mut Writer) {
         writer.byte_slice(&self.connection_request);
     }

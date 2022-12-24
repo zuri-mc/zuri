@@ -2,7 +2,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{ToPrimitive, FromPrimitive};
 
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
 pub enum NPCRequestAction {
@@ -24,7 +24,7 @@ pub struct NPCRequest {
     pub scene_name: String,
 }
 
-impl Packet for NPCRequest {
+impl PacketType for NPCRequest {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.entity_runtime_id);
         writer.u8(self.request_type.to_u8().unwrap());

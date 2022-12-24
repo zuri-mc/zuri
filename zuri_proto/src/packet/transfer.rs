@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct Transfer {
@@ -7,7 +7,7 @@ pub struct Transfer {
     pub port: u16,
 }
 
-impl Packet for Transfer {
+impl PacketType for Transfer {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.address.as_str());
         writer.u16(self.port);

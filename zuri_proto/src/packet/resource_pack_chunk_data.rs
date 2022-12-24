@@ -1,6 +1,6 @@
 use bytes::Bytes;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct ResourcePackChunkData {
@@ -10,7 +10,7 @@ pub struct ResourcePackChunkData {
     pub data: Bytes,
 }
 
-impl Packet for ResourcePackChunkData {
+impl PacketType for ResourcePackChunkData {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.uuid.as_str());
         writer.u32(self.chunk_index);

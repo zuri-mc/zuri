@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct CodeBuilder {
@@ -7,7 +7,7 @@ pub struct CodeBuilder {
     pub should_open_code_builder: bool,
 }
 
-impl Packet for CodeBuilder {
+impl PacketType for CodeBuilder {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.url.as_str());
         writer.bool(self.should_open_code_builder);

@@ -2,7 +2,7 @@ use glam::Vec3;
 use uuid::Uuid;
 use num_traits::{ToPrimitive, FromPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::item::ItemInstance;
 use crate::types::ability::AbilityData;
@@ -62,7 +62,7 @@ pub struct AddPlayer {
     pub build_platform: Device,
 }
 
-impl Packet for AddPlayer {
+impl PacketType for AddPlayer {
     fn write(&self, writer: &mut Writer) {
         writer.uuid(self.uuid);
         writer.string(self.username.as_str());

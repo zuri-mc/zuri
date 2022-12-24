@@ -1,6 +1,6 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::inventory::Window;
 
@@ -17,7 +17,7 @@ pub struct PlayerHotBar {
     pub select_hotbar_slot: bool,
 }
 
-impl Packet for PlayerHotBar {
+impl PacketType for PlayerHotBar {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.selected_hotbar_slot);
         writer.u8(self.window.to_u8().unwrap());

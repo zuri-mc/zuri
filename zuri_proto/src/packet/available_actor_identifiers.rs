@@ -1,13 +1,13 @@
 use bytes::Bytes;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct AvailableActorIdentifiers {
     pub serialised_entity_identifiers: Bytes,
 }
 
-impl Packet for AvailableActorIdentifiers {
+impl PacketType for AvailableActorIdentifiers {
     fn write(&self, writer: &mut Writer) {
         writer.byte_slice(&self.serialised_entity_identifiers);
     }

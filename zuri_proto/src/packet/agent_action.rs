@@ -2,7 +2,7 @@ use bytes::Bytes;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{ToPrimitive, FromPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
@@ -35,7 +35,7 @@ pub struct AgentAction {
     pub response: Bytes,
 }
 
-impl Packet for AgentAction {
+impl PacketType for AgentAction {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.identifier.as_str());
         writer.var_i32(self.action.to_i32().unwrap());

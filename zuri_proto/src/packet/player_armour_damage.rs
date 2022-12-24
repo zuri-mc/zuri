@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct PlayerArmourDamage {
@@ -10,7 +10,7 @@ pub struct PlayerArmourDamage {
     pub boots_damage: i32,
 }
 
-impl Packet for PlayerArmourDamage {
+impl PacketType for PlayerArmourDamage {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.bitset);
         if self.bitset & 0x01 != 0 {

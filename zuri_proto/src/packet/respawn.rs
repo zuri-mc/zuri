@@ -2,7 +2,7 @@ use glam::Vec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 /// Sent by the server to make a player respawn client-side. It is sent in response to a PlayerAction packet with the
@@ -28,7 +28,7 @@ pub enum RespawnState {
     ClientReadyToSpawn,
 }
 
-impl Packet for Respawn {
+impl PacketType for Respawn {
     fn write(&self, writer: &mut Writer) {
         writer.vec3(self.position);
         writer.u8(self.state.to_u8().unwrap());

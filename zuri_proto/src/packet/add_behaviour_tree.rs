@@ -1,12 +1,12 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct AddBehaviourTree {
     pub behaviour_tree: String,
 }
 
-impl Packet for AddBehaviourTree {
+impl PacketType for AddBehaviourTree {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.behaviour_tree.as_str());
     }

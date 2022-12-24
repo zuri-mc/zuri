@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 /// Sent by the server when a player picks up an item entity. It makes the item entity disappear to viewers and shows
 /// the pick-up animation. The item entity is not actually removed from the world, but it is hidden from viewers.
@@ -13,7 +13,7 @@ pub struct TakeItemActor {
     pub taker_entity_runtime_id: u64,
 }
 
-impl Packet for TakeItemActor {
+impl PacketType for TakeItemActor {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.item_entity_runtime_id);
         writer.var_u64(self.taker_entity_runtime_id);

@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct ChangeMobProperty {
@@ -11,7 +11,7 @@ pub struct ChangeMobProperty {
     pub float_value: f32,
 }
 
-impl Packet for ChangeMobProperty {
+impl PacketType for ChangeMobProperty {
     fn write(&self, writer: &mut Writer) {
         writer.u64(self.entity_unique_id);
         writer.string(self.property.as_str());

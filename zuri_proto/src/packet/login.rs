@@ -1,6 +1,6 @@
 use bytes::Bytes;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 /// Sent when the client initially tries to join the server. It is the first packet sent and contains information
 /// specific to the player.
@@ -15,7 +15,7 @@ pub struct Login {
     pub connection_request: Bytes,
 }
 
-impl Packet for Login {
+impl PacketType for Login {
     fn write(&self, writer: &mut Writer) {
         writer.i32_be(self.client_protocol);
         writer.byte_slice(&self.connection_request);

@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct SimpleEvent {
@@ -16,7 +16,7 @@ pub enum SimpleEventType {
     UnlockWorldTemplateSettings,
 }
 
-impl Packet for SimpleEvent {
+impl PacketType for SimpleEvent {
     fn write(&self, writer: &mut Writer) {
         writer.i16(self.event_type.to_i16().unwrap());
     }

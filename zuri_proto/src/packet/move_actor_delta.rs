@@ -1,7 +1,7 @@
 use glam::Vec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct MoveActorDelta {
@@ -11,7 +11,7 @@ pub struct MoveActorDelta {
     pub rotation: Vec3,
 }
 
-impl Packet for MoveActorDelta {
+impl PacketType for MoveActorDelta {
     fn write(&self, writer: &mut Writer) {
         writer.u64(self.entity_runtime_id);
         writer.u16(self.flags);

@@ -1,4 +1,4 @@
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::world::CacheBlob;
 
@@ -7,7 +7,7 @@ pub struct ClientCacheMissResponse {
     pub blobs: Vec<CacheBlob>,
 }
 
-impl Packet for ClientCacheMissResponse {
+impl PacketType for ClientCacheMissResponse {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.blobs.len() as u32);
         self.blobs.iter().for_each(|blob| blob.write(writer));

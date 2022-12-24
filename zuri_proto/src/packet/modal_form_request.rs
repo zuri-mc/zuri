@@ -1,7 +1,7 @@
 use bytes::Bytes;
 
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct ModalFormRequest {
@@ -9,7 +9,7 @@ pub struct ModalFormRequest {
     pub form_data: Bytes,
 }
 
-impl Packet for ModalFormRequest {
+impl PacketType for ModalFormRequest {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.form_id);
         writer.byte_slice(&self.form_data);

@@ -1,6 +1,6 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::world::PermissionLevel;
 
@@ -11,7 +11,7 @@ pub struct RequestPermissions {
     pub requested_permissions: u16,
 }
 
-impl Packet for RequestPermissions {
+impl PacketType for RequestPermissions {
     fn write(&self, writer: &mut Writer) {
         writer.i64(self.entity_unique_id);
         writer.u8(self.permission_level.to_u8().unwrap());

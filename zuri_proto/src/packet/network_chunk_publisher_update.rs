@@ -1,7 +1,7 @@
 use glam::{IVec2, IVec3};
 
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct NetworkChunkPublisherUpdate {
@@ -10,7 +10,7 @@ pub struct NetworkChunkPublisherUpdate {
     pub saved_chunks: Vec<IVec2>,
 }
 
-impl Packet for NetworkChunkPublisherUpdate {
+impl PacketType for NetworkChunkPublisherUpdate {
     fn write(&self, writer: &mut Writer) {
         writer.block_pos(self.position);
         writer.var_u32(self.radius);

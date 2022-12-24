@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
@@ -63,7 +63,7 @@ pub struct MobEffect {
     pub duration: i32,
 }
 
-impl Packet for MobEffect {
+impl PacketType for MobEffect {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.entity_runtime_id);
         writer.u8(self.operation.to_u8().unwrap());

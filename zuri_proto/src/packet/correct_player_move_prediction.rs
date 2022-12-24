@@ -1,6 +1,6 @@
 use glam::Vec3;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct CorrectPlayerMovePrediction {
@@ -10,7 +10,7 @@ pub struct CorrectPlayerMovePrediction {
     pub tick: u64,
 }
 
-impl Packet for CorrectPlayerMovePrediction {
+impl PacketType for CorrectPlayerMovePrediction {
     fn write(&self, writer: &mut Writer) {
         writer.vec3(self.position);
         writer.vec3(self.delta);

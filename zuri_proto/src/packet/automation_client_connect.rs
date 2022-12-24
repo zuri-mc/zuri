@@ -1,12 +1,12 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct AutomationClientConnect {
     pub server_uri: String,
 }
 
-impl Packet for AutomationClientConnect {
+impl PacketType for AutomationClientConnect {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.server_uri.as_str());
     }

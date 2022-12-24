@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
@@ -26,7 +26,7 @@ pub struct CodeBuilderSource {
     pub value: u8,
 }
 
-impl Packet for CodeBuilderSource {
+impl PacketType for CodeBuilderSource {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.operation.to_u8().unwrap());
         writer.u8(self.category.to_u8().unwrap());

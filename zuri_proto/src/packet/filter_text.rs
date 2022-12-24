@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct FilterText {
@@ -7,7 +7,7 @@ pub struct FilterText {
     pub from_server: bool,
 }
 
-impl Packet for FilterText {
+impl PacketType for FilterText {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.text.as_str());
         writer.bool(self.from_server);

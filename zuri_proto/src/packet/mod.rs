@@ -382,7 +382,7 @@ pub mod update_sub_chunk_blocks;
 pub mod update_trade;
 
 encodable_enum!(
-        pub enum Packets {
+        pub enum Packet {
             Login = 1,
             PlayStatus = 2,
             ServerToClientHandshake = 3,
@@ -575,7 +575,7 @@ encodable_enum!(
         }
 );
 
-trait Packet {
+trait PacketType {
     fn write(&self, writer: &mut Writer);
     fn read(reader: &mut Reader) -> Self;
 }

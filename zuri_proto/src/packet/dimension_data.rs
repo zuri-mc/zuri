@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::world::DimensionDefinition;
 
 #[derive(Debug)]
@@ -7,7 +7,7 @@ pub struct DimensionData {
     pub definitions: Vec<DimensionDefinition>,
 }
 
-impl Packet for DimensionData {
+impl PacketType for DimensionData {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.definitions.len() as u32);
         self.definitions.iter().for_each(|d| d.write(writer));

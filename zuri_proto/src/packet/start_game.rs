@@ -4,7 +4,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 use zuri_nbt::{Value, encoding::NetworkLittleEndian};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 use crate::types::game_rule::GameRule;
@@ -222,7 +222,7 @@ pub struct StartGame {
     pub disable_player_interactions: bool,
 }
 
-impl Packet for StartGame {
+impl PacketType for StartGame {
     fn write(&self, writer: &mut Writer) {
         writer.var_i64(self.entity_unique_id);
         writer.var_u64(self.entity_runtime_id);

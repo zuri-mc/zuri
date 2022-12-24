@@ -1,5 +1,5 @@
 use glam::Vec3;
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::item::ItemInstance;
 
@@ -30,7 +30,7 @@ pub struct AddItemActor {
     pub from_fishing: bool,
 }
 
-impl Packet for AddItemActor {
+impl PacketType for AddItemActor {
     fn write(&self, writer: &mut Writer) {
         writer.var_i64(self.entity_unique_id);
         writer.var_u64(self.entity_runtime_id);

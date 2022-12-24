@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 /// Sent by the server to remove an entity that currently exists in the world from the client-side. Sending this packet
 /// if the client cannot already see this entity will have no effect.
@@ -10,7 +10,7 @@ pub struct RemoveActor {
     pub entity_unique_id: i64,
 }
 
-impl Packet for RemoveActor {
+impl PacketType for RemoveActor {
     fn write(&self, writer: &mut Writer) {
         writer.i64(self.entity_unique_id);
     }

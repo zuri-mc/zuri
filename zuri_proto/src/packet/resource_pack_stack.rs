@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::world::ExperimentData;
 
 /// Sent by the server to send the order in which resource packs and behaviour packs should be applied (and downloaded)
@@ -33,7 +33,7 @@ pub struct StackResourcePack {
     pub sub_pack_name: String,
 }
 
-impl Packet for ResourcePackStack {
+impl PacketType for ResourcePackStack {
     fn write(&self, writer: &mut Writer) {
         writer.bool(self.texture_pack_required);
 

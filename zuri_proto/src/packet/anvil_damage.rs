@@ -1,6 +1,6 @@
 use glam::IVec3;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct AnvilDamage {
@@ -8,7 +8,7 @@ pub struct AnvilDamage {
     pub anvil_position: IVec3,
 }
 
-impl Packet for AnvilDamage {
+impl PacketType for AnvilDamage {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.damage);
         writer.u_block_pos(self.anvil_position);

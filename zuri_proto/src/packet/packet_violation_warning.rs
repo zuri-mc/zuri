@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 #[derive(Debug)]
@@ -24,7 +24,7 @@ pub enum PacketViolationSeverity {
     TerminatingConnection,
 }
 
-impl Packet for PacketViolationWarning {
+impl PacketType for PacketViolationWarning {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.violation_type.to_i32().unwrap());
         writer.var_i32(self.severity.to_i32().unwrap());

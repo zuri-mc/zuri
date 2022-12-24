@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::command::CommandOrigin;
 
 #[derive(Debug)]
@@ -9,7 +9,7 @@ pub struct CommandRequest {
     pub internal: bool,
 }
 
-impl Packet for CommandRequest {
+impl PacketType for CommandRequest {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.command_line.as_str());
         self.command_origin.write(writer);

@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{ToPrimitive, FromPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 #[derive(Debug, Clone, Copy, PartialEq, FromPrimitive, ToPrimitive)]
@@ -27,7 +27,7 @@ pub struct Animate {
     pub boat_rowing_time: f32,
 }
 
-impl Packet for Animate {
+impl PacketType for Animate {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.action_type.to_i32().unwrap());
         writer.var_u64(self.entity_runtime_id);

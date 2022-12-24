@@ -3,7 +3,7 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use zuri_nbt::{Value, encoding::NetworkLittleEndian};
 
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
 pub enum PositionTrackingDBBroadcastAction {
@@ -19,7 +19,7 @@ pub struct PositionTrackingDBServerBroadcast {
     pub payload: Value,
 }
 
-impl Packet for PositionTrackingDBServerBroadcast {
+impl PacketType for PositionTrackingDBServerBroadcast {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.broadcast_action.to_u8().unwrap());
         writer.var_i32(self.tracking_id);

@@ -1,6 +1,6 @@
 use glam::IVec3;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 /// Sent by the client when it requests to pick a block in the world and place its item in their inventory.
 #[derive(Debug)]
@@ -15,7 +15,7 @@ pub struct BlockPickRequest {
     pub hotbar_slot: u8,
 }
 
-impl Packet for BlockPickRequest {
+impl PacketType for BlockPickRequest {
     fn write(&self, writer: &mut Writer) {
         writer.block_pos(self.position);
         writer.bool(self.add_block_nbt);

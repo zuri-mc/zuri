@@ -1,6 +1,6 @@
 use bytes::Bytes;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct ScriptMessage {
@@ -8,7 +8,7 @@ pub struct ScriptMessage {
     pub data: Bytes,
 }
 
-impl Packet for ScriptMessage {
+impl PacketType for ScriptMessage {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.identifier.as_str());
         writer.byte_slice(&self.data);

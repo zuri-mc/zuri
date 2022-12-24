@@ -2,7 +2,7 @@ use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
@@ -25,7 +25,7 @@ pub struct GameTestRequest {
     pub name: String,
 }
 
-impl Packet for GameTestRequest {
+impl PacketType for GameTestRequest {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.max_tests_per_batch);
         writer.var_i32(self.repetitions);

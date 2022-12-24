@@ -1,6 +1,6 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::command::{CommandOrigin, CommandOutputMessage, CommandOutputType};
 
@@ -13,7 +13,7 @@ pub struct CommandOutput {
     pub data_set: String,
 }
 
-impl Packet for CommandOutput {
+impl PacketType for CommandOutput {
     fn write(&self, writer: &mut Writer) {
         self.command_origin.write(writer);
         writer.u8(self.output_type.to_u8().unwrap());

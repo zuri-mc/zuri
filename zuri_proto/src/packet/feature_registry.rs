@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::world::GenerationFeature;
 
 #[derive(Debug)]
@@ -7,7 +7,7 @@ pub struct FeatureRegistry {
     pub features: Vec<GenerationFeature>,
 }
 
-impl Packet for FeatureRegistry {
+impl PacketType for FeatureRegistry {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.features.len() as u32);
         self.features.iter().for_each(|f| f.write(writer));

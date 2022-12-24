@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct SetDisplayObjective {
@@ -10,7 +10,7 @@ pub struct SetDisplayObjective {
     pub sort_order: i32,
 }
 
-impl Packet for SetDisplayObjective {
+impl PacketType for SetDisplayObjective {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.display_slot.as_str());
         writer.string(self.objective_name.as_str());

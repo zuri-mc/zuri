@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 /// Sent by the server to update a player on the play status. This includes failed statuses due to a mismatched version,
@@ -26,7 +26,7 @@ pub enum PlayStatusType {
     LoginFailedVanillaEditor,
 }
 
-impl Packet for PlayStatus {
+impl PacketType for PlayStatus {
     fn write(&self, writer: &mut Writer) {
         writer.i32_be(self.status.to_i32().unwrap());
     }

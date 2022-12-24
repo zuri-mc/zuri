@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct ResourcePackChunkRequest {
@@ -7,7 +7,7 @@ pub struct ResourcePackChunkRequest {
     pub chunk_index: u32,
 }
 
-impl Packet for ResourcePackChunkRequest {
+impl PacketType for ResourcePackChunkRequest {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.uuid.as_str());
         writer.u32(self.chunk_index);

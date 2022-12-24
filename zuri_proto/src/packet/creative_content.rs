@@ -1,4 +1,4 @@
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::item::ItemStack;
 
@@ -7,7 +7,7 @@ pub struct CreativeContent {
     pub items: Vec<CreativeItem>,
 }
 
-impl Packet for CreativeContent {
+impl PacketType for CreativeContent {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.items.len() as u32);
         self.items.iter().for_each(|i| i.write(writer));

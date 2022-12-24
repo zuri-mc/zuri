@@ -1,12 +1,12 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct SetLocalPlayerAsInitialised {
     pub entity_runtime_id: u64,
 }
 
-impl Packet for SetLocalPlayerAsInitialised {
+impl PacketType for SetLocalPlayerAsInitialised {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.entity_runtime_id);
     }

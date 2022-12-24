@@ -1,6 +1,6 @@
 use glam::IVec3;
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 #[derive(Debug)]
@@ -11,7 +11,7 @@ pub struct LecternUpdate {
     pub drop_book: bool,
 }
 
-impl Packet for LecternUpdate {
+impl PacketType for LecternUpdate {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.page);
         writer.u8(self.page_count);

@@ -1,4 +1,4 @@
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::item_stack::ItemStackResponseEntry;
 
@@ -7,7 +7,7 @@ pub struct ItemStackResponse {
     pub responses: Vec<ItemStackResponseEntry>,
 }
 
-impl Packet for ItemStackResponse {
+impl PacketType for ItemStackResponse {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.responses.len() as u32);
         self.responses.iter().for_each(|e| e.write(writer));

@@ -2,7 +2,7 @@ use bytes::Bytes;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{ToPrimitive, FromPrimitive};
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct PhotoTransfer {
@@ -22,7 +22,7 @@ pub enum PhotoType {
     Book,
 }
 
-impl Packet for PhotoTransfer {
+impl PacketType for PhotoTransfer {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.photo_name.as_str());
         writer.byte_slice(&self.photo_data);

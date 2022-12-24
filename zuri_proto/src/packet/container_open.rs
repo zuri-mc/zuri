@@ -1,7 +1,7 @@
 use glam::IVec3;
 use num_traits::{ToPrimitive, FromPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::inventory::Window;
 use crate::types::container::ContainerType;
@@ -25,7 +25,7 @@ pub struct ContainerOpen {
     pub container_entity_unique_id: i64,
 }
 
-impl Packet for ContainerOpen {
+impl PacketType for ContainerOpen {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.window.to_u8().unwrap());
         writer.u8(self.container_type.to_u8().unwrap());

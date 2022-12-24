@@ -1,6 +1,6 @@
 use glam::IVec3;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct UpdateBlockSynced {
@@ -12,7 +12,7 @@ pub struct UpdateBlockSynced {
     pub transition_type: u64,
 }
 
-impl Packet for UpdateBlockSynced {
+impl PacketType for UpdateBlockSynced {
     fn write(&self, writer: &mut Writer) {
         writer.u_block_pos(self.position);
         writer.var_u32(self.new_block_runtime_id);

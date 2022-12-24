@@ -3,7 +3,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum ClientBoundDebugRendererType {
@@ -24,7 +24,7 @@ pub struct ClientBoundDebugRenderer {
     pub duration: i64,
 }
 
-impl Packet for ClientBoundDebugRenderer {
+impl PacketType for ClientBoundDebugRenderer {
     fn write(&self, writer: &mut Writer) {
         writer.i32(self.render_type.to_i32().unwrap());
         if self.render_type == ClientBoundDebugRendererType::AddCube {

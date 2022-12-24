@@ -1,12 +1,12 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct ChunkRadiusUpdated {
     pub chunk_radius: i32,
 }
 
-impl Packet for ChunkRadiusUpdated {
+impl PacketType for ChunkRadiusUpdated {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.chunk_radius);
     }

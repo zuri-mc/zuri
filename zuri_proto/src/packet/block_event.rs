@@ -2,7 +2,7 @@ use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{ToPrimitive, FromPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 /// Sent by the server to initiate a certain event that has to do with blocks in specific, for example opening chests.
@@ -23,7 +23,7 @@ pub enum BlockEventType {
     ChangeChestState,
 }
 
-impl Packet for BlockEvent {
+impl PacketType for BlockEvent {
     fn write(&self, writer: &mut Writer) {
         writer.u_block_pos(self.position);
         writer.var_i32(self.event_type.to_i32().unwrap());

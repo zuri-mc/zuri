@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct ClientCacheBlobStatus {
@@ -7,7 +7,7 @@ pub struct ClientCacheBlobStatus {
     pub hit_hashes: Vec<u64>,
 }
 
-impl Packet for ClientCacheBlobStatus {
+impl PacketType for ClientCacheBlobStatus {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.miss_hashes.len() as u32);
         writer.var_u32(self.hit_hashes.len() as u32);

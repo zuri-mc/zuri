@@ -1,7 +1,7 @@
 use uuid::Uuid;
 use num_traits::{ToPrimitive, FromPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::inventory::Window;
 use crate::types::item::ItemInstance;
@@ -24,7 +24,7 @@ pub struct CraftingEvent {
     pub output: Vec<ItemInstance>,
 }
 
-impl Packet for CraftingEvent {
+impl PacketType for CraftingEvent {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.window.to_u8().unwrap());
         writer.var_i32(self.container_type.to_i32().unwrap());

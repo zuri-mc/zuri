@@ -2,7 +2,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct NPCDialogue {
@@ -20,7 +20,7 @@ pub enum NPCDialogueAction {
     Close,
 }
 
-impl Packet for NPCDialogue {
+impl PacketType for NPCDialogue {
     fn write(&self, writer: &mut Writer) {
         writer.u64(self.entity_unique_id);
         writer.var_i32(self.action_type.to_i32().unwrap());

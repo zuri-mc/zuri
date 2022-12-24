@@ -3,7 +3,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum MoveMode {
@@ -54,7 +54,7 @@ pub struct MovePlayer {
     pub tick: u64,
 }
 
-impl Packet for MovePlayer {
+impl PacketType for MovePlayer {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.entity_runtime_id);
 

@@ -2,7 +2,7 @@ use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 #[derive(Debug)]
@@ -21,7 +21,7 @@ pub struct CommandBlockUpdate {
     pub execute_on_first_tick: bool,
 }
 
-impl Packet for CommandBlockUpdate {
+impl PacketType for CommandBlockUpdate {
     fn write(&self, writer: &mut Writer) {
         writer.bool(self.block);
         if self.block { // todo: make an enum for block/minecart

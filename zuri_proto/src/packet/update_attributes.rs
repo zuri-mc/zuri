@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::attribute::Attribute;
 
 /// Sent by the server to update an amount of attributes of any entity in the world. These attributes include ones such
@@ -17,7 +17,7 @@ pub struct UpdateAttributes {
     pub tick: u64,
 }
 
-impl Packet for UpdateAttributes {
+impl PacketType for UpdateAttributes {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.entity_runtime_id);
         writer.var_u32(self.attributes.len() as u32);

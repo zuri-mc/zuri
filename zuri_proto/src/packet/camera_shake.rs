@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{ToPrimitive, FromPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 #[derive(Debug)]
@@ -24,7 +24,7 @@ pub enum CameraShakeType {
     Rotational,
 }
 
-impl Packet for CameraShake {
+impl PacketType for CameraShake {
     fn write(&self, writer: &mut Writer) {
         writer.f32(self.intensity);
         writer.f32(self.duration);

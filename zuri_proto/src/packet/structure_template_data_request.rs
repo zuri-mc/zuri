@@ -1,7 +1,7 @@
 use glam::IVec3;
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::structure::{StructureSettings, StructureTemplateDataRequestType};
 
@@ -16,7 +16,7 @@ pub struct StructureTemplateDataRequest {
     pub request_type: StructureTemplateDataRequestType,
 }
 
-impl Packet for StructureTemplateDataRequest {
+impl PacketType for StructureTemplateDataRequest {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.structure_name.as_str());
         writer.u_block_pos(self.position);

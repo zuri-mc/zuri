@@ -1,6 +1,6 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::resource_pack::ResourcePackResponse;
 
@@ -15,7 +15,7 @@ pub struct ResourcePackClientResponse {
     pub packs_to_download: Vec<String>,
 }
 
-impl Packet for ResourcePackClientResponse {
+impl PacketType for ResourcePackClientResponse {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.response.to_u8().unwrap());
 

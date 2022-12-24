@@ -1,12 +1,12 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct PlayerFog {
     pub stack: Vec<String>,
 }
 
-impl Packet for PlayerFog {
+impl PacketType for PlayerFog {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.stack.len() as u32);
         self.stack.iter().for_each(|stack| writer.string(stack.as_str()));

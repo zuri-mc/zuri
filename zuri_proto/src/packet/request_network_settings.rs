@@ -1,12 +1,12 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct RequestNetworkSettings {
     pub client_protocol: i32,
 }
 
-impl Packet for RequestNetworkSettings {
+impl PacketType for RequestNetworkSettings {
     fn write(&self, writer: &mut Writer) {
         writer.i32_be(self.client_protocol);
     }

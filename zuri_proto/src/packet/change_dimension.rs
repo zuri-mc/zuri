@@ -2,7 +2,7 @@ use glam::Vec3;
 use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::world::Dimension;
 
 #[derive(Debug)]
@@ -12,7 +12,7 @@ pub struct ChangeDimension {
     pub respawn: bool,
 }
 
-impl Packet for ChangeDimension {
+impl PacketType for ChangeDimension {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.dimension.to_i32().unwrap());
         writer.vec3(self.position);

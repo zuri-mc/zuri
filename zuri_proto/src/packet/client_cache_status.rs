@@ -1,12 +1,12 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct ClientCacheStatus {
     pub enabled: bool,
 }
 
-impl Packet for ClientCacheStatus {
+impl PacketType for ClientCacheStatus {
     fn write(&self, writer: &mut Writer) {
         writer.bool(self.enabled);
     }

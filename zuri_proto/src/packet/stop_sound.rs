@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct StopSound {
@@ -7,7 +7,7 @@ pub struct StopSound {
     pub stop_all: bool,
 }
 
-impl Packet for StopSound {
+impl PacketType for StopSound {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.sound_name.as_str());
         writer.bool(self.stop_all);

@@ -1,6 +1,6 @@
 use num_traits::{ToPrimitive, FromPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::inventory::Window;
 
@@ -16,7 +16,7 @@ pub struct ContainerClose {
     pub server_side: bool,
 }
 
-impl Packet for ContainerClose {
+impl PacketType for ContainerClose {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.window.to_u8().unwrap());
         writer.bool(self.server_side);

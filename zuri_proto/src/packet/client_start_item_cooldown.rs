@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct ClientStartItemCooldown {
@@ -7,7 +7,7 @@ pub struct ClientStartItemCooldown {
     pub duration: i32,
 }
 
-impl Packet for ClientStartItemCooldown {
+impl PacketType for ClientStartItemCooldown {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.category.as_str());
         writer.var_i32(self.duration);

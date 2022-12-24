@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 /// Sent by the server to update the current time client-side. The client actually advances time client-side by itself,
 /// so this packet does not need to be sent each tick. It is a means of synchronising time between server and client.
@@ -9,7 +9,7 @@ pub struct SetTime {
     pub time: i32,
 }
 
-impl Packet for SetTime {
+impl PacketType for SetTime {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.time);
     }

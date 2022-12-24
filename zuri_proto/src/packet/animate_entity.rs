@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct AnimateEntity {
@@ -12,7 +12,7 @@ pub struct AnimateEntity {
     pub entity_runtime_ids: Vec<u64>,
 }
 
-impl Packet for AnimateEntity {
+impl PacketType for AnimateEntity {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.animation.as_str());
         writer.string(self.next_state.as_str());

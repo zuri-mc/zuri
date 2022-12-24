@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct ScriptCustomEvent {
@@ -7,7 +7,7 @@ pub struct ScriptCustomEvent {
     pub event_data: u8,
 }
 
-impl Packet for ScriptCustomEvent {
+impl PacketType for ScriptCustomEvent {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.event_name.as_str());
         writer.u8(self.event_data);

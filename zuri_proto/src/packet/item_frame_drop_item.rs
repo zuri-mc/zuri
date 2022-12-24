@@ -1,13 +1,13 @@
 use glam::IVec3;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct ItemFrameDropItem {
     pub position: IVec3,
 }
 
-impl Packet for ItemFrameDropItem {
+impl PacketType for ItemFrameDropItem {
     fn write(&self, writer: &mut Writer) {
         writer.u_block_pos(self.position);
     }

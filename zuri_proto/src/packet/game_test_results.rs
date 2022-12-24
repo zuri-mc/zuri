@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct GameTestResults {
@@ -8,7 +8,7 @@ pub struct GameTestResults {
     pub error: String,
 }
 
-impl Packet for GameTestResults {
+impl PacketType for GameTestResults {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.name.as_str());
         writer.bool(self.succeeded);

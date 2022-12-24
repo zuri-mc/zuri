@@ -1,7 +1,7 @@
 use glam::IVec3;
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::structure::{StructureBlockType, StructureRedstoneSaveMode, StructureSettings};
 
@@ -19,7 +19,7 @@ pub struct StructureBlockUpdate {
     pub waterlogged: bool,
 }
 
-impl Packet for StructureBlockUpdate {
+impl PacketType for StructureBlockUpdate {
     fn write(&self, writer: &mut Writer) {
         writer.u_block_pos(self.position);
         writer.string(self.structure_name.as_str());

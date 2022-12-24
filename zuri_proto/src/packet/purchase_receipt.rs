@@ -1,12 +1,12 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct PurchaseReceipt {
     pub receipts: Vec<String>,
 }
 
-impl Packet for PurchaseReceipt {
+impl PacketType for PurchaseReceipt {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.receipts.len() as u32);
         self.receipts.iter().for_each(|receipt| writer.string(receipt.as_str()));

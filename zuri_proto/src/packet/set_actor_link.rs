@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::world::EntityLink;
 
 /// Sent by the server to initiate an entity link client-side, meaning one entity will start riding another.
@@ -11,7 +11,7 @@ pub struct SetActorLink {
     pub entity_link: EntityLink,
 }
 
-impl Packet for SetActorLink {
+impl PacketType for SetActorLink {
     fn write(&self, writer: &mut Writer) {
         self.entity_link.write(writer);
     }

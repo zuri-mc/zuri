@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct CreatePhoto {
@@ -8,7 +8,7 @@ pub struct CreatePhoto {
     pub item_name: String,
 }
 
-impl Packet for CreatePhoto {
+impl PacketType for CreatePhoto {
     fn write(&self, writer: &mut Writer) {
         writer.i64(self.entity_unique_id);
         writer.string(self.photo_name.as_str());

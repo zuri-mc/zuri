@@ -1,7 +1,7 @@
 use glam::Vec3;
 
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct MotionPredictionHints {
@@ -10,7 +10,7 @@ pub struct MotionPredictionHints {
     pub on_ground: bool,
 }
 
-impl Packet for MotionPredictionHints {
+impl PacketType for MotionPredictionHints {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.entity_runtime_id);
         writer.vec3(self.velocity);

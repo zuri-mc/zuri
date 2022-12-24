@@ -1,6 +1,6 @@
 use num_traits::{ToPrimitive, FromPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::inventory::Window;
 use crate::types::container::ContainerDataKey;
@@ -18,7 +18,7 @@ pub struct ContainerSetData {
     pub value: i32,
 }
 
-impl Packet for ContainerSetData {
+impl PacketType for ContainerSetData {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.window.to_u8().unwrap());
         writer.var_i32(self.key.0);

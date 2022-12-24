@@ -1,6 +1,6 @@
 use bytes::Bytes;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct ServerSettingsResponse {
@@ -8,7 +8,7 @@ pub struct ServerSettingsResponse {
     pub form_data: Bytes,
 }
 
-impl Packet for ServerSettingsResponse {
+impl PacketType for ServerSettingsResponse {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.form_id);
         writer.byte_slice(&self.form_data);

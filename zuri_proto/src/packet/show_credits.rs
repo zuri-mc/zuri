@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{ToPrimitive, FromPrimitive};
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
 pub enum ShowCreditsStatus {
@@ -15,7 +15,7 @@ pub struct ShowCredits {
     pub status_type: ShowCreditsStatus,
 }
 
-impl Packet for ShowCredits {
+impl PacketType for ShowCredits {
     fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.player_runtime_id);
         writer.var_i32(self.status_type.to_i32().unwrap());

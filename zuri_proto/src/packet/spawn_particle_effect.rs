@@ -1,7 +1,7 @@
 use bytes::Bytes;
 use glam::Vec3;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct SpawnParticleEffect {
@@ -12,7 +12,7 @@ pub struct SpawnParticleEffect {
     pub molang_variables: Option<Bytes>,
 }
 
-impl Packet for SpawnParticleEffect {
+impl PacketType for SpawnParticleEffect {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.dimension);
         writer.var_i64(self.entity_unique_id);

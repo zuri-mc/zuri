@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct DeathInfo {
@@ -7,7 +7,7 @@ pub struct DeathInfo {
     pub messages: Vec<String>,
 }
 
-impl Packet for DeathInfo {
+impl PacketType for DeathInfo {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.cause.as_str());
         writer.var_u32(self.messages.len() as u32);

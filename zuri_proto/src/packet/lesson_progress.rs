@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
@@ -18,7 +18,7 @@ pub struct LessonProgress {
     pub identifier: String,
 }
 
-impl Packet for LessonProgress {
+impl PacketType for LessonProgress {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.action.to_u8().unwrap());
         writer.var_i32(self.score);

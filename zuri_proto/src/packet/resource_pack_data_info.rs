@@ -1,7 +1,7 @@
 use bytes::Bytes;
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::resource_pack::ResourcePackType;
 
@@ -16,7 +16,7 @@ pub struct ResourcePackDataInfo {
     pub pack_type: ResourcePackType,
 }
 
-impl Packet for ResourcePackDataInfo {
+impl PacketType for ResourcePackDataInfo {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.uuid.as_str());
         writer.u32(self.data_chunk_size);

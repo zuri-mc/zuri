@@ -1,13 +1,13 @@
 use bytes::Bytes;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct BiomeDefinitionList {
     pub serialised_biome_definitions: Bytes,
 }
 
-impl Packet for BiomeDefinitionList {
+impl PacketType for BiomeDefinitionList {
     fn write(&self, writer: &mut Writer) {
         writer.byte_slice(&self.serialised_biome_definitions);
     }

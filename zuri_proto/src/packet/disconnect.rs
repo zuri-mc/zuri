@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 /// Sent by the server to disconnect the client using an optional message to send as the disconnect screen.
 #[derive(Debug)]
@@ -8,7 +8,7 @@ pub struct Disconnect {
     pub message: Option<String>,
 }
 
-impl Packet for Disconnect {
+impl PacketType for Disconnect {
     fn write(&self, writer: &mut Writer) {
         writer.bool(self.message.is_some());
         if self.message.is_some() {

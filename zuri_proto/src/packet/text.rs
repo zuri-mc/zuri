@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 /// Sent by the client to the server to send chat messages, and by the server to the client to forward or send messages,
@@ -31,7 +31,7 @@ pub struct Text {
     pub platform_chat_id: String,
 }
 
-impl Packet for Text {
+impl PacketType for Text {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.text_type.to_u8().unwrap());
         writer.bool(self.needs_translation);

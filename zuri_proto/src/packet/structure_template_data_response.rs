@@ -1,7 +1,7 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 use zuri_nbt::{Value, encoding::NetworkLittleEndian};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::structure::StructureTemplateDataRequestType;
 
@@ -13,7 +13,7 @@ pub struct StructureTemplateDataResponse {
     pub response_type: StructureTemplateDataRequestType,
 }
 
-impl Packet for StructureTemplateDataResponse {
+impl PacketType for StructureTemplateDataResponse {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.structure_name.as_str());
         writer.bool(self.success);

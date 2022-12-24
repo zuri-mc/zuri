@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 /// Sent by the server to create a locked copy of one map into another map. In vanilla, it is used in the cartography
 /// table to create a map that is locked and cannot be modified.
@@ -13,7 +13,7 @@ pub struct MapCreateLockedCopy {
     pub new_map_id: i64,
 }
 
-impl Packet for MapCreateLockedCopy {
+impl PacketType for MapCreateLockedCopy {
     fn write(&self, writer: &mut Writer) {
         writer.var_i64(self.original_map_id);
         writer.var_i64(self.new_map_id);

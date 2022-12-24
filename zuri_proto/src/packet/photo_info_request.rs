@@ -1,12 +1,12 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct PhotoInfoRequest {
     pub photo_id: i64,
 }
 
-impl Packet for PhotoInfoRequest {
+impl PacketType for PhotoInfoRequest {
     fn write(&self, writer: &mut Writer) {
         writer.var_i64(self.photo_id);
     }

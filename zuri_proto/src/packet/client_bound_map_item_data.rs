@@ -1,6 +1,6 @@
 use glam::IVec3;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::colour::RGBA;
 use crate::types::map::{MapDecoration, MapTrackedObject, MapUpdateFlag};
 
@@ -22,7 +22,7 @@ pub struct ClientBoundMapItemData {
     pub pixels: Vec<RGBA>,
 }
 
-impl Packet for ClientBoundMapItemData {
+impl PacketType for ClientBoundMapItemData {
     fn write(&self, writer: &mut Writer) {
         writer.var_i64(self.map_id);
         writer.var_u32(self.update_flags);

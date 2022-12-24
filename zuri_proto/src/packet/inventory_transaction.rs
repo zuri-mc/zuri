@@ -1,7 +1,7 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::inventory::{
     InventoryAction,
     InventoryTransactionData,
@@ -39,7 +39,7 @@ pub struct InventoryTransaction {
     pub transaction_data: Box<dyn InventoryTransactionData>, // todo: make enum
 }
 
-impl Packet for InventoryTransaction {
+impl PacketType for InventoryTransaction {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.legacy_request_id);
         if self.legacy_request_id != 0 {

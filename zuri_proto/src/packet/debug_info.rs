@@ -1,6 +1,6 @@
 use bytes::Bytes;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct DebugInfo {
@@ -8,7 +8,7 @@ pub struct DebugInfo {
     pub data: Bytes,
 }
 
-impl Packet for DebugInfo {
+impl PacketType for DebugInfo {
     fn write(&self, writer: &mut Writer) {
         writer.var_i64(self.player_unique_id);
         writer.byte_slice(&self.data);

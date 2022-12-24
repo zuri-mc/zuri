@@ -1,5 +1,5 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct UpdateSoftEnum {
@@ -8,7 +8,7 @@ pub struct UpdateSoftEnum {
     pub action_type: u8,
 }
 
-impl Packet for UpdateSoftEnum {
+impl PacketType for UpdateSoftEnum {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.enum_type.as_str());
         writer.var_u32(self.options.len() as u32);

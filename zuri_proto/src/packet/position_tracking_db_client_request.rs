@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
@@ -15,7 +15,7 @@ pub struct PositionTrackingDBClientRequest {
     pub tracking_id: i32,
 }
 
-impl Packet for PositionTrackingDBClientRequest {
+impl PacketType for PositionTrackingDBClientRequest {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.request_action.to_u8().unwrap());
         writer.var_i32(self.tracking_id);

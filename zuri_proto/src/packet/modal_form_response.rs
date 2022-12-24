@@ -2,7 +2,7 @@ use bytes::Bytes;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{ToPrimitive, FromPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Read, Reader, Write, Writer};
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
@@ -18,7 +18,7 @@ pub struct ModalFormResponse {
     pub cancel_reason: Option<ModalFormCancelReason>,
 }
 
-impl Packet for ModalFormResponse {
+impl PacketType for ModalFormResponse {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.form_id);
         writer.optional(&self.response_data);

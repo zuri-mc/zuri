@@ -1,12 +1,12 @@
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct SetCommandsEnabled {
     pub enabled: bool,
 }
 
-impl Packet for SetCommandsEnabled {
+impl PacketType for SetCommandsEnabled {
     fn write(&self, writer: &mut Writer) {
         writer.bool(self.enabled);
     }

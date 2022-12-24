@@ -1,6 +1,6 @@
 use glam::Vec3;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::attribute::AttributeValue;
 use crate::types::world::EntityLink;
 
@@ -47,7 +47,7 @@ pub struct AddActor {
     pub entity_links: Vec<EntityLink>,
 }
 
-impl Packet for AddActor {
+impl PacketType for AddActor {
     fn write(&self, writer: &mut Writer) {
         writer.var_i64(self.entity_unique_id);
         writer.var_u64(self.entity_runtime_id);

@@ -2,7 +2,7 @@ use glam::{Vec2, Vec3};
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
 use crate::types::player::PlayerBlockAction;
 use crate::types::inventory::UseItemTransactionData;
@@ -88,7 +88,7 @@ pub struct PlayerAuthInput {
     pub block_actions: Vec<PlayerBlockAction>,
 }
 
-impl Packet for PlayerAuthInput {
+impl PacketType for PlayerAuthInput {
     fn write(&self, writer: &mut Writer) {
         writer.f32(self.pitch);
         writer.f32(self.yaw);

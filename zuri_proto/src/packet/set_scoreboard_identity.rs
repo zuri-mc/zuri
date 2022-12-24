@@ -1,7 +1,7 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 use crate::types::scoreboard::{ScoreboardIdentityAction, ScoreboardIdentityEntry};
 
 #[derive(Debug)]
@@ -10,7 +10,7 @@ pub struct SetScoreboardIdentity {
     pub entries: Vec<ScoreboardIdentityEntry>,
 }
 
-impl Packet for SetScoreboardIdentity {
+impl PacketType for SetScoreboardIdentity {
     fn write(&self, writer: &mut Writer) {
         writer.u8(self.action_type.to_u8().unwrap());
 

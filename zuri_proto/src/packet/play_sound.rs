@@ -2,7 +2,7 @@ use glam::Vec3;
 use std::ops::{Div, Mul};
 
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct PlaySound {
@@ -12,7 +12,7 @@ pub struct PlaySound {
     pub pitch: f32,
 }
 
-impl Packet for PlaySound {
+impl PacketType for PlaySound {
     fn write(&self, writer: &mut Writer) {
         writer.string(self.sound_name.as_str());
         writer.block_pos(self.position.mul(8.).as_ivec3());

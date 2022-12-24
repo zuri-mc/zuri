@@ -1,6 +1,6 @@
 use glam::IVec3;
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;
+use crate::packet::PacketType;
 
 #[derive(Debug)]
 pub struct UpdateSubChunkBlocks {
@@ -9,7 +9,7 @@ pub struct UpdateSubChunkBlocks {
     pub extra: Vec<BlockChangeEntry>,
 }
 
-impl Packet for UpdateSubChunkBlocks {
+impl PacketType for UpdateSubChunkBlocks {
     fn write(&self, writer: &mut Writer) {
         writer.block_pos(self.position);
         writer.var_u32(self.blocks.len() as u32);
