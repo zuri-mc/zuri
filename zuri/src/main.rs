@@ -1,5 +1,6 @@
 extern crate core;
 
+use std::collections::{BTreeMap};
 use bevy::{
     pbr::wireframe::{Wireframe, WireframeConfig, WireframePlugin},
     prelude::*,
@@ -7,6 +8,7 @@ use bevy::{
 };
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::window::{CursorGrabMode, PresentMode};
+use json::{Array, JsonValue};
 use noise::{NoiseFn, Simplex};
 
 use crate::chunk::SubChunk;
@@ -17,9 +19,7 @@ use crate::player::{Local, LocalPlayerPlugin};
 mod entity;
 mod player;
 mod input;
-mod io;
 mod chunk;
-mod protocol;
 
 fn main() {
     App::new()
@@ -74,8 +74,6 @@ fn setup(
 ) {
     wireframe_config.global = false;
 
-    let texture_handle = asset_server.load("dirt.png");
-
     // cubes
     let mut cube_count = 0;
     let noise = Simplex::new(1);
@@ -99,12 +97,7 @@ fn setup(
             commands.spawn((
                 PbrBundle {
                     mesh: meshes.add(s.build_mesh()),
-                    material: materials.add(StandardMaterial{
-                        base_color_texture: Some(texture_handle.clone()),
-                        alpha_mode: AlphaMode::Opaque,
-                        unlit: true,
-                        ..default()
-                    }),
+                    material: materials.add(Color::rgb(0., 0., 0.).into()),
                     transform: Transform::from_xyz(chunk_x as f32 * 16., 0., chunk_z as f32 * 16.),
                     ..default()
                 },

@@ -1789,6 +1789,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "json"
+version = "0.12.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "078e285eafdfb6c4b434e0d31e8cfcb5115b651496faca5749b88fafd4f23bfd"
+
+[[package]]
 name = "khronos-egl"
 version = "4.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2170,6 +2176,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "num"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43db66d1170d347f9a065114077f7dccb00c1b9478c89384490a3425279a4606"
+dependencies = [
+ "num-bigint",
+ "num-complex",
+ "num-integer",
+ "num-iter",
+ "num-rational",
+ "num-traits",
+]
+
+[[package]]
+name = "num-bigint"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f93ab6289c7b344a8a9f60f88d80aa20032336fe78da341afc91c8a2341fc75f"
+dependencies = [
+ "autocfg",
+ "num-integer",
+ "num-traits",
+]
+
+[[package]]
+name = "num-complex"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ae39348c8bc5fbd7f40c727a9925f03517afd2ab27d46702108b6a7e5414c19"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "num-derive"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2191,12 +2231,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "num-iter"
+version = "0.1.43"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d03e6c028c5dc5cac6e2dec0efda81fc887605bb3d884578bb6d6bf7514e252"
+dependencies = [
+ "autocfg",
+ "num-integer",
+ "num-traits",
+]
+
+[[package]]
 name = "num-rational"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0638a1c9d0a3c0914158145bc76cff373a75a627e6ecbfb71cbe6f453a5a19b0"
 dependencies = [
  "autocfg",
+ "num-bigint",
  "num-integer",
  "num-traits",
 ]
@@ -3570,5 +3622,20 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bytes",
+ "json",
  "noise",
+ "uuid",
+ "zuri_proto",
+]
+
+[[package]]
+name = "zuri_proto"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "glam",
+ "num",
+ "num-derive",
+ "num-traits",
+ "uuid",
 ]

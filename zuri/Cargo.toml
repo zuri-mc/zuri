@@ -7,6 +7,9 @@ edition = "2021"
 bevy = "0.9.1"
 bytes = "1.3.0"
 noise = "0.8.2"
+json = "0.12.4"
+uuid = "1.2.2"
+zuri_proto = { path = "../zuri_proto" }
 
 [features]
 # Compiles the application for the wayland window system protocol instead of x11. Only for linux.

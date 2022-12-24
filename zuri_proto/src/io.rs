@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use crate::data::*;
 
 use bytes::{
     Buf,
@@ -6,6 +6,8 @@ use bytes::{
     Bytes,
     BytesMut,
 };
+use glam::{Vec2, Vec3};
+use uuid::Uuid;
 
 #[derive(Default)]
 pub struct Writer {
@@ -109,19 +111,57 @@ impl Writer {
         self.write_u8(x as u8);
     }
 
-    pub fn write_string(&mut self, x: String) {
-        self.write_var_u32(x.len() as u32);
+    pub fn string(&mut self, x: &str) {
+        self.var_u32(x.len() as u32);
         self.buf.put_slice(x.as_bytes());
     }
 
-    pub fn write_string_utf(&mut self, x: String) {
-        self.write_i16(x.len() as i16);
+    pub fn string_utf(&mut self, x: &str) {
+        self.i16(x.len() as i16);
         self.buf.put_slice(x.as_bytes());
+    }
+
+    pub fn bytes(&mut self, x: &[u8]) {
+        self.buf.put_slice(x);
     }
 
     pub fn write_slice(&mut self, x: &[u8]) {
         self.write_var_u32(x.len() as u32);
         self.buf.put_slice(x);
+    }
+
+    pub fn block_pos(&mut self, x: BlockPos) {
+        self.i32(x.x);
+        self.i32(x.y);
+        self.i32(x.z);
+    }
+
+    pub fn u_block_pos(&mut self, x: BlockPos) {
+        self.i32(x.x);
+        self.u32(x.y as u32);
+        self.i32(x.z);
+    }
+
+    pub fn vec2(&mut self, x: Vec2) {
+        self.f32(x.x);
+        self.f32(x.y);
+    }
+
+    pub fn vec3(&mut self, x: Vec3) {
+        self.f32(x.x);
+        self.f32(x.y);
+        self.f32(x.z);
+    }
+
+    pub fn uuid(&mut self, x: Uuid) {
+        self.buf.put(x.to_bytes_le());
+    }
+
+    pub fn optional<T>(&mut self, x: &Option<T>, f: fn(&T)) {
+        self.bool(x.is_some());
+        if let Some(x) = x {
+            f(x);
+        }
     }
 }
 
@@ -143,46 +183,46 @@ impl Reader {
         }
     }
 
-    pub fn read_u8(&mut self) -> u8 {
+    pub fn u8(&mut self) -> u8 {
         return self.buf.get_u8();
     }
 
-    pub fn read_i8(&mut self) -> i8 {
+    pub fn i8(&mut self) -> i8 {
         return self.buf.get_i8();
     }
 
-    pub fn read_u16(&mut self) -> u16 {
+    pub fn u16(&mut self) -> u16 {
         return self.buf.get_u16_le();
     }
 
-    pub fn read_i16(&mut self) -> i16 {
+    pub fn i16(&mut self) -> i16 {
         return self.buf.get_i16_le();
     }
 
-    pub fn read_u32(&mut self) -> u32 {
+    pub fn u32(&mut self) -> u32 {
         return self.buf.get_u32_le();
     }
 
-    pub fn read_i32(&mut self) -> i32 {
+    pub fn i32(&mut self) -> i32 {
         return self.buf.get_i32_le();
     }
 
-    pub fn read_be32(&mut self) -> i32 {
+    pub fn i32_be(&mut self) -> i32 {
         return self.buf.get_i32();
     }
 
-    pub fn read_u64(&mut self) -> u64 {
+    pub fn u64(&mut self) -> u64 {
         return self.buf.get_u64_le();
     }
 
-    pub fn read_i64(&mut self) -> i64 {
+    pub fn i64(&mut self) -> i64 {
         return self.buf.get_i64_le();
     }
 
-    pub fn read_var_u32(&mut self) -> u32 {
+    pub fn var_u32(&mut self) -> u32 {
         let mut v: u32 = 0;
         for i in (0..35).step_by(7) {
-            let b = self.read_u8();
+            let b = self.u8();
 
             v |= ((b & 0x7f) as u32) << i;
             if b & 0x80 == 0 {
@@ -192,10 +232,10 @@ impl Reader {
         panic!("varint overflows integer");
     }
 
-    pub fn read_var_i32(&mut self) -> i32 {
+    pub fn var_i32(&mut self) -> i32 {
         let mut v: u32 = 0;
         for i in (0..35).step_by(7) {
-            let b = self.read_u8();
+            let b = self.u8();
 
             v |= ((b & 0x7f) as u32) << i;
             if b & 0x80 == 0 {
@@ -210,10 +250,10 @@ impl Reader {
         panic!("varint overflows integer");
     }
 
-    pub fn read_var_u64(&mut self) -> u64 {
+    pub fn var_u64(&mut self) -> u64 {
         let mut v: u64 = 0;
         for i in (0..70).step_by(7) {
-            let b = self.read_u8();
+            let b = self.u8();
 
             v |= ((b & 0x7f) as u64) << i;
             if b & 0x80 == 0 {
@@ -223,10 +263,10 @@ impl Reader {
         panic!("varint overflows integer");
     }
 
-    pub fn read_var_i64(&mut self) -> i64 {
+    pub fn var_i64(&mut self) -> i64 {
         let mut v: u64 = 0;
         for i in (0..70).step_by(7) {
-            let b = self.read_u8();
+            let b = self.u8();
 
             v |= ((b & 0x7f) as u64) << i;
             if b & 0x80 == 0 {
@@ -241,26 +281,37 @@ impl Reader {
         panic!("varint overflows integer");
     }
 
-    pub fn read_f32(&mut self) -> f32 {
+    pub fn f32(&mut self) -> f32 {
         return self.buf.get_f32_le();
     }
 
-    pub fn read_bool(&mut self) -> bool {
-        return self.read_u8() != 0;
+    pub fn byte_f32(&mut self) -> f32 {
+        return (self.u8() as f32) * (360. / 256.);
     }
 
-    pub fn read_string(&mut self) -> String {
-        let len = self.read_var_u32() as usize;
+    pub fn bool(&mut self) -> bool {
+        return self.u8() != 0;
+    }
+
+    pub fn string(&mut self) -> String {
+        let len = self.var_u32() as usize;
         let s = String::from_utf8(self.buf.slice(0..len).into()).expect("could not decode string");
         self.buf.advance(len);
         s
     }
 
-    pub fn read_string_utf(&mut self) -> String {
-        let len = self.read_i16() as usize;
+    pub fn string_utf(&mut self) -> String {
+        let len = self.i16() as usize;
         let s = String::from_utf8(self.buf.slice(0..len).into()).expect("could not decode string");
         self.buf.advance(len);
         s
+    }
+
+    pub fn bytes(&mut self) -> Bytes {
+        let len = self.buf.remaining();
+        let b = self.buf.slice(0..len);
+        self.buf.advance(len);
+        b
     }
 
     pub fn read_slice(&mut self) -> Bytes {
@@ -268,6 +319,51 @@ impl Reader {
         let b = self.buf.slice(0..len);
         self.buf.advance(len);
         b
+    }
+
+    pub fn block_pos(&mut self) -> BlockPos {
+        BlockPos {
+            x: self.i32(),
+            y: self.i32(),
+            z: self.i32(),
+        }
+    }
+
+    pub fn u_block_pos(&mut self) -> BlockPos {
+        BlockPos {
+            x: self.i32(),
+            y: self.u32() as i32,
+            z: self.i32(),
+        }
+    }
+
+    pub fn vec2(&mut self) -> Vec2 {
+        Vec2 {
+            x: self.f32(),
+            y: self.f32(),
+        }
+    }
+
+    pub fn vec3(&mut self) -> Vec3 {
+        Vec3 {
+            x: self.f32(),
+            y: self.f32(),
+            z: self.f32(),
+        }
+    }
+
+    pub fn uuid(&mut self) -> Uuid {
+        let b = self.buf.slice(0..16);
+        self.buf.advance(16);
+        Uuid::from_slice_le(&b).unwrap()
+    }
+
+    pub fn optional<T>(&mut self, f: fn() -> T) -> Option<T> {
+        if self.bool() {
+            Some(f())
+        } else {
+            None
+        }
     }
 }
 
@@ -286,9 +382,9 @@ mod tests {
         buf.write_var_i32(243563456);
 
         let mut reader = Reader::from_bytes(buf.into());
-        assert_eq!(reader.read_bool(), true);
-        assert_eq!(reader.read_i32(), 23974);
-        assert_eq!(reader.read_string_utf(), <&str as Into<String>>::into("This is a test!"));
-        assert_eq!(reader.read_var_i32(), 243563456);
+        assert_eq!(reader.bool(), true);
+        assert_eq!(reader.i32(), 23974);
+        assert_eq!(reader.string_utf(), <&str as Into<String>>::into("This is a test!"));
+        assert_eq!(reader.var_i32(), 243563456);
     }
 }
