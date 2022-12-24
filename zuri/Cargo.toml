@@ -10,6 +10,8 @@ noise = "0.8.2"
 json = "0.12.4"
 uuid = "1.2.2"
 zuri_proto = { path = "../zuri_proto" }
+zuri_math = { path = "../zuri_math" }
+zuri_world = { path = "../zuri_world" }
 
 [features]
 # Compiles the application for the wayland window system protocol instead of x11. Only for linux.
