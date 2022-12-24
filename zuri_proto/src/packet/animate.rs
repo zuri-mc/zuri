@@ -1,3 +1,13 @@
+#[derive(Debug, Clone, Copy, PartialEq, FromPrimitive, ToPrimitive)]
+pub enum AnimateAction {
+    SwingArm = 1,
+    StopSleep = 3,
+    CriticalHit = 4,
+    MagicCriticalHit = 5,
+    RowRight = 128,
+    RowLeft = 129,
+}
+
 /// Sent by the server to send a player animation from one player to all viewers of that player. It is used for a couple
 /// of actions, such as arm swimming and critical hits.
 #[derive(Debug)]

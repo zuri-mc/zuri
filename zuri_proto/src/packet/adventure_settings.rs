@@ -1,3 +1,31 @@
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum AdventureFlag {
+    WorldImmutable,
+    NoPvM,
+    NoPvP,
+    Unused,
+    ShowNameTags,
+    AutoJump,
+    AllowFlight,
+    NoClip,
+    WorldBuilder,
+    Flying,
+    Muted,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum ActionPermission {
+    Mine,
+    DoorsAndSwitches,
+    OpenContainers,
+    AttackPlayers,
+    AttackMobs,
+    OperatorCommands,
+    Teleport,
+    Build,
+    Default,
+}
+
 #[derive(Debug)]
 pub struct AdventureSettings {
     pub flags: u32,

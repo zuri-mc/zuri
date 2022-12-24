@@ -7,63 +7,7 @@ use uuid::Uuid;
 
 use crate::encodable_enum;
 use crate::enums::*;
-use crate::io::{Reader, Writer, Write, Read};
-
-#[derive(Debug)]
-pub struct AbilityData {
-    entity_unique_id: i64,
-    player_permissions: u8,
-    command_permission: u8,
-    layers: Vec<AbilityLayer>,
-}
-
-impl AbilityData {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.i64(self.entity_unique_id);
-        writer.u8(self.player_permissions);
-        writer.u8(self.command_permission);
-        writer.u8(self.layers.len() as u8);
-        self.layers.iter().for_each(|layer| layer.write(writer));
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            entity_unique_id: reader.i64(),
-            player_permissions: reader.u8(),
-            command_permission: reader.u8(),
-            layers: (0..reader.u8()).map(|_| AbilityLayer::read(reader)).collect(),
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct AbilityLayer {
-    layer_type: AbilityLayerType,
-    abilities: u32,
-    values: u32,
-    fly_speed: f32,
-    walk_speed: f32,
-}
-
-impl AbilityLayer {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.u8(num::ToPrimitive::to_u8(&self.layer_type).unwrap());
-        writer.u32(self.abilities);
-        writer.u32(self.values);
-        writer.f32(self.fly_speed);
-        writer.f32(self.walk_speed);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            layer_type: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
-            abilities: reader.u32(),
-            values: reader.u32(),
-            fly_speed: reader.f32(),
-            walk_speed: reader.f32(),
-        }
-    }
-}
+use crate::io::{Read, Reader, Write, Writer};
 
 #[derive(Debug)]
 pub struct AchievementAwardedEventData {
@@ -320,29 +264,6 @@ impl BehaviourPackInfo {
             content_identity: reader.string(),
             has_scripts: reader.bool(),
         }
-    }
-}
-
-#[derive(Debug)]
-pub struct BellUsedEventData {
-    pub item_id: i32,
-}
-
-impl BellUsedEventData {
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            item_id: reader.var_i32(),
-        }
-    }
-}
-
-impl EventData for BellUsedEventData {
-    fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.item_id);
-    }
-
-    fn event_type(&self) -> EventType {
-        EventType::BellUsed
     }
 }
 
@@ -1310,135 +1231,6 @@ impl ExperimentData {
     }
 }
 
-#[derive(Debug)]
-pub struct ExtractHoneyEventData {}
-
-impl ExtractHoneyEventData {
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {}
-    }
-}
-
-impl EventData for ExtractHoneyEventData {
-    fn write(&self, _: &mut Writer) {}
-
-    fn event_type(&self) -> EventType {
-        EventType::ExtractHoney
-    }
-}
-
-pub trait EventData: Debug {
-    fn write(&self, writer: &mut Writer);
-    fn event_type(&self) -> EventType;
-}
-
-encodable_enum!(
-    #[derive(Debug)]
-    pub enum EventData2 {
-        AchievementAwardedEventData = 0,
-        EntityInteractEventData = 1,
-        PortalBuiltEventData = 2,
-        PortalUsedEventData = 3,
-        MobKilledEventData = 4,
-        CauldronUsedEventData = 5,
-        PlayerDiedEventData = 6,
-        BossKilledEventData = 7,
-        AgentCommandEventData = 8,
-        AgentCreatedEventData = 9,
-        PatternRemovedEventData = 10,
-        SlashCommandExecutedEventData = 11,
-        FishBucketedEventData = 12,
-        MobBornEventData = 13,
-        PetDiedEventData = 14,
-        CauldronInteractEventData = 15,
-        ComposterInteractEventData = 16,
-        BellUsedEventData = 17,
-        EntityDefinitionTriggerEventData = 18,
-        RaidUpdateEventData = 19,
-        MovementAnomalyEventData = 20,
-        MovementCorrectedEventData = 21,
-        //ExtractHoneyEventData = 22, todo
-        //TargetBlockHitEventData = 23, todo
-        //PiglinBarterEventData = 24, todo
-        PlayerWaxedOrUnwaxedCopperEventData = 25,
-        //CodeBuilderRuntimeActionEventData = 26, todo
-        //CodeBuilderScoreboardEventData = 27, todo
-        //StriderRiddenInLavaInOverworldEventData = 28, todo
-        SneakCloseToSculkSensorEventData = 29,
-    }
-);
-
-#[derive(Debug)]
-pub struct FishBucketedEventData {
-    pub pattern: i32,
-    pub preset: i32,
-    pub bucketed_entity_type: i32,
-    pub release: bool,
-}
-
-impl FishBucketedEventData {
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            pattern: reader.var_i32(),
-            preset: reader.var_i32(),
-            bucketed_entity_type: reader.var_i32(),
-            release: reader.bool(),
-        }
-    }
-}
-
-impl EventData for FishBucketedEventData {
-    fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.pattern);
-        writer.var_i32(self.preset);
-        writer.var_i32(self.bucketed_entity_type);
-        writer.bool(self.release);
-    }
-
-    fn event_type(&self) -> EventType {
-        EventType::FishBucketed
-    }
-}
-
-#[derive(Debug)]
-pub struct FurnaceDataRecipe {
-    pub furnace_recipe: FurnaceRecipe,
-}
-
-impl FurnaceDataRecipe {
-    pub fn write(&self, writer: &mut Writer) {
-        self.furnace_recipe.write(writer);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            furnace_recipe: FurnaceRecipe::read(reader),
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct FurnaceRecipe {
-    pub network_id: i32,
-    pub output: ItemStack,
-    pub block: String,
-}
-
-impl FurnaceRecipe {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.network_id);
-        self.output.write(writer);
-        writer.string(self.block.as_str());
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            network_id: reader.var_i32(),
-            output: ItemStack::read(reader),
-            block: reader.string(),
-        }
-    }
-}
 
 #[derive(Debug)]
 pub struct GameRule {
@@ -1757,8 +1549,6 @@ impl ItemStackRequestEntry {
         writer.var_u32(self.actions.len() as u32);
         self.actions.iter().for_each(|action| {
             action.write(writer);
-            //writer.var_u32(num::ToPrimitive::to_u32(&action.action_type()).unwrap());
-            //action.write(writer);
         });
         writer.var_u32(self.filter_strings.len() as u32);
         self.filter_strings.iter().for_each(|filter_string| writer.string(filter_string.as_str()));
@@ -1769,29 +1559,6 @@ impl ItemStackRequestEntry {
         Self {
             request_id: reader.var_i32(),
             actions: (0..reader.var_u32()).map(|_| {
-                /*let action_type: StackRequestActionType = num::FromPrimitive::from_u32(reader.var_u32()).unwrap();
-                match action_type {
-                    StackRequestActionType::Take => Box::from(TakeStackRequestAction::read(reader)),
-                    StackRequestActionType::Place => Box::from(PlaceStackRequestAction::read(reader)),
-                    StackRequestActionType::Swap => Box::from(SwapStackRequestAction::read(reader)),
-                    StackRequestActionType::Drop => Box::from(DropStackRequestAction::read(reader)),
-                    StackRequestActionType::Destroy => Box::from(DestroyStackRequestAction::read(reader)),
-                    StackRequestActionType::Consume => Box::from(ConsumeStackRequestAction::read(reader)),
-                    StackRequestActionType::Create => Box::from(CreateStackRequestAction::read(reader)),
-                    StackRequestActionType::PlaceInContainer => Box::from(PlaceInContainerStackRequestAction::read(reader)),
-                    StackRequestActionType::TakeOutContainer => Box::from(TakeOutContainerStackRequestAction::read(reader)),
-                    StackRequestActionType::LabTableCombine => Box::from(LabTableCombineStackRequestAction::read(reader)),
-                    StackRequestActionType::BeaconPayment => Box::from(BeaconPaymentStackRequestAction::read(reader)),
-                    StackRequestActionType::MineBlock => Box::from(MineBlockStackRequestAction::read(reader)),
-                    StackRequestActionType::CraftRecipe => Box::from(CraftRecipeStackRequestAction::read(reader)),
-                    StackRequestActionType::CraftRecipeAuto => Box::from(AutoCraftRecipeStackRequestAction::read(reader)),
-                    StackRequestActionType::CraftCreative => Box::from(CraftCreativeStackRequestAction::read(reader)),
-                    StackRequestActionType::CraftRecipeOptional => Box::from(CraftRecipeOptionalStackRequestAction::read(reader)),
-                    StackRequestActionType::CraftGrindstone => Box::from(CraftGrindstoneRecipeStackRequestAction::read(reader)),
-                    StackRequestActionType::CraftLoom => Box::from(CraftLoomRecipeStackRequestAction::read(reader)),
-                    StackRequestActionType::CraftNonImplementedDeprecated => Box::from(CraftNonImplementedStackRequestAction::read(reader)),
-                    StackRequestActionType::CraftResultsDeprecated => Box::from(CraftResultsDeprecatedStackRequestAction::read(reader)),
-                }*/
                 StackRequestAction2::read(reader)
             }).collect(),
             filter_strings: (0..reader.var_u32()).map(|_| reader.string()).collect(),
@@ -2038,28 +1805,6 @@ pub struct MobBornEventData {
     pub colour: u8,
 }
 
-impl MobBornEventData {
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            entity_type: reader.var_i32(),
-            variant: reader.var_i32(),
-            colour: reader.u8(),
-        }
-    }
-}
-
-impl EventData for MobBornEventData {
-    fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.entity_type);
-        writer.var_i32(self.variant);
-        writer.u8(self.colour);
-    }
-
-    fn event_type(&self) -> EventType {
-        EventType::AchievementAwarded
-    }
-}
-
 #[derive(Debug)]
 pub struct MobKilledEventData {
     pub killer_entity_unique_id: i64,
@@ -2270,91 +2015,6 @@ impl EventData for PatternRemovedEventData {
 }
 
 #[derive(Debug)]
-pub struct PersonaPiece {
-    pub piece_id: String,
-    pub piece_type: String,
-    pub pack_id: String,
-    pub default: bool,
-    pub product_id: String,
-}
-
-impl PersonaPiece {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.string(self.piece_id.as_str());
-        writer.string(self.piece_type.as_str());
-        writer.string(self.pack_id.as_str());
-        writer.bool(self.default);
-        writer.string(self.product_id.as_str());
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            piece_id: reader.string(),
-            piece_type: reader.string(),
-            pack_id: reader.string(),
-            default: reader.bool(),
-            product_id: reader.string(),
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct PersonaPieceTintColour {
-    pub piece_type: String,
-    pub colours: Vec<String>,
-}
-
-impl PersonaPieceTintColour {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.string(self.piece_type.as_str());
-        writer.u32(self.colours.len() as u32);
-        self.colours.iter().for_each(|colour| writer.string(colour.as_str()));
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            piece_type: reader.string(),
-            colours: (0..reader.u32()).map(|_| reader.string()).collect::<Vec<String>>(),
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct PetDiedEventData {
-    pub killed_by_owner: bool,
-    pub killer_entity_unique_id: i64,
-    pub pet_entity_unique_id: i64,
-    pub entity_damage_cause: i32,
-    pub pet_entity_type: i32,
-}
-
-impl PetDiedEventData {
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            killed_by_owner: reader.bool(),
-            killer_entity_unique_id: reader.var_i64(),
-            pet_entity_unique_id: reader.var_i64(),
-            entity_damage_cause: reader.var_i32(),
-            pet_entity_type: reader.var_i32(),
-        }
-    }
-}
-
-impl EventData for PetDiedEventData {
-    fn write(&self, writer: &mut Writer) {
-        writer.bool(self.killed_by_owner);
-        writer.var_i64(self.killer_entity_unique_id);
-        writer.var_i64(self.pet_entity_unique_id);
-        writer.var_i32(self.entity_damage_cause);
-        writer.var_i32(self.pet_entity_type);
-    }
-
-    fn event_type(&self) -> EventType {
-        EventType::PetDied
-    }
-}
-
-#[derive(Debug)]
 pub struct PixelRequest {
     colour: RGBA,
     index: u16,
@@ -2469,38 +2129,6 @@ impl PlayerBlockAction {
     }
 }
 
-#[derive(Debug)]
-pub struct PlayerDiedEventData {
-    pub attacker_entity_id: i32,
-    pub attacker_variant: i32,
-    pub entity_damage_cause: i32,
-    pub in_raid: bool,
-}
-
-impl PlayerDiedEventData {
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            attacker_entity_id: reader.var_i32(),
-            attacker_variant: reader.var_i32(),
-            entity_damage_cause: reader.var_i32(),
-            in_raid: reader.bool(),
-        }
-    }
-}
-
-impl EventData for PlayerDiedEventData {
-    fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.attacker_entity_id);
-        writer.var_i32(self.attacker_variant);
-        writer.var_i32(self.entity_damage_cause);
-        writer.bool(self.in_raid);
-    }
-
-    fn event_type(&self) -> EventType {
-        EventType::PlayerDied
-    }
-}
-
 #[derive(Debug, Default)]
 pub struct PlayerListEntry {
     pub uuid: Uuid,
@@ -2572,73 +2200,6 @@ impl PlayerMovementSettings {
     }
 }
 
-
-#[derive(Debug)]
-pub struct PlayerWaxedOrUnwaxedCopperEventData {}
-
-impl PlayerWaxedOrUnwaxedCopperEventData {
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {}
-    }
-}
-
-impl EventData for PlayerWaxedOrUnwaxedCopperEventData {
-    fn write(&self, _: &mut Writer) {}
-
-    fn event_type(&self) -> EventType {
-        EventType::ExtractHoney
-    }
-}
-
-#[derive(Debug)]
-pub struct PortalBuiltEventData {
-    pub dimension_id: i32,
-}
-
-impl PortalBuiltEventData {
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            dimension_id: reader.var_i32(),
-        }
-    }
-}
-
-impl EventData for PortalBuiltEventData {
-    fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.dimension_id);
-    }
-
-    fn event_type(&self) -> EventType {
-        EventType::PortalBuilt
-    }
-}
-
-#[derive(Debug)]
-pub struct PortalUsedEventData {
-    pub from_dimension_id: i32,
-    pub to_dimension_id: i32,
-}
-
-impl PortalUsedEventData {
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            from_dimension_id: reader.var_i32(),
-            to_dimension_id: reader.var_i32(),
-        }
-    }
-}
-
-impl EventData for PortalUsedEventData {
-    fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.from_dimension_id);
-        writer.var_i32(self.to_dimension_id);
-    }
-
-    fn event_type(&self) -> EventType {
-        EventType::PortalUsed
-    }
-}
-
 #[derive(Debug)]
 pub struct PotionContainerChangeRecipe {
     pub input_item_id: i32,
@@ -2658,38 +2219,6 @@ impl PotionContainerChangeRecipe {
             input_item_id: reader.var_i32(),
             reagent_item_id: reader.var_i32(),
             output_item_id: reader.var_i32(),
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct PotionRecipe {
-    pub input_potion_id: i32,
-    pub input_potion_metadata: i32,
-    pub reagent_item_id: i32,
-    pub reagent_item_metadata: i32,
-    pub output_potion_id: i32,
-    pub output_potion_metadata: i32,
-}
-
-impl PotionRecipe {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.input_potion_id);
-        writer.var_i32(self.input_potion_metadata);
-        writer.var_i32(self.reagent_item_id);
-        writer.var_i32(self.reagent_item_metadata);
-        writer.var_i32(self.output_potion_id);
-        writer.var_i32(self.output_potion_metadata);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            input_potion_id: reader.var_i32(),
-            input_potion_metadata: reader.var_i32(),
-            reagent_item_id: reader.var_i32(),
-            reagent_item_metadata: reader.var_i32(),
-            output_potion_id: reader.var_i32(),
-            output_potion_metadata: reader.var_i32(),
         }
     }
 }
@@ -2733,35 +2262,6 @@ impl RGBA {
 }
 
 #[derive(Debug)]
-pub struct RaidUpdateEventData {
-    pub current_raid_wave: i32,
-    pub total_raid_waves: i32,
-    pub won_raid: bool,
-}
-
-impl RaidUpdateEventData {
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            current_raid_wave: reader.var_i32(),
-            total_raid_waves: reader.var_i32(),
-            won_raid: reader.bool(),
-        }
-    }
-}
-
-impl EventData for RaidUpdateEventData {
-    fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.current_raid_wave);
-        writer.var_i32(self.total_raid_waves);
-        writer.bool(self.won_raid);
-    }
-
-    fn event_type(&self) -> EventType {
-        EventType::RaidUpdate
-    }
-}
-
-#[derive(Debug)]
 pub struct ReleaseItemTransactionData {
     pub action_type: u32,
     pub hot_bar_slot: i32,
@@ -2793,294 +2293,6 @@ impl InventoryTransactionData for ReleaseItemTransactionData {
     }
 }
 
-#[derive(Debug)]
-pub struct ScoreboardEntry {
-    pub entry_id: i64,
-    pub objective_name: String,
-    pub score: i32,
-    pub identity_type: ScoreboardIdentity,
-    pub entity_unique_id: i64,
-    pub display_name: String,
-}
-
-impl ScoreboardEntry {
-    pub fn write(&self, writer: &mut Writer, action: ScoreboardAction) {
-        writer.var_i64(self.entry_id);
-        writer.string(self.objective_name.as_str());
-        writer.i32(self.score);
-        if action == ScoreboardAction::Modify {
-            writer.u8(num::ToPrimitive::to_u8(&self.identity_type).unwrap());
-            match self.identity_type {
-                ScoreboardIdentity::Entity | ScoreboardIdentity::Player => {
-                    writer.var_i64(self.entity_unique_id);
-                }
-                _ => {
-                    writer.string(self.display_name.as_str());
-                }
-            }
-        }
-    }
-
-    pub fn read(reader: &mut Reader, action: ScoreboardAction) -> Self {
-        let mut entry = Self {
-            entry_id: reader.var_i64(),
-            objective_name: reader.string(),
-            score: reader.i32(),
-            identity_type: ScoreboardIdentity::Player,
-            entity_unique_id: 0,
-            display_name: "".into(),
-        };
-        if action == ScoreboardAction::Modify {
-            entry.identity_type = num::FromPrimitive::from_u8(reader.u8()).unwrap();
-            match entry.identity_type {
-                ScoreboardIdentity::Entity | ScoreboardIdentity::Player => {
-                    entry.entity_unique_id = reader.var_i64();
-                }
-                _ => {
-                    entry.display_name = reader.string();
-                }
-            }
-        }
-
-        entry
-    }
-}
-
-#[derive(Debug)]
-pub struct ScoreboardIdentityEntry {
-    pub entry_id: i64,
-    pub entity_unique_id: i64,
-}
-
-impl ScoreboardIdentityEntry {
-    pub fn write(&self, writer: &mut Writer, action: ScoreboardIdentityAction) {
-        writer.var_i64(self.entry_id);
-        if action == ScoreboardIdentityAction::Register {
-            writer.var_i64(self.entity_unique_id);
-        }
-    }
-
-    pub fn read(reader: &mut Reader, action: ScoreboardIdentityAction) -> Self {
-        Self {
-            entry_id: reader.var_i64(),
-            entity_unique_id: if action == ScoreboardIdentityAction::Register { reader.var_i64() } else { 0 },
-        }
-    }
-}
-
-pub type ShapedChemistryRecipe = ShapedRecipe;
-
-#[derive(Debug, Default)]
-pub struct ShapedRecipe {
-    pub recipe_id: String,
-    pub width: i32,
-    pub height: i32,
-    pub input: Vec<ItemDescriptorCount>,
-    pub output: Vec<ItemStack>,
-    pub uuid: Uuid,
-    pub block: String,
-    pub priority: i32,
-    pub recipe_network_id: u32,
-}
-
-impl ShapedRecipe {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.string(self.recipe_id.as_str());
-        writer.i32(self.width);
-        writer.i32(self.height);
-        for i in 0..self.width * self.height {
-            if i >= self.input.len() as i32 {
-                ItemDescriptorCount::default().write(writer);
-            } else {
-                self.input[i as usize].write(writer);
-            }
-        }
-        writer.var_u32(self.output.len() as u32);
-        self.output.iter().for_each(|stack| stack.write(writer));
-        writer.uuid(self.uuid);
-        writer.string(self.block.as_str());
-        writer.var_i32(self.priority);
-        writer.var_u32(self.recipe_network_id);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        let recipe_id = reader.string();
-        let width = reader.i32();
-        let height = reader.i32();
-        Self {
-            recipe_id,
-            width,
-            height,
-            input: (0..width * height).map(|_| ItemDescriptorCount::read(reader)).collect(),
-            output: (0..reader.var_u32()).map(|_| ItemStack::read(reader)).collect(),
-            uuid: reader.uuid(),
-            block: reader.string(),
-            priority: reader.var_i32(),
-            recipe_network_id: reader.var_u32(),
-        }
-    }
-}
-
-pub type ShapelessChemistryRecipe = ShapelessRecipe;
-
-#[derive(Debug)]
-pub struct ShapelessRecipe {
-    pub recipe_id: String,
-    pub input: Vec<ItemDescriptorCount>,
-    pub output: Vec<ItemStack>,
-    pub uuid: Uuid,
-    pub block: String,
-    pub priority: i32,
-    pub recipe_network_id: u32,
-}
-
-impl ShapelessRecipe {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.string(self.recipe_id.as_str());
-        writer.var_u32(self.input.len() as u32);
-        self.input.iter().for_each(|input| input.write(writer));
-        writer.var_u32(self.output.len() as u32);
-        self.output.iter().for_each(|stack| stack.write(writer));
-        writer.uuid(self.uuid);
-        writer.string(self.block.as_str());
-        writer.var_i32(self.priority);
-        writer.var_u32(self.recipe_network_id);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            recipe_id: reader.string(),
-            input: (0..reader.var_u32()).map(|_| ItemDescriptorCount::read(reader)).collect(),
-            output: (0..reader.var_u32()).map(|_| ItemStack::read(reader)).collect(),
-            uuid: reader.uuid(),
-            block: reader.string(),
-            priority: reader.var_i32(),
-            recipe_network_id: reader.var_u32(),
-        }
-    }
-}
-
-pub type ShulkerBoxRecipe = ShapelessRecipe;
-
-#[derive(Debug, Default)]
-pub struct Skin {
-    pub skin_id: String,
-    pub play_fab_id: String,
-    pub skin_resource_patch: Bytes,
-    pub skin_image_width: u32,
-    pub skin_image_height: u32,
-    pub skin_data: Bytes,
-    pub animations: Vec<SkinAnimation>,
-    pub cape_image_width: u32,
-    pub cape_image_height: u32,
-    pub cape_data: Bytes,
-    pub skin_geometry: Bytes,
-    pub geometry_data_engine_version: Bytes,
-    pub animation_data: Bytes,
-    pub cape_id: String,
-    pub full_id: String,
-    pub arm_size: String,
-    pub skin_colour: String,
-    pub persona_pieces: Vec<PersonaPiece>,
-    pub piece_tint_colours: Vec<PersonaPieceTintColour>,
-    pub premium_skin: bool,
-    pub persona_skin: bool,
-    pub persona_cape_on_classic_skin: bool,
-    pub primary_user: bool,
-    pub trusted: bool,
-}
-
-impl Skin {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.string(self.skin_id.as_str());
-        writer.string(self.play_fab_id.as_str());
-        writer.byte_slice(&self.skin_resource_patch);
-        writer.u32(self.skin_image_width);
-        writer.u32(self.skin_image_height);
-        writer.byte_slice(&self.skin_data);
-        writer.u32(self.animations.len() as u32);
-        self.animations.iter().for_each(|animation| animation.write(writer));
-        writer.u32(self.cape_image_width);
-        writer.u32(self.cape_image_height);
-        writer.byte_slice(&self.cape_data);
-        writer.byte_slice(&self.skin_geometry);
-        writer.byte_slice(&self.geometry_data_engine_version);
-        writer.byte_slice(&self.animation_data);
-        writer.string(self.cape_id.as_str());
-        writer.string(self.full_id.as_str());
-        writer.string(self.arm_size.as_str());
-        writer.string(self.skin_colour.as_str());
-        writer.u32(self.persona_pieces.len() as u32);
-        self.persona_pieces.iter().for_each(|piece| piece.write(writer));
-        writer.u32(self.piece_tint_colours.len() as u32);
-        self.piece_tint_colours.iter().for_each(|colour| colour.write(writer));
-        writer.bool(self.premium_skin);
-        writer.bool(self.persona_skin);
-        writer.bool(self.persona_cape_on_classic_skin);
-        writer.bool(self.primary_user);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            skin_id: reader.string(),
-            play_fab_id: reader.string(),
-            skin_resource_patch: reader.byte_slice(),
-            skin_image_width: reader.u32(),
-            skin_image_height: reader.u32(),
-            skin_data: reader.byte_slice(),
-            animations: (0..reader.u32()).map(|_| SkinAnimation::read(reader)).collect(),
-            cape_image_width: reader.u32(),
-            cape_image_height: reader.u32(),
-            cape_data: reader.byte_slice(),
-            skin_geometry: reader.byte_slice(),
-            geometry_data_engine_version: reader.byte_slice(),
-            animation_data: reader.byte_slice(),
-            cape_id: reader.string(),
-            full_id: reader.string(),
-            arm_size: reader.string(),
-            skin_colour: reader.string(),
-            persona_pieces: (0..reader.u32()).map(|_| PersonaPiece::read(reader)).collect(),
-            piece_tint_colours: (0..reader.u32()).map(|_| PersonaPieceTintColour::read(reader)).collect(),
-            premium_skin: reader.bool(),
-            persona_skin: reader.bool(),
-            persona_cape_on_classic_skin: reader.bool(),
-            primary_user: reader.bool(),
-            trusted: false,
-        }
-    }
-}
-
-#[derive(Debug)]
-pub struct SkinAnimation {
-    pub image_width: u32,
-    pub image_height: u32,
-    pub image_data: Bytes,
-    pub animation_type: u32,
-    pub frame_count: f32,
-    pub expression_type: u32,
-}
-
-impl SkinAnimation {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.u32(self.image_width);
-        writer.u32(self.image_height);
-        writer.byte_slice(&self.image_data);
-        writer.u32(self.animation_type);
-        writer.f32(self.frame_count);
-        writer.u32(self.expression_type);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            image_width: reader.u32(),
-            image_height: reader.u32(),
-            image_data: reader.byte_slice(),
-            animation_type: reader.u32(),
-            frame_count: reader.f32(),
-            expression_type: reader.u32(),
-        }
-    }
-}
 
 #[derive(Debug)]
 pub struct SlashCommandExecutedEventData {
@@ -3114,58 +2326,10 @@ impl EventData for SlashCommandExecutedEventData {
     }
 }
 
-#[derive(Debug)]
-pub struct SneakCloseToSculkSensorEventData {}
-
-impl SneakCloseToSculkSensorEventData {
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {}
-    }
-}
-
-impl EventData for SneakCloseToSculkSensorEventData {
-    fn write(&self, _: &mut Writer) {}
-
-    fn event_type(&self) -> EventType {
-        EventType::ExtractHoney
-    }
-}
-
-pub trait StackRequestAction: Debug { // todo: remove
+pub trait StackRequestAction: Debug {
+    // todo: remove
     fn write(&self, writer: &mut Writer);
     fn action_type(&self) -> StackRequestActionType;
-}
-
-encodable_enum!(
-    #[derive(Debug)]
-    pub enum StackRequestAction2 {
-        TakeStackRequestAction = 0,
-        PlaceStackRequestAction = 1,
-        SwapStackRequestAction = 2,
-        DropStackRequestAction = 3,
-        DestroyStackRequestAction = 4,
-        ConsumeStackRequestAction = 5,
-        CreateStackRequestAction = 6,
-        PlaceInContainerStackRequestAction = 7,
-        TakeOutContainerStackRequestAction = 8,
-        LabTableCombineStackRequestAction = 9,
-        BeaconPaymentStackRequestAction = 10,
-        MineBlockStackRequestAction = 11,
-        CraftRecipeStackRequestAction = 12,
-        AutoCraftRecipeStackRequestAction = 13,
-        CraftCreativeStackRequestAction = 14,
-        CraftRecipeOptionalStackRequestAction = 15,
-        CraftGrindstoneRecipeStackRequestAction = 16,
-        CraftLoomRecipeStackRequestAction = 17,
-        CraftNonImplementedStackRequestAction = 18,
-        CraftResultsDeprecatedStackRequestAction = 19,
-    }
-);
-
-impl Default for StackRequestAction2 {
-    fn default() -> Self {
-        Self::CraftNonImplementedStackRequestAction(CraftNonImplementedStackRequestAction{})
-    }
 }
 
 #[derive(Debug)]
@@ -3397,90 +2561,6 @@ impl SubChunkOffset {
             y: reader.i8(),
             z: reader.i8(),
         }
-    }
-}
-
-#[derive(Debug)]
-pub struct SwapStackRequestAction {
-    pub source: StackRequestSlotInfo,
-    pub destination: StackRequestSlotInfo,
-}
-
-impl SwapStackRequestAction {
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            source: StackRequestSlotInfo::read(reader),
-            destination: StackRequestSlotInfo::read(reader),
-        }
-    }
-}
-
-impl StackRequestAction for SwapStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
-        self.source.write(writer);
-        self.destination.write(writer);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::Swap
-    }
-}
-
-#[derive(Debug)]
-pub struct TakeOutContainerStackRequestAction {
-    pub count: u8,
-    pub source: StackRequestSlotInfo,
-    pub destination: StackRequestSlotInfo,
-}
-
-impl TakeOutContainerStackRequestAction {
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            count: reader.u8(),
-            source: StackRequestSlotInfo::read(reader),
-            destination: StackRequestSlotInfo::read(reader),
-        }
-    }
-}
-
-impl StackRequestAction for TakeOutContainerStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
-        writer.u8(self.count);
-        self.source.write(writer);
-        self.destination.write(writer);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::TakeOutContainer
-    }
-}
-
-#[derive(Debug)]
-pub struct TakeStackRequestAction {
-    pub count: u8,
-    pub source: StackRequestSlotInfo,
-    pub destination: StackRequestSlotInfo,
-}
-
-impl TakeStackRequestAction {
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            count: reader.u8(),
-            source: StackRequestSlotInfo::read(reader),
-            destination: StackRequestSlotInfo::read(reader),
-        }
-    }
-}
-
-impl StackRequestAction for TakeStackRequestAction {
-    fn write(&self, writer: &mut Writer) {
-        writer.u8(self.count);
-        self.source.write(writer);
-        self.destination.write(writer);
-    }
-
-    fn action_type(&self) -> StackRequestActionType {
-        StackRequestActionType::Take
     }
 }
 

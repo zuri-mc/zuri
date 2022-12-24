@@ -1,3 +1,26 @@
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum AgentActionType {
+    None,
+    Attack,
+    Collect,
+    Destroy,
+    DetectRedstone,
+    DetectObstacle,
+    Drop,
+    DropAll,
+    Inspect,
+    InspectData,
+    InspectItemCount,
+    InspectItemDetail,
+    InspectItemSpace,
+    Interact,
+    Move,
+    PlaceBlock,
+    Till,
+    TransferItemTo,
+    Turn,
+}
+
 #[derive(Debug)]
 pub struct AgentAction {
     pub identifier: String,
