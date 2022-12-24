@@ -146,7 +146,7 @@ pub enum AgentActionType {
     Turn,
 }
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum AnimateAction {
     SwingArm = 1,
     StopSleep = 3,
@@ -192,7 +192,7 @@ pub enum BlockUpdate {
     Priority,
 }
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum BookAction {
     ReplacePage,
     AddPage,
@@ -201,7 +201,7 @@ pub enum BookAction {
     Sign,
 }
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum BossEventType {
     Show,
     RegisterPlayer,
@@ -244,7 +244,7 @@ pub enum ChatRestrictionLevel {
     Disabled,
 }
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum ClientBoundDebugRendererType {
     None,
     Clear,
@@ -338,7 +338,7 @@ pub enum CommandOriginType {
     Executor,
 }
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum CommandOutputType {
     None,
     LastOutput,
@@ -347,7 +347,7 @@ pub enum CommandOutputType {
     DataSet,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum CommandPermissionLevel {
     Normal,
     GameDirectors,
@@ -357,13 +357,13 @@ pub enum CommandPermissionLevel {
     Internal,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum CompressionType {
     Flate,
     Snappy,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum Container {
     AnvilInput,
     AnvilMaterial,
@@ -428,7 +428,7 @@ pub enum Container {
     CreatedOutput,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum ContainerDataFurnace {
     TickCount = 0,
     LitTime = 1,
@@ -436,14 +436,14 @@ pub enum ContainerDataFurnace {
     FuelAux = 4,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum ContainerDataBrewingStand {
     BrewTime,
     FuelAmount,
     FuelTotal,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum ContainerType {
     Inventory = -1,
     Container = 0,
@@ -483,7 +483,7 @@ pub enum ContainerType {
     ChestBoat = 34,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum Device {
     None,
     Android,
@@ -503,7 +503,7 @@ pub enum Device {
     Linux,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum Difficulty {
     Peaceful,
     Easy,
@@ -511,26 +511,26 @@ pub enum Difficulty {
     Hard,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum Dimension {
     Overworld,
     Nether,
     End,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum EducationEditionRegion {
     None,
     RestOfWorld,
     China,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum EmoteFlag {
     ServerSide
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum EntityDataFlag {
     OnFire,
     Sneaking,
@@ -644,7 +644,7 @@ pub enum EntityDataFlag {
     PushTowardsClosestSpace,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum EntityDataKey {
     Flags,
     StructuralIntegrity,
@@ -953,7 +953,7 @@ pub enum InputMode {
     MotionController,
 }
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum InteractionAction {
     LeaveVehicle = 3,
     MouseOverEntity = 4,
@@ -994,7 +994,7 @@ pub enum ItemDescriptorType {
     Deferred,
 }
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum ItemStackResponseStatus {
     Ok,
     Error,
@@ -2028,7 +2028,7 @@ pub enum TeleportCause {
     Behaviour,
 }
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum TextType {
     Raw,
     Chat,

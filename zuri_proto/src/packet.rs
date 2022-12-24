@@ -334,7 +334,7 @@ impl Packet for Disconnect {
     fn write(&self, writer: &mut Writer) {
         writer.bool(self.message.is_some());
         if self.message.is_some() {
-            writer.string(self.message.unwrap().as_str());
+            writer.string(self.message.as_ref().unwrap().as_str());
         }
     }
 
@@ -816,7 +816,7 @@ impl Packet for StartGame {
 
         self.education_shared_resource_uri.write(writer);
 
-        writer.optional_func(&self.force_experimental_gameplay, |x| writer.bool(*x));
+        writer.optional(&self.force_experimental_gameplay);
 
         writer.u8(num::ToPrimitive::to_u8(&self.chat_restriction_level).unwrap());
         writer.bool(self.disable_player_interactions);
@@ -927,7 +927,7 @@ impl Packet for StartGame {
 
             education_shared_resource_uri: EducationSharedResourceURI::read(reader),
 
-            force_experimental_gameplay: reader.optional(|| reader.bool()),
+            force_experimental_gameplay: reader.optional(),
 
             chat_restriction_level: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
             disable_player_interactions: reader.bool(),
@@ -3093,19 +3093,19 @@ impl AvailableCommands {
     fn enum_values(&self) -> (Vec<String>, BTreeMap<String, usize>) {
         let mut values = Vec::new();
         let mut indices = BTreeMap::new();
-        for command in self.commands {
-            for alias in command.aliases {
-                if !indices.contains_key(&alias) {
+        for command in &self.commands {
+            for alias in &command.aliases {
+                if !indices.contains_key(alias.as_str()) {
                     indices.insert(alias.clone(), values.len());
-                    values.push(alias);
+                    values.push(alias.clone());
                 }
             }
-            for overload in command.overloads {
-                for parameter in overload.parameters {
-                    for option in parameter.command_enum.options {
-                        if !indices.contains_key(&option) {
+            for overload in &command.overloads {
+                for parameter in &overload.parameters {
+                    for option in &parameter.command_enum.options {
+                        if !indices.contains_key(option) {
                             indices.insert(option.clone(), values.len());
-                            values.push(option);
+                            values.push(option.clone());
                         }
                     }
                 }
@@ -3118,13 +3118,13 @@ impl AvailableCommands {
     fn suffixes(&self) -> (Vec<String>, BTreeMap<String, usize>) {
         let mut values = Vec::new();
         let mut indices = BTreeMap::new();
-        for command in self.commands {
-            for overload in command.overloads {
-                for parameter in overload.parameters {
+        for command in &self.commands {
+            for overload in &command.overloads {
+                for parameter in &overload.parameters {
                     if !parameter.suffix.is_empty() {
                         if !indices.contains_key(&parameter.suffix) {
                             indices.insert(parameter.suffix.clone(), values.len());
-                            values.push(parameter.suffix);
+                            values.push(parameter.suffix.clone());
                         }
                     }
                 }
@@ -3166,13 +3166,13 @@ impl AvailableCommands {
     fn dynamic_enums(&self) -> (Vec<CommandEnum>, BTreeMap<String, usize>) {
         let mut values = Vec::new();
         let mut indices = BTreeMap::new();
-        for command in self.commands {
-            for overload in command.overloads {
-                for parameter in overload.parameters {
+        for command in &self.commands {
+            for overload in &command.overloads {
+                for parameter in &overload.parameters {
                     if parameter.command_enum.dynamic {
                         if !indices.contains_key(&parameter.command_enum.enum_type) {
                             indices.insert(parameter.command_enum.enum_type.clone(), values.len());
-                            values.push(parameter.command_enum);
+                            values.push(parameter.command_enum.clone());
                         }
                     }
                 }
@@ -3909,15 +3909,15 @@ pub struct ModalFormResponse {
 impl Packet for ModalFormResponse {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.form_id);
-        writer.optional_func(&self.response_data, |x| writer.byte_slice(&x));
-        writer.optional_func(&self.cancel_reason, |x| writer.u8(*x));
+        writer.optional(&self.response_data);
+        writer.optional(&self.cancel_reason);
     }
 
     fn read(reader: &mut Reader) -> Self {
         Self {
             form_id: reader.var_u32(),
-            response_data: reader.optional(|| reader.byte_slice()),
-            cancel_reason: reader.optional(|| reader.u8()),
+            response_data: reader.optional(),
+            cancel_reason: reader.optional(),
         }
     }
 }
@@ -4298,7 +4298,7 @@ impl Packet for SpawnParticleEffect {
         writer.var_i64(self.entity_unique_id);
         writer.vec3(self.position);
         writer.string(self.particle_name.as_str());
-        writer.optional_func(&self.molang_variables, |x| writer.byte_slice(&x));
+        writer.optional(&self.molang_variables);
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -4307,7 +4307,7 @@ impl Packet for SpawnParticleEffect {
             entity_unique_id: reader.var_i64(),
             position: reader.vec3(),
             particle_name: reader.string(),
-            molang_variables: reader.optional(|| reader.byte_slice()),
+            molang_variables: reader.optional(),
         }
     }
 }
@@ -4671,10 +4671,10 @@ impl Packet for EducationSettings {
         writer.bool(self.disable_legacy_title_bar);
         writer.string(self.post_process_filter.as_str());
         writer.string(self.screenshot_border_path.as_str());
-        writer.optional_func(&self.can_modify_blocks, |x| writer.bool(*x));
-        writer.optional_func(&self.override_uri, |x| writer.string(x));
+        writer.optional(&self.can_modify_blocks);
+        writer.optional(&self.override_uri);
         writer.bool(self.has_quiz);
-        writer.optional_func(&self.external_link_settings, |settings| settings.write(writer));
+        writer.optional(&self.external_link_settings);
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -4685,10 +4685,10 @@ impl Packet for EducationSettings {
             disable_legacy_title_bar: reader.bool(),
             post_process_filter: reader.string(),
             screenshot_border_path: reader.string(),
-            can_modify_blocks: reader.optional(|| reader.bool()),
-            override_uri: reader.optional(|| reader.string()),
+            can_modify_blocks: reader.optional(),
+            override_uri: reader.optional(),
             has_quiz: reader.bool(),
-            external_link_settings: reader.optional(|| EducationExternalLinkSettings::read(reader)),
+            external_link_settings: reader.optional(),
         }
     }
 }

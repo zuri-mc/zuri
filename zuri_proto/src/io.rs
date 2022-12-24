@@ -161,23 +161,40 @@ impl Writer {
         self.buf.put(x.to_bytes_le().as_ref());
     }
 
-    pub fn optional_func<T>(&mut self, x: &Option<T>, f: impl Fn(&T)) {
-        self.bool(x.is_some());
-        if let Some(x) = x {
-            f(x);
-        }
-    }
-
     pub fn optional(&mut self, x: &Option<impl Write>) {
         self.bool(x.is_some());
         if let Some(x) = x {
-            x.write(&mut self.buf);
+            x.write(self);
         }
     }
 }
 
 pub trait Write {
-    fn write(&self, buf: &mut impl BufMut);
+    fn write(&self, writer: &mut Writer);
+}
+
+impl Write for bool {
+    fn write(&self, writer: &mut Writer) {
+        writer.u8(*self as u8);
+    }
+}
+
+impl Write for u8 {
+    fn write(&self, writer: &mut Writer) {
+        writer.u8(*self);
+    }
+}
+
+impl Write for Bytes {
+    fn write(&self, writer: &mut Writer) {
+        writer.byte_slice(self);
+    }
+}
+
+impl Write for String {
+    fn write(&self, writer: &mut Writer) {
+        writer.string(self);
+    }
 }
 
 #[derive(Default)]
@@ -373,12 +390,40 @@ impl Reader {
         Uuid::from_slice_le(&b).unwrap()
     }
 
-    pub fn optional<T>(&mut self, f: impl Fn() -> T) -> Option<T> {
+    pub fn optional<T: Read<T>>(&mut self) -> Option<T> {
         if self.bool() {
-            Some(f())
+            Some(T::read(self))
         } else {
             None
         }
+    }
+}
+
+pub trait Read<T> {
+    fn read(reader: &mut Reader) -> T;
+}
+
+impl Read<bool> for bool {
+    fn read(reader: &mut Reader) -> bool {
+        reader.bool()
+    }
+}
+
+impl Read<u8> for u8 {
+    fn read(reader: &mut Reader) -> u8 {
+        reader.u8()
+    }
+}
+
+impl Read<String> for String {
+    fn read(reader: &mut Reader) -> String {
+        reader.string()
+    }
+}
+
+impl Read<Bytes> for Bytes {
+    fn read(reader: &mut Reader) -> Bytes {
+        reader.bytes()
     }
 }
 

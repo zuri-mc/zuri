@@ -26,7 +26,6 @@ use crate::player::{Local, LocalPlayerPlugin};
 mod entity;
 mod player;
 mod input;
-mod chunk;
 
 fn main() {
     App::new()

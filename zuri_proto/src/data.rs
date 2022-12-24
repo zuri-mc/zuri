@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::encodable_enum;
 use crate::enums::*;
-use crate::io::{Reader, Writer};
+use crate::io::{Reader, Writer, Write, Read};
 
 #[derive(Debug)]
 pub struct AbilityData {
@@ -541,7 +541,7 @@ impl Command {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct CommandEnum {
     pub enum_type: String,
     pub options: Vec<String>,
@@ -1128,6 +1128,18 @@ impl EducationExternalLinkSettings {
     }
 }
 
+impl Write for EducationExternalLinkSettings {
+    fn write(&self, writer: &mut Writer) {
+        self.write(writer)
+    }
+}
+
+impl Read<EducationExternalLinkSettings> for EducationExternalLinkSettings {
+    fn read(reader: &mut Reader) -> EducationExternalLinkSettings {
+        EducationExternalLinkSettings::read(reader)
+    }
+}
+
 #[derive(Debug)]
 pub struct EducationSharedResourceURI {
     pub button_name: String,
@@ -1516,9 +1528,9 @@ impl InventoryAction {
     }
 
     pub fn read(reader: &mut Reader) -> Self {
-        let source_type = num::FromPrimitive::from_u32(reader.var_u32()).unwrap();
+        let source_type: InventoryActionSource = num::FromPrimitive::from_u32(reader.var_u32()).unwrap();
         Self {
-            source_type.clone(),
+            source_type: source_type.clone(),
             window: if source_type == InventoryActionSource::Container || source_type == InventoryActionSource::TODO {
                 num::FromPrimitive::from_i32(reader.var_i32()).unwrap()
             } else {
@@ -1806,9 +1818,9 @@ impl ItemStackResponseEntry {
     }
 
     pub fn read(reader: &mut Reader) -> Self {
-        let status = num::FromPrimitive::from_u8(reader.u8()).unwrap();
+        let status: ItemStackResponseStatus = num::FromPrimitive::from_u8(reader.u8()).unwrap();
         Self {
-            status,
+            status: status.clone(),
             request_id: reader.var_i32(),
             container_info: if status == ItemStackResponseStatus::Ok { (0..reader.var_u32()).map(|_| StackResponseContainerInfo::read(reader)).collect() } else { Vec::new() },
         }
