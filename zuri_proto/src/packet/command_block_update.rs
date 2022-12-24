@@ -1,11 +1,13 @@
+use glam::IVec3;
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
 #[derive(Debug)]
 pub struct CommandBlockUpdate {
     pub block: bool,
-    pub position: BlockPos,
-    pub mode: u32,
+    pub position: IVec3,
+    pub mode: CommandBlock,
     pub needs_redstone: bool,
     pub conditional: bool,
     pub minecart_entity_runtime_id: u64,
@@ -20,9 +22,9 @@ pub struct CommandBlockUpdate {
 impl Packet for CommandBlockUpdate {
     fn write(&self, writer: &mut Writer) {
         writer.bool(self.block);
-        if self.block {
+        if self.block { // todo: make an enum for block/minecart
             writer.u_block_pos(self.position);
-            writer.var_u32(self.mode);
+            writer.var_u32(num::ToPrimitive::to_u32(&self.mode).unwrap()); // todo
             writer.bool(self.needs_redstone);
             writer.bool(self.conditional);
         } else {
@@ -40,8 +42,8 @@ impl Packet for CommandBlockUpdate {
         let block = reader.bool();
         Self {
             block,
-            position: if block { reader.u_block_pos() } else { BlockPos::default() },
-            mode: if block { reader.var_u32() } else { 0 },
+            position: if block { reader.u_block_pos() } else { IVec3::default() },
+            mode: if block { num::FromPrimitive::from_u32(reader.var_u32()).unwrap() } else { CommandBlock::Chain }, // todo
             needs_redstone: if block { reader.bool() } else { false },
             conditional: if block { reader.bool() } else { false },
             minecart_entity_runtime_id: if !block { reader.u64() } else { 0 },
@@ -53,4 +55,11 @@ impl Packet for CommandBlockUpdate {
             execute_on_first_tick: reader.bool(),
         }
     }
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum CommandBlock {
+    Impulse,
+    Repeating,
+    Chain,
 }

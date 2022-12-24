@@ -1,9 +1,10 @@
+use glam::IVec3;
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
 #[derive(Debug)]
 pub struct ItemFrameDropItem {
-    pub position: Bloc,
+    pub position: IVec3,
 }
 
 impl Packet for ItemFrameDropItem {

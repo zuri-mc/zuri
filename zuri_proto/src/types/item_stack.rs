@@ -1,4 +1,11 @@
+use std::fmt::Debug;
+use num_derive::{FromPrimitive, ToPrimitive};
+use zuri_nbt::{Value, encoding::NetworkLittleEndian};
+
+use crate::encodable_enum;
 use crate::io::{Reader, Writer};
+use crate::types::item::ItemStack;
+
 encodable_enum!(
     #[derive(Debug)]
     pub enum StackRequestAction2 {
@@ -55,65 +62,46 @@ impl Default for StackRequestAction2 {
     }
 }
 
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum FilterCause {
+    ServerChatPublic,
+    ServerChatWhisper,
+    SignText,
+    AnvilText,
+    BookAndQuillText,
+    CommandBlockText,
+    BlockActorDataText,
+    JoinEventText,
+    LeaveEventText,
+    SlashCommandChat,
+    CartographyText,
+    SlashCommandNonChat,
+    ScoreboardText,
+    TickingAreaText,
+}
+
+#[derive(Debug, Clone, PartialEq, FromPrimitive, ToPrimitive)]
+pub enum ItemStackResponseStatus {
+    Ok,
+    Error,
+}
+
 #[derive(Debug)]
 pub struct ItemComponentEntry {
     pub name: String,
-    //pub data: dyn Any, // TODO: NBT
+    pub data: Value,
 }
 
 impl ItemComponentEntry {
     pub fn write(&self, writer: &mut Writer) {
         writer.string(self.name.as_str());
-        // TODO: NBT (data)
+        writer.nbt(&self.data, NetworkLittleEndian);
     }
 
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             name: reader.string(),
-            // data: {
-            //     // TODO: NBT
-            // },
-        }
-    }
-}
-
-pub trait ItemDescriptor: Debug {
-    fn write(&self, writer: &mut Writer);
-    fn descriptor_type(&self) -> ItemDescriptorType;
-}
-
-#[derive(Debug)]
-pub struct ItemDescriptorCount {
-    pub item_descriptor: Box<dyn ItemDescriptor>,
-    pub count: i32,
-}
-
-impl ItemDescriptorCount {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.u8(num::ToPrimitive::to_u8(&(self.item_descriptor.descriptor_type())).unwrap());
-        self.item_descriptor.write(writer);
-        writer.var_i32(self.count);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            item_descriptor: match num::FromPrimitive::from_u8(reader.u8()).unwrap() {
-                ItemDescriptorType::Invalid => Box::from(InvalidItemDescriptor::read(reader)),
-                ItemDescriptorType::Default => Box::from(DefaultItemDescriptor::read(reader)),
-                ItemDescriptorType::MoLang => Box::from(MoLangItemDescriptor::read(reader)),
-                ItemDescriptorType::ItemTag => Box::from(ItemTagItemDescriptor::read(reader)),
-                ItemDescriptorType::Deferred => Box::from(DeferredItemDescriptor::read(reader)),
-            },
-            count: reader.var_i32(),
-        }
-    }
-}
-
-impl Default for ItemDescriptorCount {
-    fn default() -> Self {
-        Self {
-            item_descriptor: Box::from(InvalidItemDescriptor {}),
-            count: 0,
+            data: reader.nbt(NetworkLittleEndian),
         }
     }
 }
@@ -146,6 +134,52 @@ impl ItemEnchantments {
 }
 
 #[derive(Debug)]
+pub struct EnchantmentInstance {
+    pub enchantment_type: u8,
+    pub level: u8,
+}
+
+impl EnchantmentInstance {
+    pub fn write(&self, writer: &mut Writer) {
+        writer.u8(self.enchantment_type);
+        writer.u8(self.level);
+    }
+
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            enchantment_type: reader.u8(),
+            level: reader.u8(),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct EnchantmentOption {
+    pub cost: u32,
+    pub enchantments: ItemEnchantments,
+    pub name: String,
+    pub recipe_network_id: u32,
+}
+
+impl EnchantmentOption {
+    pub fn write(&self, writer: &mut Writer) {
+        writer.var_u32(self.cost);
+        self.enchantments.write(writer);
+        writer.string(self.name.as_str());
+        writer.var_u32(self.recipe_network_id);
+    }
+
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            cost: reader.var_u32(),
+            enchantments: ItemEnchantments::read(reader),
+            name: reader.string(),
+            recipe_network_id: reader.var_u32(),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct ItemEntry {
     pub name: String,
     pub runtime_id: i16,
@@ -165,70 +199,6 @@ impl ItemEntry {
             runtime_id: reader.i16(),
             component_based: reader.bool(),
         }
-    }
-}
-
-#[derive(Debug, Default)]
-pub struct ItemInstance {
-    pub stack_network_id: i32,
-    pub stack: ItemStack,
-}
-
-impl ItemInstance {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.i32(self.stack_network_id);
-        self.stack.write(writer);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            stack_network_id: reader.i32(),
-            stack: ItemStack::read(reader),
-        }
-    }
-}
-
-#[derive(Debug, Default)]
-pub struct ItemStack {
-    pub network_id: i32,
-    pub metadata_value: u32,
-    pub block_runtime_id: i32,
-    pub count: u16,
-    //pub nbt_data: dyn Any, // TODO: NBT
-    pub can_be_placed_on: Vec<String>,
-    pub can_break: Vec<String>,
-    pub has_network_id: bool,
-}
-
-impl ItemStack {
-    pub fn write(&self, writer: &mut Writer) {
-        // writer.write_ItemType(self.item_type);
-        // writer.i32(self.block_runtime_id);
-        // writer.u16(self.count);
-        // writer.write_TODO(self.LEN);
-        // writer.write_String(self.nbt_data);
-        // writer.write_TODO(self.LEN);
-        // writer.write_String(self.can_be_placed_on);
-        // writer.write_TODO(self.LEN);
-        // writer.write_String(self.can_break);
-        // writer.bool(self.has_network_id);
-        todo!()
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        todo!()
-        // Self {
-        //     item_type: reader.read_ItemType(),
-        //     block_runtime_id: reader.i32(),
-        //     count: reader.u16(),
-        //     LEN: reader.read_TODO(),
-        //     nbt_data: reader.read_String(),
-        //     LEN: reader.read_TODO(),
-        //     can_be_placed_on: reader.read_String(),
-        //     LEN: reader.read_TODO(),
-        //     can_break: reader.read_String(),
-        //     has_network_id: reader.bool(),
-        // }
     }
 }
 
@@ -292,25 +262,136 @@ impl ItemStackResponseEntry {
 }
 
 #[derive(Debug)]
-pub struct ItemTagItemDescriptor {
-    tag: String,
+pub struct StackRequestSlotInfo {
+    pub container_id: u8,
+    pub slot: u8,
+    pub stack_network_id: i32,
 }
 
-impl ItemTagItemDescriptor {
+impl StackRequestSlotInfo {
+    pub fn write(&self, writer: &mut Writer) {
+        writer.u8(self.container_id);
+        writer.u8(self.slot);
+        writer.var_i32(self.stack_network_id);
+    }
+
     pub fn read(reader: &mut Reader) -> Self {
         Self {
-            tag: reader.string(),
+            container_id: reader.u8(),
+            slot: reader.u8(),
+            stack_network_id: reader.var_i32(),
         }
     }
 }
 
-impl ItemDescriptor for ItemTagItemDescriptor {
+#[derive(Debug)]
+pub struct DestroyStackRequestAction {
+    pub count: u8,
+    pub source: StackRequestSlotInfo,
+}
+
+impl DestroyStackRequestAction {
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            count: reader.u8(),
+            source: StackRequestSlotInfo::read(reader),
+        }
+    }
+}
+
+impl StackRequestAction for DestroyStackRequestAction {
     fn write(&self, writer: &mut Writer) {
-        writer.string(self.tag.as_str());
+        writer.u8(self.count);
+        self.source.write(writer);
     }
 
-    fn descriptor_type(&self) -> ItemDescriptorType {
-        ItemDescriptorType::Deferred
+    fn action_type(&self) -> StackRequestActionType {
+        StackRequestActionType::Destroy
+    }
+}
+
+#[derive(Debug)]
+pub struct DropStackRequestAction {
+    pub count: u8,
+    pub source: StackRequestSlotInfo,
+    pub randomly: bool,
+}
+
+impl DropStackRequestAction {
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            count: reader.u8(),
+            source: StackRequestSlotInfo::read(reader),
+            randomly: reader.bool(),
+        }
+    }
+}
+
+impl StackRequestAction for DropStackRequestAction {
+    fn write(&self, writer: &mut Writer) {
+        writer.u8(self.count);
+        self.source.write(writer);
+        writer.bool(self.randomly);
+    }
+
+    fn action_type(&self) -> StackRequestActionType {
+        StackRequestActionType::Drop
+    }
+}
+
+#[derive(Debug)]
+pub struct AutoCraftRecipeStackRequestAction {
+    pub recipe_network_id: u32,
+    pub times_crafted: u8,
+    pub ingredients: Vec<ItemDescriptorCount>,
+}
+
+impl AutoCraftRecipeStackRequestAction {
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            recipe_network_id: reader.u32(),
+            times_crafted: reader.u8(),
+            ingredients: (0..reader.var_u32()).map(|_| ItemDescriptorCount::read(reader)).collect(),
+        }
+    }
+}
+
+impl StackRequestAction for AutoCraftRecipeStackRequestAction {
+    fn write(&self, writer: &mut Writer) {
+        writer.u32(self.recipe_network_id);
+        writer.u8(self.times_crafted);
+        writer.var_u32(self.ingredients.len() as u32);
+        self.ingredients.iter().for_each(|ingredient| ingredient.write(writer));
+    }
+
+    fn action_type(&self) -> StackRequestActionType {
+        StackRequestActionType::CraftRecipeAuto
+    }
+}
+
+#[derive(Debug)]
+pub struct BeaconPaymentStackRequestAction {
+    pub primary_effect: i32,
+    pub secondary_effect: i32,
+}
+
+impl BeaconPaymentStackRequestAction {
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            primary_effect: reader.var_i32(),
+            secondary_effect: reader.var_i32(),
+        }
+    }
+}
+
+impl StackRequestAction for BeaconPaymentStackRequestAction {
+    fn write(&self, writer: &mut Writer) {
+        writer.var_i32(self.primary_effect);
+        writer.var_i32(self.secondary_effect);
+    }
+
+    fn action_type(&self) -> StackRequestActionType {
+        StackRequestActionType::BeaconPayment
     }
 }
 
@@ -655,5 +736,116 @@ impl StackRequestAction for CreateStackRequestAction {
 
     fn action_type(&self) -> StackRequestActionType {
         StackRequestActionType::Create
+    }
+}
+
+#[derive(Debug)]
+pub struct PlaceInContainerStackRequestAction {
+    pub count: u8,
+    pub source: StackRequestSlotInfo,
+    pub destination: StackRequestSlotInfo,
+}
+
+impl PlaceInContainerStackRequestAction {
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            count: reader.u8(),
+            source: StackRequestSlotInfo::read(reader),
+            destination: StackRequestSlotInfo::read(reader),
+        }
+    }
+}
+
+impl StackRequestAction for PlaceInContainerStackRequestAction {
+    fn write(&self, writer: &mut Writer) {
+        writer.u8(self.count);
+        self.source.write(writer);
+        self.destination.write(writer);
+    }
+
+    fn action_type(&self) -> StackRequestActionType {
+        StackRequestActionType::PlaceInContainer
+    }
+}
+
+#[derive(Debug)]
+pub struct PlaceStackRequestAction {
+    pub count: u8,
+    pub source: StackRequestSlotInfo,
+    pub destination: StackRequestSlotInfo,
+}
+
+impl PlaceStackRequestAction {
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            count: reader.u8(),
+            source: StackRequestSlotInfo::read(reader),
+            destination: StackRequestSlotInfo::read(reader),
+        }
+    }
+}
+
+impl StackRequestAction for PlaceStackRequestAction {
+    fn write(&self, writer: &mut Writer) {
+        writer.u8(self.count);
+        self.source.write(writer);
+        self.destination.write(writer);
+    }
+
+    fn action_type(&self) -> StackRequestActionType {
+        StackRequestActionType::Place
+    }
+}
+
+#[derive(Debug)]
+pub struct StackResponseContainerInfo {
+    pub container_id: u8,
+    pub slot_info: Vec<StackResponseSlotInfo>,
+}
+
+impl StackResponseContainerInfo {
+    pub fn write(&self, writer: &mut Writer) {
+        writer.u8(self.container_id);
+        writer.var_u32(self.slot_info.len() as u32);
+        self.slot_info.iter().for_each(|slot_info| slot_info.write(writer));
+    }
+
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            container_id: reader.u8(),
+            slot_info: (0..reader.var_u32()).map(|_| StackResponseSlotInfo::read(reader)).collect(),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct StackResponseSlotInfo {
+    pub slot: u8,
+    pub hotbar_slot: u8,
+    pub count: u8,
+    pub stack_network_id: i32,
+    pub custom_name: String,
+    pub durability_correction: i32,
+}
+
+impl StackResponseSlotInfo {
+    pub fn write(&self, writer: &mut Writer) {
+        writer.u8(self.slot);
+        writer.u8(self.hotbar_slot);
+        writer.u8(self.count);
+        writer.var_i32(self.stack_network_id);
+        writer.string(self.custom_name.as_str());
+        writer.var_i32(self.durability_correction);
+    }
+
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            slot: reader.u8(),
+            hotbar_slot: reader.u8(),
+            count: reader.u8(),
+            stack_network_id: reader.var_i32(),
+            custom_name: reader.string(),
+            durability_correction: reader.var_i32(),
+        }
     }
 }

@@ -1,5 +1,7 @@
-use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+use crate::types::inventory::Window;
+use crate::types::item::ItemInstance;
 
 /// Sent by the client to the server and the server to the client to make the other side aware of the new item that an
 /// entity is holding. It is used to show the item in the hand of entities such as zombies too.
@@ -41,7 +43,7 @@ impl Packet for MobEquipment {
 
             inventory_slot: reader.u8(),
             hotbar_slot: reader.u8(),
-            window: num::FromPrimitive::from_u8(reader.u8()).unwrap();
+            window: num::FromPrimitive::from_u8(reader.u8()).unwrap(),
         }
     }
 }

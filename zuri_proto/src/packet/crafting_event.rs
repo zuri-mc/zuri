@@ -1,6 +1,9 @@
 use uuid::Uuid;
-use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+use crate::types::inventory::Window;
+use crate::types::item::ItemInstance;
+use crate::types::container::ContainerType;
 
 /// Sent by the client when it crafts a particular item. Note that this packet may be fully ignored, as the transaction
 /// systems provide all the information necessary.

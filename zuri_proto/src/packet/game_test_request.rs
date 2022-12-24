@@ -1,5 +1,17 @@
-use crate::io::{Reader, Writer};
+use glam::IVec3;
+use num_derive::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum GameTestRequestRotation {
+    None,
+    Rotate90,
+    Rotate180,
+    Rotate270,
+    Rotate360,
+}
 
 #[derive(Debug)]
 pub struct GameTestRequest {
@@ -7,7 +19,7 @@ pub struct GameTestRequest {
     pub repetitions: i32,
     pub rotation: GameTestRequestRotation,
     pub stop_on_error: bool,
-    pub position: BlockPos,
+    pub position: IVec3,
     pub tests_per_row: i32,
     pub name: String,
 }

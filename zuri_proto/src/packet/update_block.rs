@@ -1,12 +1,28 @@
+use glam::IVec3;
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+
+#[derive(Clone, Copy, Debug, FromPrimitive, ToPrimitive)]
+pub enum BlockUpdate {
+    Neighbours,
+    Network,
+    NoGraphics,
+    Priority,
+}
+
+impl BlockUpdate {
+    pub fn flag(&self) -> u32 {
+        1 << (*self as u32)
+    }
+}
 
 /// Sent by the server to update a block client-side, without resending the entire chunk that the block is located in.
 /// It is particularly useful for small modifications like block breaking/placing.
 #[derive(Debug)]
 pub struct UpdateBlock {
     /// The block position at which a block is updated.
-    pub position: BlockPos,
+    pub position: IVec3,
     /// The runtime ID of the block that is placed at position after sending the packet to the client.
     pub new_block_runtime_id: u32,
     /// A combination of BlockUpdate flags that specify the way the block is updated client-side. Typically, sending

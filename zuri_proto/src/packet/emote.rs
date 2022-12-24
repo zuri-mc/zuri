@@ -1,5 +1,18 @@
-use crate::io::{Reader, Writer};
+use num_derive::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
+pub enum EmoteFlag {
+    ServerSide
+}
+
+impl EmoteFlag {
+    pub fn flag(&self) -> u8 {
+        1 << (*self as u8)
+    }
+}
 
 #[derive(Debug)]
 pub struct Emote {

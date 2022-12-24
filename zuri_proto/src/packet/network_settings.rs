@@ -1,5 +1,12 @@
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
+pub enum CompressionType {
+    Flate,
+    Snappy,
+}
 
 #[derive(Debug)]
 pub struct NetworkSettings {

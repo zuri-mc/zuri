@@ -1,9 +1,12 @@
-use crate::io::{Reader, Writer};
+use glam::Vec3;
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+use crate::types::sound_event::SoundEvent;
 
 #[derive(Debug)]
 pub struct LevelSoundEvent {
-    pub sound_type: u32,
+    pub sound: SoundEvent,
     pub position: Vec3,
     pub extra_data: i32,
     pub entity_type: String,
@@ -13,7 +16,7 @@ pub struct LevelSoundEvent {
 
 impl Packet for LevelSoundEvent {
     fn write(&self, writer: &mut Writer) {
-        writer.var_u32(self.sound_type);
+        writer.var_u32(num::ToPrimitive::to_u32(&self.sound).unwrap());
         writer.vec3(self.position);
         writer.var_i32(self.extra_data);
         writer.string(self.entity_type.as_str());
@@ -23,7 +26,7 @@ impl Packet for LevelSoundEvent {
 
     fn read(reader: &mut Reader) -> Self {
         Self {
-            sound_type: reader.var_u32(),
+            sound: num::FromPrimitive::from_u32(reader.var_u32()).unwrap(),
             position: reader.vec3(),
             extra_data: reader.var_i32(),
             entity_type: reader.string(),

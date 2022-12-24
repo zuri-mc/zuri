@@ -1,10 +1,17 @@
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum ShowCreditsStatus {
+    Start,
+    End,
+}
 
 #[derive(Debug)]
 pub struct ShowCredits {
     pub player_runtime_id: u64,
-    pub status_type: i32,
+    pub status_type: ShowCreditsStatus,
 }
 
 impl Packet for ShowCredits {

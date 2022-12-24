@@ -1,5 +1,6 @@
-use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+use crate::types::item_stack::ItemStackResponseEntry;
 
 #[derive(Debug)]
 pub struct ItemStackResponse {
@@ -9,10 +10,14 @@ pub struct ItemStackResponse {
 impl Packet for ItemStackResponse {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.responses.len() as u32);
-        self.responses.iter().for_each(|entry| entry.write(writer));
+        self.responses.iter().for_each(|e| e.write(writer));
     }
 
     fn read(reader: &mut Reader) -> Self {
-        Self { responses: (0..reader.var_u32()).map(|_| ItemStackResponseEntry::read(reader)).collect() }
+        Self {
+            responses: (0..reader.var_u32())
+                .map(|_| ItemStackResponseEntry::read(reader))
+                .collect()
+        }
     }
 }

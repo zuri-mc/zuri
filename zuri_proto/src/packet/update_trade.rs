@@ -1,6 +1,7 @@
 use bytes::Bytes;
-use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+use crate::types::inventory::Window;
 
 #[derive(Debug)]
 pub struct UpdateTrade {

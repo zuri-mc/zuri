@@ -1,6 +1,8 @@
 use glam::Vec3;
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::attribute::AttributeValue;
+use crate::types::world::EntityLink;
 
 /// Sent by the server to the client to spawn an entity to the player. It is used for every entity except other players,
 /// for which the AddPlayer packet is used.

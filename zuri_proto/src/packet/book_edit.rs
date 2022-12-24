@@ -1,5 +1,15 @@
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
-use crate::packet::Packet;\
+use crate::packet::Packet;
+
+#[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
+pub enum BookAction {
+    ReplacePage,
+    AddPage,
+    DeletePage,
+    SwapPages,
+    Sign,
+}
 
 #[derive(Debug)]
 pub struct BookEdit {

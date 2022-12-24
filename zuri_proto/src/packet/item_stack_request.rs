@@ -1,5 +1,6 @@
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::item_stack::ItemStackRequestEntry;
 
 #[derive(Debug)]
 pub struct ItemStackRequest {

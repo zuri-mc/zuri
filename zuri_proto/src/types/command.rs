@@ -1,6 +1,36 @@
 use std::collections::BTreeMap;
 use bytes::Bytes;
+use uuid::Uuid;
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum CommandArg {
+    TypeInt = 1,
+    TypeFloat = 3,
+    TypeValue = 4,
+    TypeWildcardInt = 5,
+    TypeOperator = 6,
+    TypeCompareOperator = 7,
+    TypeTarget = 8,
+    TypeWildcardTarget = 10,
+    TypeFilepath = 17,
+    TypeIntegerRange = 23,
+    TypeEquipmentSlots = 38,
+    TypeString = 39,
+    TypeBlockPosition = 47,
+    TypePosition = 48,
+    TypeMessage = 51,
+    TypeRawText = 53,
+    TypeJSON = 57,
+    TypeBlockStates = 67,
+    TypeCommand = 70,
+
+    Valid = 0x100000,
+    Enum = 0x200000,
+    Suffixed = 0x1000000,
+    SoftEnum = 0x4000000,
+}
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
 pub enum CommandConstraint {
@@ -46,6 +76,13 @@ pub enum CommandPermissionLevel {
     Host,
     Owner,
     Internal,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum SoftEnumAction {
+    Add,
+    Remove,
+    Set,
 }
 
 #[derive(Debug)]

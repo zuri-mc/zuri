@@ -1,5 +1,24 @@
+use glam::Vec3;
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+
+#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+pub enum MoveMode {
+    Normal,
+    Reset,
+    Teleport,
+    Rotation,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum TeleportCause {
+    None,
+    Projectile,
+    ChorusFruit,
+    Command,
+    Behaviour,
+}
 
 /// Sent by players to send their movement to the server, and by the server to update the movement of player entities
 /// to other players. When using the new movement system, this is only sent by the server.

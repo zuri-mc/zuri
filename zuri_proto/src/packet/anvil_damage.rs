@@ -1,10 +1,11 @@
+use glam::IVec3;
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
 #[derive(Debug)]
 pub struct AnvilDamage {
     pub damage: u8,
-    pub anvil_position: BlockPos,
+    pub anvil_position: IVec3,
 }
 
 impl Packet for AnvilDamage {

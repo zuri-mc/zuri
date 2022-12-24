@@ -1,5 +1,7 @@
-use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+use crate::types::inventory::Window;
+use crate::types::item::ItemInstance;
 
 /// Sent by the server to update a single slot in one of the inventory windows that the client currently has opened.
 /// Usually this is the main inventory, but it may also be the off hand or, for example, a chest inventory.

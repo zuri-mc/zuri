@@ -1,5 +1,13 @@
+use glam::Vec3;
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum MoveFlag {
+    OnGround,
+    Teleport,
+}
 
 /// Sent by the server to move an entity to an absolute position. It is typically used for movements where high accuracy
 /// isn't needed, such as for long range teleporting.

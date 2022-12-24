@@ -1,3 +1,5 @@
+use glam::Vec3;
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
@@ -40,4 +42,11 @@ impl Packet for ClientBoundDebugRenderer {
             duration: if render_type == ClientBoundDebugRendererType::AddCube { reader.i64() } else { 0 },
         }
     }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
+pub enum ClientBoundDebugRendererType {
+    None,
+    Clear,
+    AddCube,
 }

@@ -1,3 +1,5 @@
+use num_derive::{FromPrimitive, ToPrimitive};
+
 #[derive(Debug, FromPrimitive, ToPrimitive)]
 pub enum ActorEventType {
     Jump = 1,

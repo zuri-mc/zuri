@@ -1,5 +1,6 @@
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::scoreboard::{ScoreboardIdentityAction, ScoreboardIdentityEntry};
 
 #[derive(Debug)]
 pub struct SetScoreboardIdentity {

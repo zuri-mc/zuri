@@ -1,10 +1,12 @@
+use glam::IVec3;
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::world::{Dimension, SubChunkOffset};
 
 #[derive(Debug)]
 pub struct SubChunkRequest {
     pub dimension: Dimension,
-    pub position: BlockPos,
+    pub position: IVec3,
     pub offsets: Vec<SubChunkOffset>,
 }
 

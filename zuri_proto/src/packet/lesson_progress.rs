@@ -1,5 +1,14 @@
-use crate::io::{Reader, Writer};
+use num_derive::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum LessonAction {
+    Start,
+    Complete,
+    Restart,
+}
 
 #[derive(Debug)]
 pub struct LessonProgress {

@@ -8,10 +8,10 @@ use encode::Writer;
 use crate::decode::Reader;
 use crate::err::{NbtError, Res};
 
-mod encode;
-mod decode;
 mod err;
-mod encoding;
+pub mod encode;
+pub mod decode;
+pub mod encoding;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
@@ -139,6 +139,12 @@ impl Value {
             Self::LongArray(x) => w.write_i64_vec(buf, x)?,
         };
         Ok(())
+    }
+}
+
+impl Default for Value {
+    fn default() -> Self {
+        Self::Compound(HashMap::new())
     }
 }
 

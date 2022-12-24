@@ -1,17 +1,25 @@
-use crate::data::*;
-
+use uuid::Uuid;
+use glam::{
+    IVec3,
+    Vec2,
+    Vec3,
+};
+use zuri_nbt::{
+    Value,
+    decode,
+    encode,
+};
 use bytes::{
     Buf,
     BufMut,
     Bytes,
     BytesMut,
 };
-use glam::{Vec2, Vec3};
-use uuid::Uuid;
 
 #[derive(Default)]
 pub struct Writer {
     buf: BytesMut,
+    shield_id: i32,
 }
 
 impl Into<BytesMut> for Writer {
@@ -27,6 +35,17 @@ impl Into<Bytes> for Writer {
 }
 
 impl Writer {
+    pub fn new(shield_id: i32) -> Writer {
+        Writer {
+            shield_id,
+            ..Default::default()
+        }
+    }
+
+    pub fn shield_id(&self) -> i32 {
+        self.shield_id
+    }
+
     pub fn u8(&mut self, x: u8) {
         self.buf.put_u8(x);
     }
@@ -134,13 +153,13 @@ impl Writer {
         self.buf.put_slice(x);
     }
 
-    pub fn block_pos(&mut self, x: BlockPos) {
+    pub fn block_pos(&mut self, x: IVec3) {
         self.i32(x.x);
         self.i32(x.y);
         self.i32(x.z);
     }
 
-    pub fn u_block_pos(&mut self, x: BlockPos) {
+    pub fn u_block_pos(&mut self, x: IVec3) {
         self.i32(x.x);
         self.u32(x.y as u32);
         self.i32(x.z);
@@ -159,6 +178,10 @@ impl Writer {
 
     pub fn uuid(&mut self, x: Uuid) {
         self.buf.put(x.to_bytes_le().as_ref());
+    }
+
+    pub fn nbt<T: encode::Writer + Sized + Default>(&mut self, val: &Value, &mut writer: T) {
+        val.write(&mut self.buf, writer).unwrap();
     }
 
     pub fn optional(&mut self, x: &Option<impl Write>) {
@@ -200,6 +223,7 @@ impl Write for String {
 #[derive(Default)]
 pub struct Reader {
     buf: Bytes,
+    shield_id: i32,
 }
 
 impl Into<Bytes> for Reader {
@@ -209,10 +233,15 @@ impl Into<Bytes> for Reader {
 }
 
 impl Reader {
-    pub fn from_bytes(buf: Bytes) -> Self {
+    pub fn from_buf(buf: Bytes, shield_id: i32) -> Self {
         Reader {
             buf,
+            shield_id,
         }
+    }
+
+    pub fn shield_id(&self) -> i32 {
+        self.shield_id
     }
 
     pub fn u8(&mut self) -> u8 {
@@ -353,16 +382,16 @@ impl Reader {
         b
     }
 
-    pub fn block_pos(&mut self) -> BlockPos {
-        BlockPos {
+    pub fn block_pos(&mut self) -> IVec3 {
+        IVec3 {
             x: self.i32(),
             y: self.i32(),
             z: self.i32(),
         }
     }
 
-    pub fn u_block_pos(&mut self) -> BlockPos {
-        BlockPos {
+    pub fn u_block_pos(&mut self) -> IVec3 {
+        IVec3 {
             x: self.i32(),
             y: self.u32() as i32,
             z: self.i32(),
@@ -388,6 +417,10 @@ impl Reader {
         let b = self.buf.slice(0..16);
         self.buf.advance(16);
         Uuid::from_slice_le(&b).unwrap()
+    }
+
+    pub fn nbt<T: decode::Reader + Sized + Default>(&mut self, &mut reader: T) -> Value {
+        Value::read(&mut self.buf, reader).unwrap()
     }
 
     pub fn optional<T: Read<T>>(&mut self) -> Option<T> {
@@ -441,7 +474,7 @@ mod tests {
         buf.string_utf("This is a test!".into());
         buf.var_i32(243563456);
 
-        let mut reader = Reader::from_bytes(buf.into());
+        let mut reader = Reader::from_buf(buf.into(), 0);
         assert_eq!(reader.bool(), true);
         assert_eq!(reader.i32(), 23974);
         assert_eq!(reader.string_utf(), <&str as Into<String>>::into("This is a test!"));

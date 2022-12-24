@@ -1,5 +1,44 @@
-use crate::io::{Reader, Writer};
+use num_derive::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum MobEffectOperation {
+    Add,
+    Modify,
+    Remove,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum MobEffectType {
+    Speed,
+    Slowness,
+    Haste,
+    MiningFatigue,
+    Strength,
+    InstantHealth,
+    InstantDamage,
+    JumpBoost,
+    Nausea,
+    Regeneation,
+    Resistance,
+    FireResistance,
+    WaterBreathing,
+    Invisibility,
+    Blindness,
+    NightVision,
+    Hunger,
+    Weakness,
+    Poison,
+    Wither,
+    HealthBoost,
+    Absorption,
+    Saturation,
+    Levitation,
+    FatalPoison,
+    ConduitPower,
+}
 
 /// Sent by the server to apply an effect to the player, for example an effect like poison. It may also be used to
 /// modify existing effects, or removing them completely.

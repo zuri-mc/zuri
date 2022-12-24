@@ -1,5 +1,30 @@
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+
+#[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
+pub enum BossEventType {
+    Show,
+    RegisterPlayer,
+    Hide,
+    UnregisterPlayer,
+    HealthPercentage,
+    Title,
+    AppearanceProperties,
+    Texture,
+    Request,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum BossEventColour {
+    Grey,
+    Blue,
+    Red,
+    Green,
+    Yellow,
+    Purple,
+    White,
+}
 
 #[derive(Debug)]
 pub struct BossEvent {
@@ -9,7 +34,7 @@ pub struct BossEvent {
     pub boss_bar_title: String,
     pub health_percentage: f32,
     pub screen_darkening: i16,
-    pub colour: u32,
+    pub colour: BossEventColour,
     pub overlay: u32,
 }
 

@@ -1,3 +1,6 @@
+use num_derive::{FromPrimitive, ToPrimitive};
+use crate::io::{Reader, Writer};
+
 #[derive(Debug, FromPrimitive, ToPrimitive)]
 pub enum Ability {
     Build,

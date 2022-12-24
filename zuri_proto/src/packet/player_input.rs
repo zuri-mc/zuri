@@ -1,3 +1,4 @@
+use glam::Vec2;
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 

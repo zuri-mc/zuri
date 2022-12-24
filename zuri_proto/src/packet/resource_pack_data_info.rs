@@ -1,6 +1,7 @@
 use bytes::Bytes;
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::resource_pack::ResourcePackType;
 
 #[derive(Debug)]
 pub struct ResourcePackDataInfo {

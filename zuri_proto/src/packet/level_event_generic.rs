@@ -1,5 +1,7 @@
-use crate::io::{Reader, Writer};
+use bytes::Bytes;
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 
 #[derive(Debug)]
 pub struct LevelEventGeneric {

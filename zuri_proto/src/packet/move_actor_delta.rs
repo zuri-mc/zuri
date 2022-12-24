@@ -1,3 +1,5 @@
+use glam::Vec3;
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
@@ -66,5 +68,24 @@ impl Packet for MoveActorDelta {
                 rotation
             },
         }
+    }
+}
+
+#[derive(Clone, Copy, Debug, FromPrimitive, ToPrimitive)]
+pub enum MoveActorDeltaFlag {
+    HasX,
+    HasY,
+    HasZ,
+    HasRotX,
+    HasRotY,
+    HasRotZ,
+    OnGround,
+    Teleport,
+    ForceMove,
+}
+
+impl MoveActorDeltaFlag {
+    pub fn flag(&self) -> u16 {
+        1 << (*self as u16)
     }
 }

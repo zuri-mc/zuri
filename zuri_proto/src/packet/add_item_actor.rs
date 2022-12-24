@@ -1,6 +1,7 @@
 use glam::Vec3;
-use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+use crate::types::item::ItemInstance;
 
 /// Sent by the server to the client to make an item entity show up. It is one of the few entities that cannot be sent
 /// using the AddActor packet

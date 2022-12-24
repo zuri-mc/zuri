@@ -1,3 +1,4 @@
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
@@ -70,4 +71,20 @@ impl Packet for Text {
             platform_chat_id: reader.string(),
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, FromPrimitive, ToPrimitive)]
+pub enum TextType {
+    Raw,
+    Chat,
+    Translation,
+    Popup,
+    JukeboxPopup,
+    Tip,
+    System,
+    Whisper,
+    Announcement,
+    ObjectWhisper,
+    Object,
+    ObjectAnnouncement,
 }

@@ -1,16 +1,25 @@
-use crate::io::{Reader, Writer};
+use glam::IVec3;
+use num_derive::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 
 /// Sent by the server to initiate a certain event that has to do with blocks in specific, for example opening chests.
 #[derive(Debug)]
 pub struct BlockEvent {
     /// The position of the block that an event occurred at.
-    pub position: BlockPos,
+    pub position: IVec3,
     /// The type of the block event. The event type decides the way the event data that follows is used.
     pub event_type: BlockEventType,
     /// Holds event type specific data. For chests, for example, opening the chest means the data must hold one, whereas
     /// closing it should hold zero.
     pub event_data: i32,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum BlockEventType {
+    None,
+    ChangeChestState,
 }
 
 impl Packet for BlockEvent {

@@ -1,5 +1,6 @@
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::world::EntityLink;
 
 /// Sent by the server to initiate an entity link client-side, meaning one entity will start riding another.
 #[derive(Debug)]

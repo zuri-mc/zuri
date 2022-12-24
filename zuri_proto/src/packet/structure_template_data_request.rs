@@ -1,5 +1,7 @@
+use glam::IVec3;
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::structure::{StructureSettings, StructureTemplateDataRequestType};
 
 /// Sent by the client to request data of a structure.
 #[derive(Debug)]
@@ -7,7 +9,7 @@ pub struct StructureTemplateDataRequest {
     /// Name of the structure that was set in the structure block's UI. This is the name used to export the structure
     /// to a file.
     pub structure_name: String,
-    pub position: BlockPos,
+    pub position: IVec3,
     pub settings: StructureSettings,
     pub request_type: StructureTemplateDataRequestType,
 }

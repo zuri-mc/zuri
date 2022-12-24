@@ -1,9 +1,11 @@
+use glam::IVec3;
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::structure::{StructureBlockType, StructureRedstoneSaveMode, StructureSettings};
 
 #[derive(Debug)]
 pub struct StructureBlockUpdate {
-    pub position: BlockPos,
+    pub position: IVec3,
     pub structure_name: String,
     pub data_field: String,
     pub include_players: bool,

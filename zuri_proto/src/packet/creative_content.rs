@@ -1,5 +1,6 @@
-use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+use crate::types::item::ItemStack;
 
 #[derive(Debug)]
 pub struct CreativeContent {
@@ -9,7 +10,7 @@ pub struct CreativeContent {
 impl Packet for CreativeContent {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.items.len() as u32);
-        self.items.iter().for_each(|item| item.write(writer));
+        self.items.iter().for_each(|i| i.write(writer));
     }
 
     fn read(reader: &mut Reader) -> Self {

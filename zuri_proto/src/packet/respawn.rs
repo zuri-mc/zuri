@@ -1,3 +1,5 @@
+use glam::Vec3;
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
@@ -15,6 +17,13 @@ pub struct Respawn {
     /// The entity runtime ID of the player that the respawn packet concerns. This is apparently for the server to
     /// recognise which player sends this packet.
     pub entity_runtime_id: u64,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum RespawnState {
+    SearchingForSpawn,
+    ReadyToSpawn,
+    ClientReadyToSpawn,
 }
 
 impl Packet for Respawn {

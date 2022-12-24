@@ -1,5 +1,16 @@
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::inventory::{
+    InventoryAction,
+    InventoryTransactionData,
+    InventoryTransactionType,
+    LegacySetItemSlot,
+    MismatchTransactionData,
+    NormalTransactionData,
+    ReleaseItemTransactionData,
+    UseItemOnEntityTransactionData,
+    UseItemTransactionData,
+};
 
 /// Sent by the client. It essentially exists out of multiple sub-packets, each of which have something to do with the
 /// inventory in one way or another. Some of these sub-packets directly relate to the inventory, others relate to
@@ -23,7 +34,7 @@ pub struct InventoryTransaction {
     /// Data object that holds data specific to the type of transaction that the TransactionPacket held. Its concrete
     /// type must be one of Normal, Mismatch, UseItem, UseItemOnEntity or ReleaseItem. If empty, the transaction will be
     /// assumed to of type Normal.
-    pub transaction_data: Box<dyn InventoryTransactionData>,
+    pub transaction_data: Box<dyn InventoryTransactionData>, // todo: make enum
 }
 
 impl Packet for InventoryTransaction {

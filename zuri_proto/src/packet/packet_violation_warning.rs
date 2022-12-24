@@ -1,3 +1,4 @@
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
@@ -7,6 +8,18 @@ pub struct PacketViolationWarning {
     pub severity: PacketViolationSeverity,
     pub packet_id: i32,
     pub violation_context: String,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum PacketViolationType {
+    Malformed,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum PacketViolationSeverity {
+    Warning,
+    FinalWarning,
+    TerminatingConnection,
 }
 
 impl Packet for PacketViolationWarning {

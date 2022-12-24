@@ -1,3 +1,5 @@
+use bytes::Bytes;
+
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 

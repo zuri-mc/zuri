@@ -1,3 +1,18 @@
+use num_derive::{FromPrimitive, ToPrimitive};
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum EntityDataType {
+    Byte,
+    I16,
+    I32,
+    F32,
+    String,
+    CompoundTag,
+    BlockPos,
+    I64,
+    Vec3,
+}
+
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum EntityDataKey {
     Flags,

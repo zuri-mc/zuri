@@ -1,3 +1,4 @@
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
@@ -9,6 +10,12 @@ pub struct NPCDialogue {
     pub scene_name: String,
     pub npc_name: String,
     pub action_json: String,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum NPCDialogueAction {
+    Open,
+    Close,
 }
 
 impl Packet for NPCDialogue {

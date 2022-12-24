@@ -1,5 +1,6 @@
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::ability::AbilityData;
 
 #[derive(Debug)]
 pub struct UpdateAbilities {

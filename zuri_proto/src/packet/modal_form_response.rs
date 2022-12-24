@@ -1,11 +1,20 @@
-use crate::io::{Reader, Writer};
+use bytes::Bytes;
+use num_derive::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum ModalFormCancelReason {
+    UserClosed,
+    UserBusy,
+}
 
 #[derive(Debug)]
 pub struct ModalFormResponse {
     pub form_id: u32,
     pub response_data: Option<Bytes>,
-    pub cancel_reason: Option<u8>,
+    pub cancel_reason: Option<ModalFormCancelReason>,
 }
 
 impl Packet for ModalFormResponse {

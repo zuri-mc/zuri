@@ -1,3 +1,6 @@
+use glam::Vec3;
+use std::ops::{Div, Mul};
+
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
@@ -11,9 +14,8 @@ pub struct PlaySound {
 
 impl Packet for PlaySound {
     fn write(&self, writer: &mut Writer) {
-        let block_pos = BlockPos { x: self.position.x as i32 * 8, y: self.position.y as i32 * 8, z: self.position.z as i32 * 8 };
         writer.string(self.sound_name.as_str());
-        writer.block_pos(block_pos);
+        writer.block_pos(self.position.mul(8).as_ivec3());
         writer.f32(self.volume);
         writer.f32(self.pitch);
     }
@@ -21,10 +23,7 @@ impl Packet for PlaySound {
     fn read(reader: &mut Reader) -> Self {
         Self {
             sound_name: reader.string(),
-            position: {
-                let block_pos = reader.block_pos();
-                Vec3 { x: block_pos.x as f32 / 8.0, y: block_pos.y as f32 / 8.0, z: block_pos.z as f32 / 8.0 }
-            },
+            position: reader.block_pos().as_vec3().div(8),
             volume: reader.f32(),
             pitch: reader.f32(),
         }

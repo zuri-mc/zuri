@@ -22,6 +22,29 @@ pub struct ResourcePacksInfo {
     pub forcing_server_packs: bool,
 }
 
+#[derive(Debug)]
+pub struct BehaviourPackInfo {
+    pub uuid: String,
+    pub version: String,
+    pub size: u64,
+    pub content_key: String,
+    pub sub_pack_name: String,
+    pub content_identity: String,
+    pub has_scripts: bool,
+}
+
+#[derive(Debug)]
+pub struct TexturePackInfo {
+    pub uuid: String,
+    pub version: String,
+    pub size: u64,
+    pub content_key: String,
+    pub sub_pack_name: String,
+    pub content_identity: String,
+    pub has_scripts: bool,
+    pub rtx_enabled: bool,
+}
+
 impl Packet for ResourcePacksInfo {
     fn write(&self, writer: &mut Writer) {
         writer.bool(self.texture_pack_required);
@@ -46,3 +69,54 @@ impl Packet for ResourcePacksInfo {
         }
     }
 }
+
+impl BehaviourPackInfo {
+    pub fn write(&self, writer: &mut Writer) {
+        writer.string(self.uuid.as_str());
+        writer.string(self.version.as_str());
+        writer.u64(self.size);
+        writer.string(self.content_key.as_str());
+        writer.string(self.sub_pack_name.as_str());
+        writer.string(self.content_identity.as_str());
+        writer.bool(self.has_scripts);
+    }
+
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            uuid: reader.string(),
+            version: reader.string(),
+            size: reader.u64(),
+            content_key: reader.string(),
+            sub_pack_name: reader.string(),
+            content_identity: reader.string(),
+            has_scripts: reader.bool(),
+        }
+    }
+}
+
+impl TexturePackInfo {
+    pub fn write(&self, writer: &mut Writer) {
+        writer.string(self.uuid.as_str());
+        writer.string(self.version.as_str());
+        writer.u64(self.size);
+        writer.string(self.content_key.as_str());
+        writer.string(self.sub_pack_name.as_str());
+        writer.string(self.content_identity.as_str());
+        writer.bool(self.has_scripts);
+        writer.bool(self.rtx_enabled);
+    }
+
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            uuid: reader.string(),
+            version: reader.string(),
+            size: reader.u64(),
+            content_key: reader.string(),
+            sub_pack_name: reader.string(),
+            content_identity: reader.string(),
+            has_scripts: reader.bool(),
+            rtx_enabled: reader.bool(),
+        }
+    }
+}
+

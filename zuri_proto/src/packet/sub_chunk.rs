@@ -1,11 +1,13 @@
+use glam::IVec3;
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::world::{Dimension, SubChunkEntry};
 
 #[derive(Debug)]
 pub struct SubChunk {
     pub cache_enabled: bool,
     pub dimension: Dimension,
-    pub position: BlockPos,
+    pub position: IVec3,
     pub sub_chunk_entries: Vec<SubChunkEntry>,
 }
 

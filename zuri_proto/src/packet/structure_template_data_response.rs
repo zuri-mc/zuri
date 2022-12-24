@@ -1,5 +1,6 @@
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::structure::StructureTemplateDataRequestType;
 
 #[derive(Debug)]
 pub struct StructureTemplateDataResponse {
@@ -7,7 +8,7 @@ pub struct StructureTemplateDataResponse {
     pub success: bool,
     //pub structure_template: dyn Any,
     // TODO: NBT
-    pub response_type: StructureTemplateDataResponseType,
+    pub response_type: StructureTemplateDataRequestType,
 }
 
 impl Packet for StructureTemplateDataResponse {

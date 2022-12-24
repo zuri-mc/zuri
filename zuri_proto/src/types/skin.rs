@@ -1,3 +1,6 @@
+use bytes::Bytes;
+use crate::io::{Reader, Writer};
+
 #[derive(Debug, Default)]
 pub struct Skin {
     pub skin_id: String,

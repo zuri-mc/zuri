@@ -1,5 +1,6 @@
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::inventory::Window;
 
 /// Sent by the server to the client. It used to be used to link hot bar slots of the player to actual slots in the
 /// inventory, but as of 1.2, this was changed and hot bar slots are no longer a free floating part of the inventory.

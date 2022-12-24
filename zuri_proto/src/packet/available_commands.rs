@@ -1,5 +1,7 @@
+use std::collections::BTreeMap;
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::command::{Command, CommandEnum, CommandEnumConstraint};
 
 #[derive(Debug)]
 pub struct AvailableCommands {

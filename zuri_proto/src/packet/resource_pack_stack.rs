@@ -1,5 +1,6 @@
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::world::ExperimentData;
 
 /// Sent by the server to send the order in which resource packs and behaviour packs should be applied (and downloaded)
 /// by the client.
@@ -23,6 +24,13 @@ pub struct ResourcePackStack {
     pub experiments: Vec<ExperimentData>,
     /// Specifies if any experiments were previously toggled in this world. It is probably used for metrics.
     pub experiments_previously_toggled: bool,
+}
+
+#[derive(Debug)]
+pub struct StackResourcePack {
+    pub uuid: String,
+    pub version: String,
+    pub sub_pack_name: String,
 }
 
 impl Packet for ResourcePackStack {
@@ -51,6 +59,22 @@ impl Packet for ResourcePackStack {
             base_game_version: reader.string(),
             experiments: (0..reader.u32()).map(|_| ExperimentData::read(reader)).collect(),
             experiments_previously_toggled: reader.bool(),
+        }
+    }
+}
+
+impl StackResourcePack {
+    pub fn write(&self, writer: &mut Writer) {
+        writer.string(self.uuid.as_str());
+        writer.string(self.version.as_str());
+        writer.string(self.sub_pack_name.as_str());
+    }
+
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            uuid: reader.string(),
+            version: reader.string(),
+            sub_pack_name: reader.string(),
         }
     }
 }

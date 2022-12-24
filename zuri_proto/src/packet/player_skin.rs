@@ -1,5 +1,7 @@
+use uuid::Uuid;
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::skin::Skin;
 
 #[derive(Debug)]
 pub struct PlayerSkin {

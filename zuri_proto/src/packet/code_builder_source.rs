@@ -1,5 +1,22 @@
+use num_derive::{FromPrimitive, ToPrimitive};
+
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum CodeBuilderCategory {
+    None,
+    Status,
+    Instantiation,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum CodeBuilderOperation {
+    None,
+    Get,
+    Set,
+    Reset,
+}
 
 #[derive(Debug)]
 pub struct CodeBuilderSource {

@@ -1,5 +1,8 @@
+use glam::IVec3;
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::colour::RGBA;
+use crate::types::map::{MapDecoration, MapTrackedObject, MapUpdateFlag};
 
 #[derive(Debug, Default)]
 pub struct ClientBoundMapItemData {
@@ -7,7 +10,7 @@ pub struct ClientBoundMapItemData {
     pub update_flags: u32,
     pub dimension: u8,
     pub locked_map: bool,
-    pub origin: BlockPos,
+    pub origin: IVec3,
     pub scale: u8,
     pub maps_included_in: Vec<i64>,
     pub tracked_objects: Vec<MapTrackedObject>,

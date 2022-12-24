@@ -1,5 +1,6 @@
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::world::Dimension;
 
 #[derive(Debug)]
 pub struct RemoveVolumeEntity {

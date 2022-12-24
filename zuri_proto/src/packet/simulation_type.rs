@@ -1,9 +1,18 @@
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
 #[derive(Debug)]
 pub struct SimulationType {
     pub simulation_type: Simulation,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum Simulation {
+    Game,
+    Editor,
+    Test,
+    Invalid,
 }
 
 impl Packet for SimulationType {

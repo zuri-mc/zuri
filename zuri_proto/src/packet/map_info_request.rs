@@ -1,5 +1,6 @@
-use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::colour::RGBA;
+use crate::io::{Reader, Writer};
 
 #[derive(Debug)]
 pub struct MapInfoRequest {
@@ -18,6 +19,26 @@ impl Packet for MapInfoRequest {
         Self {
             map_id: reader.var_i64(),
             client_pixels: (0..reader.var_u32()).map(|_| PixelRequest::read(reader)).collect(),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct PixelRequest {
+    colour: RGBA,
+    index: u16,
+}
+
+impl PixelRequest {
+    pub fn write(&self, writer: &mut Writer) {
+        self.colour.write(writer);
+        writer.u16(self.index);
+    }
+
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            colour: RGBA::read(reader),
+            index: reader.u16(),
         }
     }
 }

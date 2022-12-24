@@ -1,5 +1,8 @@
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::command::CommandPermissionLevel;
+use crate::types::world::PermissionLevel;
 
 #[derive(Debug, FromPrimitive, ToPrimitive)]
 pub enum AdventureFlag {

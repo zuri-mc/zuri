@@ -1,5 +1,6 @@
-use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+use crate::types::education::EducationExternalLinkSettings;
 
 #[derive(Debug)]
 pub struct EducationSettings {

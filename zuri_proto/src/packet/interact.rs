@@ -1,5 +1,8 @@
-use crate::io::{Reader, Writer};
+use glam::Vec3;
+use num_derive::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 
 /// Sent by the client when it interacts with another entity in some way. It used to be used for normal entity and block
 /// interaction, but this is no longer the case now.
@@ -39,4 +42,12 @@ impl Packet for Interact {
             },
         }
     }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
+pub enum InteractionAction {
+    LeaveVehicle = 3,
+    MouseOverEntity = 4,
+    NPCOpen = 5,
+    OpenInventory = 6,
 }

@@ -1,3 +1,4 @@
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
@@ -7,6 +8,18 @@ pub struct CameraShake {
     pub duration: f32,
     pub shake_type: CameraShakeType,
     pub action: CameraShakeAction,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum CameraShakeAction {
+    Add,
+    Stop,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum CameraShakeType {
+    Positional,
+    Rotational,
 }
 
 impl Packet for CameraShake {

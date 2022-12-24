@@ -1,5 +1,20 @@
-use crate::io::{Reader, Writer};
+use num_derive::{FromPrimitive, ToPrimitive};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum TitleAction {
+    Clear,
+    Reset,
+    SetTitle,
+    SetSubtitle,
+    SetActionBar,
+    SetDurations,
+    TitleTextObject,
+    SubtitleTextObject,
+    ActionbarTextObject,
+}
 
 #[derive(Debug)]
 pub struct SetTitle {

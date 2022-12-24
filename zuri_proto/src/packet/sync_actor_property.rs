@@ -1,21 +1,18 @@
+use zuri_nbt::{Value, encoding::NetworkLittleEndian};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
 #[derive(Debug)]
 pub struct SyncActorProperty {
-    //pub property_data: dyn Any, // TODO: NBT
+    pub property_data: Value,
 }
 
 impl Packet for SyncActorProperty {
     fn write(&self, writer: &mut Writer) {
-        // TODO: NBT (property_data)
+        writer.nbt(&self.property_data, NetworkLittleEndian);
     }
 
     fn read(reader: &mut Reader) -> Self {
-        Self {
-            // property_data: {
-            //     // TODO: NBT
-            // }
-        }
+        Self { property_data: reader.nbt(NetworkLittleEndian) }
     }
 }

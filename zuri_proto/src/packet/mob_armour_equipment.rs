@@ -1,5 +1,6 @@
-use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+use crate::types::item::ItemInstance;
 
 /// Sent by the server to the client to update the armour an entity is wearing. It is sent for both players and other
 /// entities, such as zombies.

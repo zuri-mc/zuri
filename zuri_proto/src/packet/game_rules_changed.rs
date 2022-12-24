@@ -1,5 +1,6 @@
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::game_rule::GameRule;
 
 #[derive(Debug)]
 pub struct GameRulesChanged {

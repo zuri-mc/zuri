@@ -1,5 +1,48 @@
-use crate::io::{Reader, Writer};
+use glam::{IVec3, Vec3};
+use uuid::Uuid;
+use num_derive::{FromPrimitive, ToPrimitive};
+use zuri_nbt::{Value, encoding::NetworkLittleEndian};
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
+
+use crate::types::game_rule::GameRule;
+use crate::types::item_stack::ItemEntry;
+use crate::types::player::PlayerMovementSettings;
+use crate::types::education::EducationSharedResourceURI;
+use crate::types::world::{
+    BlockEntry,
+    Difficulty,
+    Dimension,
+    ExperimentData,
+    GameType,
+    Generator,
+    PermissionLevel,
+    SpawnBiomeType,
+};
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum ChatRestrictionLevel {
+    None,
+    Dropped,
+    Disabled,
+}
+
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
+pub enum EducationEditionRegion {
+    None,
+    RestOfWorld,
+    China,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum GamePublishSetting {
+    None,
+    InviteOnly,
+    FriendsOnly,
+    FriendsOfFriends,
+    Public,
+}
 
 /// Sent by the server to send information about the world the player will be spawned in. It contains information about
 /// the position the player spawns in, and information about the world in general such as its game rules.
@@ -40,7 +83,7 @@ pub struct StartGame {
     pub difficulty: Difficulty,
     /// The block on which the world spawn of the world. This coordinate has no effect on the place that the client
     /// spawns, but it does have an effect on the direction that a compass points.
-    pub world_spawn: BlockPos,
+    pub world_spawn: IVec3,
     /// Specifies if achievements are disabled in the world. The client crashes if this value is set to true while the
     /// player's or the world's game mode is creative. It's recommended to simply always set this to false as a server.
     pub achievements_disabled: bool,
@@ -162,8 +205,7 @@ pub struct StartGame {
     pub game_version: String,
     /// Contains properties that should be applied on the player. These properties are the same as the ones that are
     /// sent in the SyncActorProperty packet.
-    //TODO: NBT
-    // pub property_data: dyn Any,
+    pub property_data: Value,
     /// Checksum to ensure block states between the server and client match. This can simply be left empty, and the
     /// client will avoid trying to verify it.
     pub server_block_state_checksum: u64,
@@ -282,8 +324,7 @@ impl Packet for StartGame {
         writer.bool(self.server_authoritative_inventory);
 
         writer.string(self.game_version.as_str());
-
-        // TODO: w.NBT(&pk.PropertyData, nbt.NetworkLittleEndian)
+        writer.nbt(&self.property_data, NetworkLittleEndian);
 
         writer.u64(self.server_block_state_checksum);
 
@@ -391,10 +432,7 @@ impl Packet for StartGame {
             server_authoritative_inventory: reader.bool(),
 
             game_version: reader.string(),
-
-            // property_data: {
-            //     // TODO: NBT
-            // },
+            property_data: reader.nbt(NetworkLittleEndian),
 
             server_block_state_checksum: reader.u64(),
 

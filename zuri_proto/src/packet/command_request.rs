@@ -1,5 +1,6 @@
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::command::CommandOrigin;
 
 #[derive(Debug)]
 pub struct CommandRequest {

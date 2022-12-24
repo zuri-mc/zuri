@@ -1,3 +1,6 @@
+use num_derive::{FromPrimitive, ToPrimitive};
+use crate::io::{Reader, Writer};
+
 #[derive(Clone, Copy, Debug, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum ScoreboardAction {
     Modify,

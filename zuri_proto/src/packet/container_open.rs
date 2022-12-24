@@ -1,5 +1,8 @@
+use glam::IVec3;
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::container::ContainerType;
+use crate::types::inventory::Window;
 
 /// Sent by the server to open a container client-side. This container must be physically present in the world, for the
 /// packet to have any effect. Unlike Java Edition, Bedrock Edition requires that chests for example must be present and
@@ -14,7 +17,7 @@ pub struct ContainerOpen {
     /// The position of the container opened. The position must point to a block entity that actually has a container.
     /// If that is not the case, the window will not be opened and the packet will be ignored, if a valid
     /// container entity unique id has not also been provided.
-    pub container_position: BlockPos,
+    pub container_position: IVec3,
     /// The unique ID of the entity container that was opened. It is only used if the ContainerType is one that points
     /// to an entity, for example a horse.
     pub container_entity_unique_id: i64,

@@ -1,3 +1,4 @@
+use glam::IVec3;
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
@@ -6,7 +7,7 @@ use crate::packet::Packet;
 pub struct BlockPickRequest {
     /// The position at which the client requested to pick the block. The block at that position should have its item
     /// put in HotBarSlot if it is empty.
-    pub position: BlockPos,
+    pub position: IVec3,
     /// Specifies if the item should get all NBT tags from the block, meaning the item places a block practically
     /// always equal to the one picked.
     pub add_block_nbt: bool,

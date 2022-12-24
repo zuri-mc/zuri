@@ -1,5 +1,65 @@
+use glam::{Vec2, Vec3};
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::inventory::UseItemTransactionData;
+use crate::types::item_stack::ItemStackRequestEntry;
+use crate::types::player::PlayerBlockAction;
+
+#[derive(Clone, Copy, Debug, FromPrimitive, ToPrimitive)]
+pub enum InputFlag {
+    Ascend,
+    Descend,
+    NorthJump,
+    JumpDown,
+    SprintDown,
+    ChangeHeight,
+    Jumping,
+    AutoJumpingInWater,
+    Sneaking,
+    SneakDown,
+    Up,
+    Down,
+    Left,
+    Right,
+    UpLeft,
+    UpRight,
+    WantUp,
+    WantDown,
+    WantDownSlow,
+    WantUpSlow,
+    Sprinting,
+    AscendBlock,
+    DescendBlock,
+    SneakToggleDown,
+    PersistSneak,
+    StartSprinting,
+    StopSprinting,
+    StartSneaking,
+    StopSneaking,
+    StartSwimming,
+    StopSwimming,
+    StartJumping,
+    StartGliding,
+    StopGliding,
+    PerformItemInteraction,
+    PerformBlockActions,
+    PerformItemStackRequest,
+}
+
+#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+pub enum PlayMode {
+    Normal,
+    Teaser,
+    Screen,
+    Viewer,
+    Reality,
+    Placement,
+    LivingRoom,
+    ExitLevel,
+    ExitLevelLivingRoom,
+    NumModes,
+}
 
 #[derive(Debug)]
 pub struct PlayerAuthInput {

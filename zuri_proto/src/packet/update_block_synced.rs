@@ -1,9 +1,10 @@
+use glam::IVec3;
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
 #[derive(Debug)]
 pub struct UpdateBlockSynced {
-    pub position: BlockPos,
+    pub position: IVec3,
     pub new_block_runtime_id: u32,
     pub flags: u32,
     pub layer: u32,

@@ -1,3 +1,4 @@
+use num_derive::{FromPrimitive, ToPrimitive};
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
@@ -7,6 +8,20 @@ use crate::packet::Packet;
 pub struct PlayStatus {
     /// The status of the packet.
     pub status: PlayStatusType,
+}
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum PlayStatusType {
+    LoginSuccess,
+    LoginFailedClient,
+    LoginFailedServer,
+    PlayerSpawn,
+    LoginFailedInvalidTenant,
+    LoginFailedVanillaEdu,
+    LoginFailedEduVanilla,
+    LoginFailedServerFull,
+    LoginFailedEditorVanilla,
+    LoginFailedVanillaEditor,
 }
 
 impl Packet for PlayStatus {

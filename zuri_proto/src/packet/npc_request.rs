@@ -1,10 +1,23 @@
+use num_derive::{FromPrimitive, ToPrimitive};
+
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+
+#[derive(Debug, FromPrimitive, ToPrimitive)]
+pub enum NPCRequestAction {
+    SetActions,
+    ExecuteAction,
+    ExecuteClosingCommands,
+    SetName,
+    SetSkin,
+    SetInteractText,
+    ExecuteOpeningCommands,
+}
 
 #[derive(Debug)]
 pub struct NPCRequest {
     pub entity_runtime_id: u64,
-    pub request_type: u8,
+    pub request_type: NPCRequestAction,
     pub command_string: String,
     pub action_type: u8,
     pub scene_name: String,

@@ -1,9 +1,11 @@
+use glam::{IVec2, IVec3};
+
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
 
 #[derive(Debug)]
 pub struct NetworkChunkPublisherUpdate {
-    pub position: BlockPos,
+    pub position: IVec3,
     pub radius: u32,
     pub saved_chunks: Vec<IVec2>,
 }

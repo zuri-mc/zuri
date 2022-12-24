@@ -1,11 +1,12 @@
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::event::EventType;
 
 #[derive(Debug)]
 pub struct Event {
     pub entity_runtime_id: u64,
     pub use_player_id: u8,
-    pub event_data: EventData2,
+    pub event_data: EventType,
 }
 
 impl Packet for Event {
@@ -24,7 +25,7 @@ impl Packet for Event {
         Self {
             entity_runtime_id,
             use_player_id: reader.u8(),
-            event_data: EventData2::read(reader),
+            event_data: EventType::read(reader),
         }
     }
 }

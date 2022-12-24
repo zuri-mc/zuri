@@ -1,5 +1,6 @@
 use crate::io::{Reader, Writer};
 use crate::packet::Packet;
+use crate::types::world::GameType;
 
 #[derive(Debug)]
 pub struct SetPlayerGameType {

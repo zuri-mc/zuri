@@ -1,11 +1,13 @@
-use crate::io::{Reader, Writer};
+use glam::IVec3;
+
 use crate::packet::Packet;
+use crate::io::{Reader, Writer};
 
 #[derive(Debug)]
 pub struct LecternUpdate {
     pub page: u8,
     pub page_count: u8,
-    pub position: BlockPos,
+    pub position: IVec3,
     pub drop_book: bool,
 }
 
