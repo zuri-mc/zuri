@@ -1,6 +1,6 @@
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
-use bevy_math::Vec3;
+use glam::Vec3;
 
 /// An axis-aligned bounding box. Defines an area in the world. This area is always parallel with
 /// the X, Y and Z axis and cannot be rotated.
