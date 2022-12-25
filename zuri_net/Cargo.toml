@@ -19,6 +19,6 @@ serde_json = "1.0.91"
 serde_repr = "0.1.10"
 sha2 = "0.10.6"
 snap = "1.1.0"
-uuid = "1.2.2"
+uuid = { version = "1.2.2", features = ["v4"] }
 tokio = { version = "1.20.1", features = ["full"] }
 zuri_proto = { path = "../zuri_proto" }

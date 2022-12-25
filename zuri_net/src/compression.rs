@@ -18,15 +18,15 @@ impl Compression {
                 let actual_size = compressor.deflate_compress(
                     &data,
                     &mut compressed_data,
-                )?;
+                ).map_err(|e| format!("failed to compress data: {}", e))?;
 
                 compressed_data.resize(actual_size, 0);
                 Ok(compressed_data)
             }
             Compression::Snappy => {
                 let mut encoder = snap::write::FrameEncoder::new(Vec::new());
-                encoder.write_all(&data)?;
-                Ok(encoder.into_inner()?)
+                encoder.write_all(&data).map_err(|e| format!("failed to compress data: {}", e))?;
+                Ok(encoder.into_inner().map_err(|e| format!("failed to compress data: {}", e))?)
             }
         }
     }
@@ -40,15 +40,15 @@ impl Compression {
                 let actual_size = decompressor.deflate_decompress(
                     &data,
                     &mut decompressed_data,
-                )?;
+                ).map_err(|e| format!("failed to decompress data: {}", e))?;
 
                 decompressed_data.resize(actual_size, 0);
                 Ok(decompressed_data)
             }
             Compression::Snappy => {
-                let mut decoder = snap::read::FrameDecoder::new(data);
+                let mut decoder = snap::read::FrameDecoder::new(data.as_slice());
                 let mut decompressed_data = Vec::new();
-                decoder.read_to_end(&mut decompressed_data)?;
+                decoder.read_to_end(&mut decompressed_data).map_err(|e| format!("failed to decompress data: {}", e))?;
                 Ok(decompressed_data)
             }
         }
@@ -62,16 +62,16 @@ mod tests {
     #[test]
     fn test_deflate() {
         let data = b"Hello, world!";
-        let compressed = Compression::Deflate.compress(data.into())?;
-        let decompressed = Compression::Deflate.decompress(compressed);
+        let compressed = Compression::Deflate.compress(data.to_vec()).unwrap();
+        let decompressed = Compression::Deflate.decompress(compressed).unwrap();
         assert_eq!(data, &decompressed[..]);
     }
 
     #[test]
     fn test_snappy() {
         let data = b"Hello, world!";
-        let compressed = Compression::Snappy.compress(data.into())?;
-        let decompressed = Compression::Snappy.decompress(compressed);
+        let compressed = Compression::Snappy.compress(data.to_vec()).unwrap();
+        let decompressed = Compression::Snappy.decompress(compressed).unwrap();
         assert_eq!(data, &decompressed[..]);
     }
 }

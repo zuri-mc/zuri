@@ -1,6 +1,6 @@
 use bytes::Bytes;
 use std::error::Error;
-use std::fmt::{Debug, Display, Formatter, Write};
+use std::fmt::{Debug, Display, Formatter};
 use zuri_proto::io::{Reader, Writer};
 use zuri_proto::packet::Packet;
 use rust_raknet::{RaknetSocket, Reliability};
@@ -31,7 +31,10 @@ impl Connection {
     }
 
     pub async fn flush(&mut self) -> Result<(), ConnError> {
-        let batch = self.encoder.encode(&mut self.buffered_batch)?;
+        let batch = self.encoder
+            .encode(&mut self.buffered_batch)
+            .map_err(|s| ConnError::EncodeError(s))?;
+
         self.buffered_batch.clear();
 
         Ok(self.socket.send(&batch, Reliability::ReliableOrdered).await?)
@@ -46,7 +49,9 @@ impl Connection {
 
     pub async fn read_next_batch(&mut self) -> Result<Vec<Packet>, ConnError> {
         let encoded = self.socket.recv().await?;
-        let batch = self.decoder.decode(&mut encoded.into())?;
+        let batch = self.decoder
+            .decode(&mut encoded.into())
+            .map_err(|e| ConnError::DecodeError(e))?;
 
         let mut packets = Vec::with_capacity(batch.len());
         for buf in batch {
@@ -60,7 +65,7 @@ impl Connection {
 
 #[derive(Debug)]
 pub enum ConnError {
-    ConnClosed,
+    EncodeError(String),
     DecodeError(String),
     RakNetError(RaknetError),
 }
@@ -68,9 +73,9 @@ pub enum ConnError {
 impl Display for ConnError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            ConnError::ConnClosed => f.write_str("Connection is closed"),
-            ConnError::DecodeError(s) => f.write_str(&format!("Error while decoding: {}", s)),
-            ConnError::RakNetError(err) => f.write_str("RakNet error: ") + err.fmt(),
+            ConnError::EncodeError(s) => f.write_str(&format!("Error encoding packet: {}", s)),
+            ConnError::DecodeError(s) => f.write_str(&format!("Error decoding packet: {}", s)),
+            ConnError::RakNetError(err) => f.write_str(&format!("RakNet error: {:?}", err)),
         }
     }
 }

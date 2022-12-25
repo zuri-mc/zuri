@@ -49,7 +49,7 @@ impl Encryption {
     pub fn decrypt(&mut self, mut data: Vec<u8>) -> Result<Vec<u8>, String> {
         self.cipher.apply_keystream_partial(data.as_mut_slice().into());
         if data.len() < 8 {
-            Err("encrypted packet must be at least 8 bytes long")
+            Err("encrypted packet must be at least 8 bytes long")?
         }
 
         let mut their_checksum = &data[(data.len() - 8 - 1)..(data.len() - 1)];
@@ -67,7 +67,7 @@ impl Encryption {
 
         let our_checksum = digest.finalize()[0..8].to_vec();
         if their_checksum != our_checksum {
-            Err(format!("invalid checksum (expected {:?}, got {:?})", our_checksum, their_checksum))
+            Err(format!("invalid checksum (expected {:?}, got {:?})", our_checksum, their_checksum))?
         }
 
         Ok(data)
