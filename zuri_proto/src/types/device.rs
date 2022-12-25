@@ -1,6 +1,8 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use serde_repr::{Serialize_repr, Deserialize_repr};
 
-#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
+#[repr(i32)]
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive, Serialize_repr, Deserialize_repr)]
 pub enum Device {
     None,
     Android,

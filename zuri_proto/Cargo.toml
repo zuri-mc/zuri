@@ -9,5 +9,7 @@ glam = "0.22.0"
 num = "0.4.0"
 num-derive = "0.3.3"
 num-traits = "0.2.15"
+serde = "1.0.151"
+serde_repr = "0.1.10"
 uuid = "1.2.2"
 zuri_nbt = { path = "../zuri_nbt" }
