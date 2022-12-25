@@ -1,3 +1,5 @@
+use crate::packet::Packet;
+use crate::packet::start_game::StartGame;
 #[macro_export]
 macro_rules! encodable_enum {
     (
@@ -30,10 +32,22 @@ macro_rules! encodable_enum {
             }
         }
 
-        /// Allow the packets to be converted to the enum with Into.
+        /// Allow the variants to be converted to the enum with Into.
         $(impl Into<$name> for $elem {
             fn into(self) -> $name {
                 $name::$elem(self)
+            }
+        })+
+
+        /// Allow the enum to converted into a variant itself if it matches the variant.
+        $(impl TryFrom<$name> for $elem {
+            type Error = (); // todo: some kind of error here?
+
+            fn try_from(value: $name) -> Result<Self, Self::Error> {
+                match value {
+                    $name::$elem(e) => Ok(e),
+                    _ => Err(()),
+                }
             }
         })+
     };
