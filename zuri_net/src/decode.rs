@@ -49,7 +49,7 @@ impl Decoder {
 
         let mut packets = Vec::new();
         let mut batch_reader = Reader::from_buf(Bytes::from(batch.clone()), 0);
-        while batch.len() > 0 {
+        while batch_reader.len() > 0 {
             packets.push(batch_reader.byte_slice().to_vec());
         }
 

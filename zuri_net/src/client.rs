@@ -39,11 +39,12 @@ impl<H: Handler + Send + 'static> Client<H> {
             identity_data,
         };
         tokio::spawn(Self::read_loop(send, client.conn.clone()));
-        tokio::spawn(Self::handle_loop(recv, client.handler.clone()));
+        tokio::spawn(Self::handle_loop(recv, client.handler.clone(), client.conn.clone()));
 
         client.write_packet(&mut Packet::RequestNetworkSettings(RequestNetworkSettings {
             client_protocol: zuri_proto::CURRENT_PROTOCOL,
         })).await.expect("TODO: panic message"); // TODO: Panic message
+        client.flush().await.expect("TODO: panic message");
 
         Ok(client)
     }
@@ -60,6 +61,10 @@ impl<H: Handler + Send + 'static> Client<H> {
 
         self.conn.lock().await.write_packet(packet);
         Ok(())
+    }
+
+    pub async fn flush(&mut self) -> Result<(), ConnError> {
+        self.conn.lock().await.flush().await
     }
 
     async fn read_loop(chan: Sender<Packet>, conn: Arc<Mutex<Connection>>) {
@@ -82,10 +87,16 @@ impl<H: Handler + Send + 'static> Client<H> {
         }
     }
 
-    async fn handle_loop<T: Handler>(mut chan: Receiver<Packet>, handler: Arc<Mutex<T>>) {
+    async fn handle_loop<T: Handler>(mut chan: Receiver<Packet>, handler: Arc<Mutex<T>>, conn: Arc<Mutex<Connection>>) {
         loop {
             if let Some(pk) = chan.recv().await {
-                handler.lock().await.handle_incoming(pk);
+                let mut response = handler.lock().await.handle_incoming(pk);
+
+                let mut mu = conn.lock().await;
+                for pk in &mut response {
+                    mu.write_packet(pk);
+                }
+                mu.flush();
             } else {
                 handler.lock().await.handle_disconnect(None); // todo: reason
                 return;
@@ -96,7 +107,7 @@ impl<H: Handler + Send + 'static> Client<H> {
 
 /// Handles events such as incoming packets from the connection.
 pub trait Handler {
-    fn handle_incoming(&mut self, pk: Packet) {}
+    fn handle_incoming(&mut self, pk: Packet) -> Vec<Packet> { vec![] }
     fn handle_outgoing(&mut self, pk: &mut Packet) {}
 
     fn handle_disconnect(&mut self, reason: Option<String>) {}
@@ -158,13 +169,22 @@ mod tests {
             },
             TestHandler,
         ).await.unwrap();
+        sleep(Duration::from_secs(3)).await;
     }
 
     struct TestHandler;
 
     impl Handler for TestHandler {
-        fn handle_incoming(&mut self, pk: Packet) {
+        fn handle_incoming(&mut self, pk: Packet) -> Vec<Packet> {
             println!("Incoming packet: {:?}", pk);
+            match pk {
+                Packet::NetworkSettings(pk) => {
+
+
+                }
+                _ => todo!()
+            }
+            vec![]
         }
 
         fn handle_outgoing(&mut self, pk: &mut Packet) {

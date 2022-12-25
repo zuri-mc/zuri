@@ -59,6 +59,10 @@ impl Writer {
         self.shield_id
     }
 
+    pub fn len(&self) -> usize {
+        self.buf.len()
+    }
+
     pub fn u8(&mut self, x: u8) {
         self.buf.put_u8(x);
     }
@@ -255,6 +259,10 @@ impl Reader {
 
     pub fn shield_id(&self) -> i32 {
         self.shield_id
+    }
+
+    pub fn len(&self) -> usize {
+        self.buf.len()
     }
 
     pub fn u8(&mut self) -> u8 {
