@@ -62,7 +62,7 @@ impl ItemInstance {
 
         let mut extra_data = Writer::default();
         if let Value::Compound(m) = &self.stack.nbt_data {
-            if m.len() > 0 {
+            if !m.is_empty() {
                 extra_data.i16(-1);
                 extra_data.u8(1);
                 extra_data.nbt(&self.stack.nbt_data, LittleEndian);
@@ -160,7 +160,7 @@ impl ItemStack {
 
         let mut extra_data = Writer::default();
         if let Value::Compound(m) = &self.nbt_data {
-            if m.len() > 0 {
+            if !m.is_empty() {
                 extra_data.i16(-1);
                 extra_data.u8(1);
                 extra_data.nbt(&self.nbt_data, LittleEndian);

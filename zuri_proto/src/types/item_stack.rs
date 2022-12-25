@@ -10,7 +10,7 @@ use crate::types::item_descriptor::ItemDescriptorCount;
 
 encodable_enum!(
     #[derive(Debug)]
-    pub enum StackRequestAction2 {
+    pub enum StackRequestAction {
         TakeStackRequestAction = 0,
         PlaceStackRequestAction = 1,
         SwapStackRequestAction = 2,
@@ -58,7 +58,7 @@ pub enum StackRequestActionType {
     CraftResultsDeprecated,
 }
 
-impl Default for StackRequestAction2 {
+impl Default for StackRequestAction {
     fn default() -> Self {
         Self::CraftNonImplementedStackRequestAction(CraftNonImplementedStackRequestAction {})
     }
@@ -207,7 +207,7 @@ impl ItemEntry {
 #[derive(Debug, Default)]
 pub struct ItemStackRequestEntry {
     pub request_id: i32,
-    pub actions: Vec<StackRequestAction2>,
+    pub actions: Vec<StackRequestAction>,
     pub filter_strings: Vec<String>,
     pub filter_cause: i32,
 }
@@ -228,7 +228,7 @@ impl ItemStackRequestEntry {
         Self {
             request_id: reader.var_i32(),
             actions: (0..reader.var_u32()).map(|_| {
-                StackRequestAction2::read(reader)
+                StackRequestAction::read(reader)
             }).collect(),
             filter_strings: (0..reader.var_u32()).map(|_| reader.string()).collect(),
             filter_cause: reader.i32(),

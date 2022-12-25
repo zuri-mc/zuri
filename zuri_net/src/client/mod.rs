@@ -4,14 +4,14 @@ use rust_raknet::RaknetSocket;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::Mutex;
 use zuri_proto::packet::Packet;
-use zuri_proto::packet::request_network_settings::RequestNetworkSettings;
+use crate::client::login::LoginSequence;
 
 use crate::data::{ClientData, IdentityData};
-use crate::connection::{Connection, ConnError};
+use crate::connection::{Connection, ConnError, Sequence};
+
+mod login;
 
 pub struct Client<H: Handler + Send + 'static> {
-    stage: LoginStage,
-
     conn: Arc<Mutex<Connection>>,
     handler: Arc<Mutex<H>>,
 
@@ -29,23 +29,17 @@ impl<H: Handler + Send + 'static> Client<H> {
         let socket = RaknetSocket::connect_with_version(ip, 11).await.expect("TODO: panic message"); // TODO: panic message
 
         let (send, recv) = channel(1);
-        let mut client = Self {
-            stage: LoginStage::NetworkSettings,
-
+        let client = Self {
             conn: Arc::new(Mutex::new(Connection::new(socket))),
             handler: Arc::new(Mutex::new(handler)),
 
             client_data,
             identity_data,
         };
+        client.exec_sequence(LoginSequence::new(&client.client_data, &client.identity_data)).await.unwrap();
+
         tokio::spawn(Self::read_loop(send, client.conn.clone()));
         tokio::spawn(Self::handle_loop(recv, client.handler.clone(), client.conn.clone()));
-
-        client.write_packet(&mut Packet::RequestNetworkSettings(RequestNetworkSettings {
-            client_protocol: zuri_proto::CURRENT_PROTOCOL,
-        })).await.expect("TODO: panic message"); // TODO: Panic message
-        client.flush().await.expect("TODO: panic message");
-
         Ok(client)
     }
 
@@ -67,18 +61,21 @@ impl<H: Handler + Send + 'static> Client<H> {
         self.conn.lock().await.flush().await
     }
 
+    pub async fn exec_sequence<E>(&self, seq: impl Sequence<E>) -> Result<(), E> {
+        dbg!("gr");
+        seq.execute(&self.conn).await
+    }
+
     async fn read_loop(chan: Sender<Packet>, conn: Arc<Mutex<Connection>>) {
         loop {
-            let pks = conn.lock().await.read_next_batch().await;
+            let result = conn.lock().await.read_next_packet().await;
             //let pks = b.await;
             //let pks = mu.read_next_batch().await;
             //drop(mu);
-            match pks {
-                Ok(pks) => {
-                    for pk in pks {
-                        // We can call expect here: the handler stops if the read loop stops.
-                        chan.send(pk).await.expect("Could not send packet to handler");
-                    }
+            match result {
+                Ok(pk) => {
+                    // We can call expect here: the handler stops if the read loop stops.
+                    chan.send(pk).await.expect("Could not send packet to handler");
                 }
                 Err(_) => {
                     return;
@@ -96,7 +93,7 @@ impl<H: Handler + Send + 'static> Client<H> {
                 for pk in &mut response {
                     mu.write_packet(pk);
                 }
-                mu.flush();
+                mu.flush().await.unwrap();
             } else {
                 handler.lock().await.handle_disconnect(None); // todo: reason
                 return;
@@ -113,40 +110,6 @@ pub trait Handler {
     fn handle_disconnect(&mut self, reason: Option<String>) {}
 }
 
-#[derive(Copy, Clone, PartialEq)]
-pub enum LoginStage {
-    NetworkSettings,
-    ServerToClientHandshake,
-    PlayStatusLoginSuccess,
-    ResourcePacksInfo,
-    ResourcePackStack,
-    StartGame,
-    CreativeContent,
-    BiomeDefinitions,
-    LevelChunk,
-    PlayStatus,
-    Success,
-}
-
-impl LoginStage {
-    pub fn advance(&mut self) -> Result<(), ()> {
-        match self {
-            LoginStage::NetworkSettings => *self = LoginStage::ServerToClientHandshake,
-            LoginStage::ServerToClientHandshake => *self = LoginStage::PlayStatusLoginSuccess,
-            LoginStage::PlayStatusLoginSuccess => *self = LoginStage::ResourcePacksInfo,
-            LoginStage::ResourcePacksInfo => *self = LoginStage::ResourcePackStack,
-            LoginStage::ResourcePackStack => *self = LoginStage::StartGame,
-            LoginStage::StartGame => *self = LoginStage::CreativeContent,
-            LoginStage::CreativeContent => *self = LoginStage::BiomeDefinitions,
-            LoginStage::BiomeDefinitions => *self = LoginStage::LevelChunk,
-            LoginStage::LevelChunk => *self = LoginStage::PlayStatus,
-            LoginStage::PlayStatus => *self = LoginStage::Success,
-            LoginStage::Success => return Err(()),
-        };
-        Ok(())
-    }
-}
-
 // tests
 #[cfg(test)]
 mod tests {
@@ -157,7 +120,7 @@ mod tests {
 
     #[tokio::test]
     async fn connect_test() {
-        let mut client = Client::connect(
+        let client = Client::connect(
             &"127.0.0.1:19132".parse().unwrap(),
             //&"172.10.117.138:19132".parse().unwrap(),
             ClientData::default(),
@@ -177,13 +140,6 @@ mod tests {
     impl Handler for TestHandler {
         fn handle_incoming(&mut self, pk: Packet) -> Vec<Packet> {
             println!("Incoming packet: {:?}", pk);
-            match pk {
-                Packet::NetworkSettings(pk) => {
-
-
-                }
-                _ => todo!()
-            }
             vec![]
         }
 

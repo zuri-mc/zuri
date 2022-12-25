@@ -1,21 +1,32 @@
 use bytes::Bytes;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
+use async_trait::async_trait;
+use p384::ecdsa::SigningKey;
 use zuri_proto::io::{Reader, Writer};
 use zuri_proto::packet::Packet;
 use rust_raknet::{RaknetSocket, Reliability};
 use rust_raknet::error::RaknetError;
+use tokio::sync::Mutex;
+use crate::compression::Compression;
 
 use crate::encode::Encoder;
-use crate::decode::Decoder;
+use crate::encryption::Encryption;
+
+#[async_trait]
+pub trait Sequence<E> {
+    async fn execute(self, conn: &Mutex<Connection>) -> Result<(), E>;
+}
 
 pub struct Connection {
     socket: RaknetSocket,
 
     buffered_batch: Vec<Vec<u8>>,
+    queued_packets: Vec<Packet>,
+
+    signing_key: SigningKey,
 
     encoder: Encoder,
-    decoder: Decoder,
 }
 
 impl Connection {
@@ -24,10 +35,24 @@ impl Connection {
             socket,
 
             buffered_batch: Vec::new(),
+            queued_packets: Vec::new(),
+
+            signing_key: SigningKey::random(&mut rand::thread_rng()),
 
             encoder: Encoder::default(),
-            decoder: Decoder::default(),
         }
+    }
+
+    pub fn signing_key(&self) -> &SigningKey {
+        &self.signing_key
+    }
+
+    pub fn set_compression(&mut self, compression: Compression) {
+        self.encoder.set_compression(compression);
+    }
+
+    pub fn set_encryption(&mut self, encryption: Encryption) {
+        self.encoder.set_encryption(encryption);
     }
 
     pub async fn flush(&mut self) -> Result<(), ConnError> {
@@ -47,9 +72,18 @@ impl Connection {
         self.buffered_batch.push(writer.into());
     }
 
-    pub async fn read_next_batch(&mut self) -> Result<Vec<Packet>, ConnError> {
+    pub async fn read_next_packet(&mut self) -> Result<Packet, ConnError> {
+        loop {
+            if let Some(packet) = self.queued_packets.pop() {
+                return Ok(packet);
+            }
+            self.queued_packets = self.read_next_batch().await?;
+        }
+    }
+
+    async fn read_next_batch(&mut self) -> Result<Vec<Packet>, ConnError> {
         let encoded = self.socket.recv().await?;
-        let batch = self.decoder
+        let batch = self.encoder
             .decode(&mut encoded.into())
             .map_err(|e| ConnError::DecodeError(e))?;
 

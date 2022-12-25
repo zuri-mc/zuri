@@ -368,11 +368,11 @@ impl Reader {
     }
 
     pub fn byte_f32(&mut self) -> f32 {
-        return (self.u8() as f32) * (360. / 256.);
+        (self.u8() as f32) * (360. / 256.)
     }
 
     pub fn bool(&mut self) -> bool {
-        return self.u8() != 0;
+        self.u8() != 0
     }
 
     pub fn string(&mut self) -> String {

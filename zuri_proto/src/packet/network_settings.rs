@@ -6,7 +6,7 @@ use crate::io::{Reader, Writer};
 
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum CompressionType {
-    Flate,
+    Deflate,
     Snappy,
 }
 

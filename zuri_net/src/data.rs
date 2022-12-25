@@ -3,7 +3,7 @@ use base64ct::{Base64, Encoding};
 use serde::{Serialize, Deserialize};
 use zuri_proto::types::device::Device;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct IdentityData {
     #[serde(rename = "XUID")]
@@ -17,7 +17,7 @@ pub struct IdentityData {
     pub title_id: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "PascalCase")]
 pub struct ClientData {
     pub animated_image_data: Vec<SkinAnimation>,
@@ -157,7 +157,7 @@ impl Default for ClientData {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "PascalCase")]
 pub struct PersonaPiece {
     #[serde(rename = "IsDefault")]
@@ -172,7 +172,7 @@ pub struct PersonaPiece {
     pub product_id: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "PascalCase")]
 pub struct PersonaPieceTintColour {
     #[serde(rename = "Colors")]
@@ -181,7 +181,7 @@ pub struct PersonaPieceTintColour {
     pub piece_type: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "PascalCase")]
 pub struct SkinAnimation {
     pub frames: f64,

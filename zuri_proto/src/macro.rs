@@ -31,9 +31,9 @@ macro_rules! encodable_enum {
         }
 
         /// Allow the variants to be converted to the enum with Into.
-        $(impl Into<$name> for $elem {
-            fn into(self) -> $name {
-                $name::$elem(self)
+        $(impl From<$elem> for $name {
+            fn from(e: $elem) -> $name {
+                $name::$elem(e)
             }
         })+
 
