@@ -1,5 +1,3 @@
-use crate::packet::Packet;
-use crate::packet::start_game::StartGame;
 #[macro_export]
 macro_rules! encodable_enum {
     (

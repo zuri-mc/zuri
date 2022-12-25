@@ -1,5 +1,5 @@
+use std::collections::VecDeque;
 use zuri_proto::io::Writer;
-use bytes::{Bytes, BytesMut};
 
 use crate::encryption::Encryption;
 use crate::compression::Compression;
@@ -22,25 +22,22 @@ impl Encoder {
         self.encryption = encryption;
     }
 
-    pub fn encode(&mut self, batch: &mut Vec<Bytes>) -> Result<Bytes, String> {
+    pub fn encode(&mut self, batch: &mut Vec<Vec<u8>>) -> Result<Vec<u8>, String> {
         let mut batch_writer = Writer::new(0);
         for packet in batch {
             batch_writer.byte_slice(&packet);
         }
 
-        let mut batch: BytesMut = batch_writer.into();
+        let mut batch: Vec<u8> = batch_writer.into();
         if let Some(compression) = &mut self.compression {
-            match compression.compress(batch.into()) {
-                Ok(v) => batch = BytesMut::from(v.as_slice()), // TODO: IS THERE A BETTER WAY?
-                Err(s) => return Err(s),
+            if let Err(s) = compression.compress(&mut batch) {
+                return Err(s);
             }
         }
         if let Some(encryption) = &mut self.encryption {
-            batch = BytesMut::from(encryption.encrypt(batch.into()).as_slice()); // TODO: IS THERE A BETTER WAY?
+            encryption.encrypt(&mut batch);
         }
-
-        // TODO: IS THERE A BETTER WAY?
-        BytesMut::from(&[PACKET_HEADER][..]).unsplit(batch);
+        batch.insert(0, PACKET_HEADER);
 
         Ok(batch.into())
     }

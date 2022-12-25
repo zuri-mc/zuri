@@ -28,31 +28,28 @@ impl Encryption {
         }
     }
 
-    pub fn encrypt(&mut self, data: Vec<u8>) -> Vec<u8> {
+    pub fn encrypt(&mut self, data: &mut Vec<u8>) {
         let mut send_buf = Vec::new();
         send_buf.put_u64_le(self.send_counter);
         self.send_counter += 1;
 
         let mut digest = sha2::Sha256::new();
         digest.update(&send_buf);
-        digest.update(data);
+        digest.update(&data);
         digest.update(&self.key);
 
-        let mut out = data.to_vec();
-        out.append(&mut digest.finalize()[0..8].to_vec());
+        data.append(&mut digest.finalize()[0..8].to_vec());
 
-        self.cipher.apply_keystream_partial(out.as_mut_slice().into());
-
-        out
+        self.cipher.clone().apply_keystream_partial(data.as_mut_slice().into());
     }
 
-    pub fn decrypt(&mut self, mut data: Vec<u8>) -> Result<Vec<u8>, String> {
-        self.cipher.apply_keystream_partial(data.as_mut_slice().into());
+    pub fn decrypt(&mut self, data: &mut Vec<u8>) -> Result<(), String> {
+        self.cipher.clone().apply_keystream_partial(data.as_mut_slice().into());
         if data.len() < 8 {
             Err("encrypted packet must be at least 8 bytes long")?
         }
 
-        let mut their_checksum = &data[(data.len() - 8 - 1)..(data.len() - 1)];
+        let their_checksum: Vec<u8> = data.iter().rev().take(8).rev().cloned().collect();
 
         let mut send_buf = Vec::new();
         send_buf.put_u64_le(self.send_counter);
@@ -70,6 +67,6 @@ impl Encryption {
             Err(format!("invalid checksum (expected {:?}, got {:?})", our_checksum, their_checksum))?
         }
 
-        Ok(data)
+        Ok(())
     }
 }

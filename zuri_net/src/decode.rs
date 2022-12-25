@@ -25,7 +25,7 @@ impl Decoder {
         self.encryption = encryption;
     }
 
-    pub fn decode(&mut self, batch: &mut Bytes) -> Result<Vec<Bytes>, String> {
+    pub fn decode(&mut self, batch: &mut Vec<u8>) -> Result<Vec<Vec<u8>>, String> {
         if batch.is_empty() {
             return Ok(Vec::new());
         }
@@ -35,28 +35,26 @@ impl Decoder {
 
         // TODO: IS THERE A BETTER WAY TO AVOID SLICE(..)
 
-        *batch = batch.slice(1..batch.len());
+        batch.remove(0);
         if let Some(encryption) = &mut self.encryption {
-            match encryption.decrypt(batch.slice(..).into()) {
-                Ok(v) => *batch = v.into(),
-                Err(s) => return Err(s),
+            if let Err(s) = encryption.decrypt(batch) {
+                return Err(s);
             }
         }
         if let Some(compression) = &mut self.compression {
-            match compression.decompress(batch.slice(..).into()) {
-                Ok(v) => *batch = v.into(),
-                Err(s) => return Err(s),
+            if let Err(s) =  compression.decompress(batch) {
+                return Err(s);
             }
         }
 
         let mut packets = Vec::new();
-        let mut batch_reader = Reader::from_buf(batch.slice(..), 0);
+        let mut batch_reader = Reader::from_buf(Bytes::from(batch.clone()), 0);
         while batch.len() > 0 {
-            packets.push(batch_reader.byte_slice());
+            packets.push(batch_reader.byte_slice().to_vec());
         }
 
         if packets.len() > MAXIMUM_IN_BATCH {
-            panic!("too many packets in batch ({} > {})", packets.len(), MAXIMUM_IN_BATCH);
+            Err(format!("too many packets in batch ({} > {})", packets.len(), MAXIMUM_IN_BATCH))?
         }
         Ok(packets)
     }

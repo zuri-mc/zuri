@@ -1,45 +1,34 @@
 use std::fmt::Debug;
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
 
+use crate::encodable_enum;
 use crate::io::{Reader, Writer};
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
-pub enum ItemDescriptorType {
-    Invalid,
-    Default,
-    MoLang,
-    ItemTag,
-    Deferred,
-}
-
-pub trait ItemDescriptor: Debug {
-    fn write(&self, writer: &mut Writer);
-    fn descriptor_type(&self) -> ItemDescriptorType;
-}
+encodable_enum!(
+    #[derive(Debug)]
+    pub enum ItemDescriptor {
+        InvalidDescriptor = 0,
+        DefaultDescriptor = 1,
+        MoLangDescriptor = 2,
+        ItemTagDescriptor = 3,
+        DeferredDescriptor = 4,
+    }
+);
 
 #[derive(Debug)]
 pub struct ItemDescriptorCount {
-    pub item_descriptor: Box<dyn ItemDescriptor>,
+    pub item_descriptor: ItemDescriptor,
     pub count: i32,
 }
 
 impl ItemDescriptorCount {
     pub fn write(&self, writer: &mut Writer) {
-        writer.u8(self.item_descriptor.descriptor_type().to_u8().unwrap());
         self.item_descriptor.write(writer);
         writer.var_i32(self.count);
     }
 
     pub fn read(reader: &mut Reader) -> Self {
         Self {
-            item_descriptor: match ItemDescriptorType::from_u8(reader.u8()).unwrap() {
-                ItemDescriptorType::Invalid => Box::from(InvalidItemDescriptor::read(reader)),
-                ItemDescriptorType::Default => Box::from(DefaultItemDescriptor::read(reader)),
-                ItemDescriptorType::MoLang => Box::from(MoLangItemDescriptor::read(reader)),
-                ItemDescriptorType::ItemTag => Box::from(ItemTagItemDescriptor::read(reader)),
-                ItemDescriptorType::Deferred => Box::from(DeferredItemDescriptor::read(reader)),
-            },
+            item_descriptor: ItemDescriptor::read(reader),
             count: reader.var_i32(),
         }
     }
@@ -48,126 +37,96 @@ impl ItemDescriptorCount {
 impl Default for ItemDescriptorCount {
     fn default() -> Self {
         Self {
-            item_descriptor: Box::from(InvalidItemDescriptor {}),
+            item_descriptor: ItemDescriptor::InvalidDescriptor(InvalidDescriptor),
             count: 0,
         }
     }
 }
 
 #[derive(Debug)]
-pub struct InvalidItemDescriptor {}
+pub struct InvalidDescriptor;
 
-impl InvalidItemDescriptor {
+impl InvalidDescriptor {
     pub fn read(_: &mut Reader) -> Self {
         Self {}
     }
-}
 
-impl ItemDescriptor for InvalidItemDescriptor {
-    fn write(&self, _: &mut Writer) {}
-
-    fn descriptor_type(&self) -> ItemDescriptorType {
-        ItemDescriptorType::Invalid
-    }
+    pub fn write(&self, _: &mut Writer) {}
 }
 
 #[derive(Debug)]
-pub struct DefaultItemDescriptor {
+pub struct DefaultDescriptor {
     network_id: i16,
     metadata: i16,
 }
 
-impl DefaultItemDescriptor {
+impl DefaultDescriptor {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             network_id: reader.i16(),
             metadata: reader.i16(),
         }
     }
-}
 
-impl ItemDescriptor for DefaultItemDescriptor {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.i16(self.network_id);
         writer.i16(self.metadata);
-    }
-
-    fn descriptor_type(&self) -> ItemDescriptorType {
-        ItemDescriptorType::Deferred
     }
 }
 
 #[derive(Debug)]
-pub struct MoLangItemDescriptor {
+pub struct MoLangDescriptor {
     expression: String,
     version: u8,
 }
 
-impl MoLangItemDescriptor {
+impl MoLangDescriptor {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             expression: reader.string(),
             version: reader.u8(),
         }
     }
-}
 
-impl ItemDescriptor for MoLangItemDescriptor {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.string(self.expression.as_str());
         writer.u8(self.version);
-    }
-
-    fn descriptor_type(&self) -> ItemDescriptorType {
-        ItemDescriptorType::MoLang
     }
 }
 
 #[derive(Debug)]
-pub struct ItemTagItemDescriptor {
+pub struct ItemTagDescriptor {
     tag: String,
 }
 
-impl ItemTagItemDescriptor {
+impl ItemTagDescriptor {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             tag: reader.string(),
         }
     }
-}
 
-impl ItemDescriptor for ItemTagItemDescriptor {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.string(self.tag.as_str());
-    }
-
-    fn descriptor_type(&self) -> ItemDescriptorType {
-        ItemDescriptorType::Deferred
     }
 }
 
 #[derive(Debug)]
-pub struct DeferredItemDescriptor {
+pub struct DeferredDescriptor {
     name: String,
     metadata: i16,
 }
 
-impl DeferredItemDescriptor {
+impl DeferredDescriptor {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             name: reader.string(),
             metadata: reader.i16(),
         }
     }
-}
 
-impl ItemDescriptor for DeferredItemDescriptor {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.string(self.name.as_str());
         writer.i16(self.metadata);
-    }
-
-    fn descriptor_type(&self) -> ItemDescriptorType {
-        ItemDescriptorType::Deferred
     }
 }

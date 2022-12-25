@@ -1,9 +1,11 @@
-use bytes::Bytes;
 use std::fmt::Debug;
+
+use bytes::Bytes;
 use glam::{IVec3, Vec3};
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
+use crate::encodable_enum;
 use crate::io::{Reader, Writer};
 use crate::types::item::ItemInstance;
 
@@ -21,16 +23,6 @@ pub enum InventoryActionSource {
     World = 2,
     Creative = 3,
     TODO = 99999,
-}
-
-#[derive(Debug, FromPrimitive, ToPrimitive)]
-pub enum InventoryTransactionType {
-    // todo: get rid of this
-    Normal,
-    Mismatch,
-    UseItem,
-    UseItemOnEntity,
-    ReleaseItem,
 }
 
 #[derive(Debug)]
@@ -114,47 +106,41 @@ impl LegacySetItemSlot {
     }
 }
 
-pub trait InventoryTransactionData: Debug {
-    fn write(&self, writer: &mut Writer);
-    fn transaction_type(&self) -> InventoryTransactionType;
-}
+encodable_enum!(
+    #[derive(Debug)]
+    pub enum InventoryTransactionData {
+        NormalTransaction = 0,
+        MismatchTransaction = 1,
+        UseItemTransactionData = 2,
+        UseItemOnEntityTransaction = 3,
+        ReleaseItemTransaction = 4,
+    }
+);
 
 #[derive(Debug)]
-pub struct MismatchTransactionData {}
+pub struct MismatchTransaction;
 
-impl MismatchTransactionData {
+impl MismatchTransaction {
     pub fn read(_: &mut Reader) -> Self {
         Self {}
     }
-}
 
-impl InventoryTransactionData for MismatchTransactionData {
-    fn write(&self, _: &mut Writer) {}
-
-    fn transaction_type(&self) -> InventoryTransactionType {
-        InventoryTransactionType::Mismatch
-    }
+    pub fn write(&self, _: &mut Writer) {}
 }
 
 #[derive(Debug)]
-pub struct NormalTransactionData {}
+pub struct NormalTransaction {}
 
-impl NormalTransactionData {
+impl NormalTransaction {
     pub fn read(_: &mut Reader) -> Self {
         Self {}
     }
-}
 
-impl InventoryTransactionData for NormalTransactionData {
-    fn write(&self, _: &mut Writer) {}
-
-    fn transaction_type(&self) -> InventoryTransactionType {
-        InventoryTransactionType::Normal
-    }
+    pub fn write(&self, _: &mut Writer) {}
 }
 
 #[derive(Debug)]
-pub struct ReleaseItemTransactionData {
+pub struct ReleaseItemTransaction {
     pub action_type: ReleaseItemAction,
     pub hot_bar_slot: i32,
     pub held_item: ItemInstance,
@@ -167,7 +153,7 @@ pub enum ReleaseItemAction {
     Consume,
 }
 
-impl ReleaseItemTransactionData {
+impl ReleaseItemTransaction {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             action_type: ReleaseItemAction::from_u32(reader.var_u32()).unwrap(),
@@ -176,23 +162,17 @@ impl ReleaseItemTransactionData {
             head_position: reader.vec3(),
         }
     }
-}
 
-impl InventoryTransactionData for ReleaseItemTransactionData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.action_type.to_u32().unwrap());
         writer.var_i32(self.hot_bar_slot);
         self.held_item.write(writer);
         writer.vec3(self.head_position);
     }
-
-    fn transaction_type(&self) -> InventoryTransactionType {
-        InventoryTransactionType::ReleaseItem
-    }
 }
 
 #[derive(Debug)]
-pub struct UseItemOnEntityTransactionData {
+pub struct UseItemOnEntityTransaction {
     pub target_entity_runtime_id: u64,
     pub action_type: u32,
     pub hot_bar_slot: i32,
@@ -201,7 +181,7 @@ pub struct UseItemOnEntityTransactionData {
     pub clicked_position: Vec3,
 }
 
-impl UseItemOnEntityTransactionData {
+impl UseItemOnEntityTransaction {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             target_entity_runtime_id: reader.var_u64(),
@@ -212,20 +192,14 @@ impl UseItemOnEntityTransactionData {
             clicked_position: reader.vec3(),
         }
     }
-}
 
-impl InventoryTransactionData for UseItemOnEntityTransactionData {
-    fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, writer: &mut Writer) {
         writer.var_u64(self.target_entity_runtime_id);
         writer.var_u32(self.action_type);
         writer.var_i32(self.hot_bar_slot);
         self.held_item.write(writer);
         writer.vec3(self.position);
         writer.vec3(self.clicked_position);
-    }
-
-    fn transaction_type(&self) -> InventoryTransactionType {
-        InventoryTransactionType::UseItemOnEntity
     }
 }
 
@@ -257,6 +231,17 @@ impl UseItemTransactionData {
             block_runtime_id: reader.var_u32(),
             ..Default::default()
         }
+    }
+
+    pub fn write(&self, writer: &mut Writer) {
+        writer.var_u32(self.action_type);
+        writer.u_block_pos(self.block_position);
+        writer.var_i32(self.block_face);
+        writer.var_i32(self.hot_bar_slot);
+        self.held_item.write(writer);
+        writer.vec3(self.position);
+        writer.vec3(self.clicked_position);
+        writer.var_u32(self.block_runtime_id);
     }
 
     pub fn write_player_action(&self, writer: &mut Writer) {
@@ -296,22 +281,5 @@ impl UseItemTransactionData {
             clicked_position: reader.vec3(),
             block_runtime_id: reader.var_u32(),
         }
-    }
-}
-
-impl InventoryTransactionData for UseItemTransactionData {
-    fn write(&self, writer: &mut Writer) {
-        writer.var_u32(self.action_type);
-        writer.u_block_pos(self.block_position);
-        writer.var_i32(self.block_face);
-        writer.var_i32(self.hot_bar_slot);
-        self.held_item.write(writer);
-        writer.vec3(self.position);
-        writer.vec3(self.clicked_position);
-        writer.var_u32(self.block_runtime_id);
-    }
-
-    fn transaction_type(&self) -> InventoryTransactionType {
-        InventoryTransactionType::UseItem
     }
 }

@@ -1,18 +1,6 @@
-use num_traits::{FromPrimitive, ToPrimitive};
-
 use crate::io::{Reader, Writer};
 use crate::packet::PacketType;
-use crate::types::inventory::{
-    InventoryAction,
-    InventoryTransactionData,
-    InventoryTransactionType,
-    LegacySetItemSlot,
-    MismatchTransactionData,
-    NormalTransactionData,
-    ReleaseItemTransactionData,
-    UseItemOnEntityTransactionData,
-    UseItemTransactionData,
-};
+use crate::types::inventory::*;
 
 /// Sent by the client. It essentially exists out of multiple sub-packets, each of which have something to do with the
 /// inventory in one way or another. Some of these sub-packets directly relate to the inventory, others relate to
@@ -36,7 +24,7 @@ pub struct InventoryTransaction {
     /// Data object that holds data specific to the type of transaction that the TransactionPacket held. Its concrete
     /// type must be one of Normal, Mismatch, UseItem, UseItemOnEntity or ReleaseItem. If empty, the transaction will be
     /// assumed to of type Normal.
-    pub transaction_data: Box<dyn InventoryTransactionData>, // todo: make enum
+    pub transaction_data: InventoryTransactionData,
 }
 
 impl PacketType for InventoryTransaction {
@@ -47,7 +35,8 @@ impl PacketType for InventoryTransaction {
             self.legacy_set_item_slots.iter().for_each(|slot| slot.write(writer));
         }
 
-        writer.var_u32(self.transaction_data.transaction_type().to_u32().unwrap());
+        // todo: split the type from the data when writing
+        //writer.var_u32(self.transaction_data.transaction_type().to_u32().unwrap());
 
         writer.var_u32(self.actions.len() as u32);
         self.actions.iter().for_each(|action| action.write(writer));
@@ -62,18 +51,13 @@ impl PacketType for InventoryTransaction {
         } else {
             Vec::new()
         };
-        let transaction_type = InventoryTransactionType::from_u32(reader.var_u32()).unwrap();
+        // todo: split the type from the data when writing
+        //let transaction_type = InventoryTransactionType::from_u32(reader.var_u32()).unwrap();
         Self {
             legacy_request_id,
             legacy_set_item_slots,
             actions: (0..reader.var_u32()).map(|_| InventoryAction::read(reader)).collect(),
-            transaction_data: match transaction_type {
-                InventoryTransactionType::Normal => Box::from(NormalTransactionData::read(reader)),
-                InventoryTransactionType::Mismatch => Box::from(MismatchTransactionData::read(reader)),
-                InventoryTransactionType::UseItem => Box::from(UseItemTransactionData::read(reader)),
-                InventoryTransactionType::UseItemOnEntity => Box::from(UseItemOnEntityTransactionData::read(reader)),
-                InventoryTransactionType::ReleaseItem => Box::from(ReleaseItemTransactionData::read(reader)),
-            },
+            transaction_data: InventoryTransactionData::read(reader),
         }
     }
 }

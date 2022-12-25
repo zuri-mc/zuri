@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use uuid::Uuid;
 use glam::{
     IVec3,
@@ -31,6 +32,18 @@ impl Into<BytesMut> for Writer {
 impl Into<Bytes> for Writer {
     fn into(self) -> Bytes {
         self.buf.into()
+    }
+}
+
+impl Into<Vec<u8>> for Writer {
+    fn into(self) -> Vec<u8> {
+        self.buf.into()
+    }
+}
+
+impl Into<VecDeque<u8>> for Writer {
+    fn into(self) -> VecDeque<u8> {
+        <BytesMut as Into<Vec<u8>>>::into(self.buf).into()
     }
 }
 

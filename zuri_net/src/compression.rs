@@ -1,4 +1,5 @@
 use std::io::{Read, Write};
+use bytes::Buf;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Compression {
@@ -7,49 +8,52 @@ pub enum Compression {
 }
 
 impl Compression {
-    pub fn compress(&self, data: Vec<u8>) -> Result<Vec<u8>, String> {
+    pub fn compress(&self, data: &mut Vec<u8>) -> Result<(), String> {
+        let temp_input = data.clone();
         match self {
             Compression::Deflate => {
                 let mut compressor = libdeflater::Compressor::new(libdeflater::CompressionLvl::default());
 
                 let compress_bound = compressor.deflate_compress_bound(data.len());
-                let mut compressed_data = vec![0; compress_bound];
+                data.resize(compress_bound, 0);
 
                 let actual_size = compressor.deflate_compress(
-                    &data,
-                    &mut compressed_data,
+                    &temp_input,
+                    data,
                 ).map_err(|e| format!("failed to compress data: {}", e))?;
 
-                compressed_data.resize(actual_size, 0);
-                Ok(compressed_data)
+                data.resize(actual_size, 0);
+                Ok(())
             }
             Compression::Snappy => {
-                let mut encoder = snap::write::FrameEncoder::new(Vec::new());
-                encoder.write_all(&data).map_err(|e| format!("failed to compress data: {}", e))?;
-                Ok(encoder.into_inner().map_err(|e| format!("failed to compress data: {}", e))?)
+                let mut encoder = snap::write::FrameEncoder::new(data);
+                encoder.write_all(&temp_input).map_err(|e| format!("failed to compress data: {}", e))?;
+                Ok(())
             }
         }
     }
 
-    pub fn decompress(&self, data: Vec<u8>) -> Result<Vec<u8>, String> {
+    pub fn decompress(&self, data: &mut Vec<u8>) -> Result<(), String> {
+        let temp_input = data.clone();
         match self {
             Compression::Deflate => {
+                data.resize(1024 * 1024 * 3, 0);
+
                 let mut decompressor = libdeflater::Decompressor::new();
-                let mut decompressed_data = vec![0; 1024 * 1024 * 3];
 
                 let actual_size = decompressor.deflate_decompress(
-                    &data,
-                    &mut decompressed_data,
+                    &temp_input,
+                    data,
                 ).map_err(|e| format!("failed to decompress data: {}", e))?;
 
-                decompressed_data.resize(actual_size, 0);
-                Ok(decompressed_data)
+                data.resize(actual_size, 0);
+                Ok(())
             }
             Compression::Snappy => {
-                let mut decoder = snap::read::FrameDecoder::new(data.as_slice());
-                let mut decompressed_data = Vec::new();
-                decoder.read_to_end(&mut decompressed_data).map_err(|e| format!("failed to decompress data: {}", e))?;
-                Ok(decompressed_data)
+                let mut decoder = snap::read::FrameDecoder::new(temp_input.reader());
+                let size = decoder.read_to_end(data).map_err(|e| format!("failed to decompress data: {}", e))?;
+                data.resize(size, 0);
+                Ok(())
             }
         }
     }
@@ -61,17 +65,19 @@ mod tests {
 
     #[test]
     fn test_deflate() {
-        let data = b"Hello, world!";
-        let compressed = Compression::Deflate.compress(data.to_vec()).unwrap();
-        let decompressed = Compression::Deflate.decompress(compressed).unwrap();
-        assert_eq!(data, &decompressed[..]);
+        let data = b"Hello, world!".to_vec();
+        let mut processed_data: Vec<u8> = data.clone().to_vec();
+        Compression::Deflate.compress(&mut processed_data).unwrap();
+        Compression::Deflate.decompress(&mut processed_data).unwrap();
+        assert_eq!(data, processed_data);
     }
 
     #[test]
     fn test_snappy() {
-        let data = b"Hello, world!";
-        let compressed = Compression::Snappy.compress(data.to_vec()).unwrap();
-        let decompressed = Compression::Snappy.decompress(compressed).unwrap();
-        assert_eq!(data, &decompressed[..]);
+        let data = b"Hello, world!".to_vec();
+        let mut processed_data: Vec<u8> = data.clone().to_vec();
+        Compression::Snappy.compress(&mut processed_data).unwrap();
+        Compression::Snappy.decompress(&mut processed_data).unwrap();
+        assert_eq!(data, processed_data);
     }
 }

@@ -4,8 +4,8 @@ use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::packet::PacketType;
 use crate::io::{Reader, Writer};
-use crate::types::player::PlayerBlockAction;
 use crate::types::inventory::UseItemTransactionData;
+use crate::types::player::PlayerBlockAction;
 use crate::types::item_stack::ItemStackRequestEntry;
 
 #[derive(Clone, Copy, Debug, FromPrimitive, ToPrimitive)]

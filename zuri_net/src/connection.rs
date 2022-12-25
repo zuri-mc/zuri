@@ -12,7 +12,7 @@ use crate::decode::Decoder;
 pub struct Connection {
     socket: RaknetSocket,
 
-    buffered_batch: Vec<Bytes>,
+    buffered_batch: Vec<Vec<u8>>,
 
     encoder: Encoder,
     decoder: Decoder,
@@ -55,7 +55,7 @@ impl Connection {
 
         let mut packets = Vec::with_capacity(batch.len());
         for buf in batch {
-            let mut reader = Reader::from_buf(buf, 0);
+            let mut reader = Reader::from_buf(Bytes::from(buf), 0);
             packets.push(Packet::read(&mut reader));
         }
 
