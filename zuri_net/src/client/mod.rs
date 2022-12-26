@@ -64,7 +64,6 @@ impl<H: Handler + Send + 'static> Client<H> {
     }
 
     pub async fn exec_sequence<E>(&self, seq: impl Sequence<E>) -> Result<(), E> {
-        dbg!("gr");
         seq.execute(&self.conn).await
     }
 
