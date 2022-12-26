@@ -113,12 +113,21 @@ impl PacketType for AddPlayer {
             // entity_properties: {
             //     // TODO: Entity properties.
             // },
-            ability_data: AbilityData::read(reader),
-
-            entity_links: (0..reader.var_u32()).map(|_| EntityLink::read(reader)).collect(),
-
-            device_id: reader.string(),
-            build_platform: Device::from_i32(reader.i32()).unwrap(),
+            // ability_data: AbilityData::read(reader),
+            //
+            // entity_links: (0..reader.var_u32()).map(|_| EntityLink::read(reader)).collect(),
+            //
+            // device_id: reader.string(),
+            // build_platform: Device::from_i32(reader.i32()).unwrap(),
+            ability_data: AbilityData {
+                entity_unique_id: 0,
+                player_permissions: 0,
+                command_permission: 0,
+                layers: vec![],
+            },
+            entity_links: vec![],
+            device_id: "".to_string(),
+            build_platform: Device::None,
         }
     }
 }

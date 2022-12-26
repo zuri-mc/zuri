@@ -94,7 +94,8 @@ impl PacketType for AddActor {
             //     // TODO: Entity properties.
             // },
 
-            entity_links: (0..reader.var_u32()).map(|_| EntityLink::read(reader)).collect(),
+            //entity_links: (0..reader.var_u32()).map(|_| EntityLink::read(reader)).collect(),
+            entity_links: vec![],
         }
     }
 }

@@ -12,10 +12,10 @@ pub struct RemoveActor {
 
 impl PacketType for RemoveActor {
     fn write(&self, writer: &mut Writer) {
-        writer.i64(self.entity_unique_id);
+        writer.var_i64(self.entity_unique_id);
     }
 
     fn read(reader: &mut Reader) -> Self {
-        Self { entity_unique_id: reader.i64() }
+        Self { entity_unique_id: reader.var_i64() }
     }
 }

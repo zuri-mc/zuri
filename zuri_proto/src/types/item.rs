@@ -101,6 +101,9 @@ impl ItemInstance {
 
         instance.stack.count = reader.u16();
         instance.stack.metadata_value = reader.var_u32();
+        if reader.bool() {
+            instance.stack_network_id = reader.var_i32();
+        }
         instance.stack.block_runtime_id = reader.var_i32();
 
         let mut extra_data = Reader::from_buf(

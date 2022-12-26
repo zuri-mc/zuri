@@ -79,7 +79,10 @@ fn receive_packets(world: &mut World) {
             Ok(vec) => {
                 for pk in vec {
                     match pk {
-                        _ => warn!("Unhandled packet {pk}"),
+                        _ => {
+                            warn!("Unhandled packet {pk}");
+                            dbg!(pk);
+                        },
                     }
                 }
             }
