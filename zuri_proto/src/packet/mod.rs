@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::encodable_enum;
 use crate::io::{Reader, Writer};
 

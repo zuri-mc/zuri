@@ -30,6 +30,14 @@ macro_rules! encodable_enum {
             }
         }
 
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                match self {
+                    $($name::$elem(_) => f.write_str(stringify!($elem)),)+
+                }
+            }
+        }
+
         /// Allow the variants to be converted to the enum with Into.
         $(impl From<$elem> for $name {
             fn from(e: $elem) -> $name {

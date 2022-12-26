@@ -1,5 +1,6 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
+use async_trait::async_trait;
 use rust_raknet::RaknetSocket;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::Mutex;
@@ -54,7 +55,7 @@ impl<H: Handler + Send + 'static> Client<H> {
 
     pub async fn write_packet(&mut self, packet: &mut Packet) -> Result<(), ConnError> {
         let mut mu = self.handler.lock().await;
-        mu.handle_outgoing(packet);
+        mu.handle_outgoing(packet).await;
         drop(mu);
 
         self.conn.lock().await.write_packet(packet);
@@ -87,10 +88,10 @@ impl<H: Handler + Send + 'static> Client<H> {
         }
     }
 
-    async fn handle_loop<T: Handler>(mut chan: Receiver<Packet>, handler: Arc<Mutex<T>>, conn: Arc<Mutex<Connection>>) {
+    async fn handle_loop<T: Handler + Send>(mut chan: Receiver<Packet>, handler: Arc<Mutex<T>>, conn: Arc<Mutex<Connection>>) {
         loop {
             if let Some(pk) = chan.recv().await {
-                let mut response = handler.lock().await.handle_incoming(pk);
+                let mut response = handler.lock().await.handle_incoming(pk).await;
 
                 let mut mu = conn.lock().await;
                 for pk in &mut response {
@@ -98,7 +99,7 @@ impl<H: Handler + Send + 'static> Client<H> {
                 }
                 mu.flush().await.unwrap();
             } else {
-                handler.lock().await.handle_disconnect(None); // todo: reason
+                handler.lock().await.handle_disconnect(None).await; // todo: reason
                 return;
             }
         }
@@ -106,11 +107,12 @@ impl<H: Handler + Send + 'static> Client<H> {
 }
 
 /// Handles events such as incoming packets from the connection.
+#[async_trait]
 pub trait Handler {
-    fn handle_incoming(&mut self, pk: Packet) -> Vec<Packet> { vec![] }
-    fn handle_outgoing(&mut self, pk: &mut Packet) {}
+    async fn handle_incoming(&mut self, pk: Packet) -> Vec<Packet> { vec![] }
+    async fn handle_outgoing(&mut self, pk: &mut Packet) {}
 
-    fn handle_disconnect(&mut self, reason: Option<String>) {}
+    async fn handle_disconnect(&mut self, reason: Option<String>) {}
 }
 
 // tests
@@ -139,13 +141,14 @@ mod tests {
 
     struct TestHandler;
 
+    #[async_trait]
     impl Handler for TestHandler {
-        fn handle_incoming(&mut self, pk: Packet) -> Vec<Packet> {
+        async fn handle_incoming(&mut self, pk: Packet) -> Vec<Packet> {
             println!("Incoming packet: {:?}", pk);
             vec![]
         }
 
-        fn handle_outgoing(&mut self, pk: &mut Packet) {
+        async fn handle_outgoing(&mut self, pk: &mut Packet) {
             println!("Outgoing packet: {:?}", pk);
         }
     }
