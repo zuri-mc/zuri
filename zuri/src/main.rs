@@ -11,6 +11,7 @@ use bevy::core_pipeline::clear_color::ClearColorConfig;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::window::{CursorGrabMode, PresentMode};
 use noise::{NoiseFn, SuperSimplex};
+use zuri_net::client::plugin::ClientPlugin;
 
 use zuri_world::chunk::Chunk;
 use zuri_world::pos::ChunkPos;
@@ -25,7 +26,8 @@ mod entity;
 mod player;
 mod input;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     App::new()
         .insert_resource(WgpuSettings {
             features: WgpuFeatures::POLYGON_MODE_LINE,
@@ -43,6 +45,7 @@ fn main() {
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin)
 
+        .add_plugin(ClientPlugin)
         .add_plugin(InputPlugin)
         .add_plugin(LocalPlayerPlugin)
         .add_plugin(WorldPlugin)

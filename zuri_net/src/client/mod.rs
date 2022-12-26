@@ -12,6 +12,8 @@ use crate::connection::{Connection, ConnError, Sequence};
 mod login;
 mod auth;
 mod data;
+#[cfg(feature = "bevy")]
+pub mod plugin;
 
 pub struct Client<H: Handler + Send + 'static> {
     conn: Arc<Mutex<Connection>>,
@@ -23,12 +25,12 @@ pub struct Client<H: Handler + Send + 'static> {
 
 impl<H: Handler + Send + 'static> Client<H> {
     pub async fn connect(
-        ip: &SocketAddr,
+        ip: SocketAddr,
         client_data: ClientData,
         identity_data: IdentityData,
         handler: H,
     ) -> Result<Self, String> {
-        let socket = RaknetSocket::connect_with_version(ip, 11).await.expect("TODO: panic message"); // TODO: panic message
+        let socket = RaknetSocket::connect_with_version(&ip, 11).await.expect("TODO: panic message"); // TODO: panic message
 
         let (send, recv) = channel(1);
         let client = Self {
@@ -122,7 +124,7 @@ mod tests {
     #[tokio::test]
     async fn connect_test() {
         let client = Client::connect(
-            &"127.0.0.1:19131".parse().unwrap(),
+            "127.0.0.1:19131".parse().unwrap(),
             ClientData::default(),
             IdentityData {
                 identity: Uuid::new_v4().to_string(),
