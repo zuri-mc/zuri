@@ -83,8 +83,8 @@ impl Value {
             9 => {
                 let content_type = r.u8(buf)?;
                 let len = r.i32(buf)?;
-                if len <= 0 {
-                    return Err(NbtError::ParseError("list length must be greater than 0".to_string()));
+                if len < 0 {
+                    return Err(NbtError::ParseError("list length must be greater than or equal to 0".to_string()));
                 }
                 let mut vec = Vec::with_capacity(len as usize);
                 for _ in 0..len {
@@ -117,11 +117,11 @@ impl Value {
                 w.write_end(buf)?;
             }
             Self::List(x) => {
-                if x.is_empty() {
-                    w.write_u8_vec(buf, &Vec::<u8>::new())?;
-                    return Ok(());
-                }
-                let first_id = x[0].tag_id();
+                let first_id = if x.is_empty() {
+                    Value::Byte(0).tag_id()
+                } else {
+                    x[0].tag_id()
+                };
 
                 w.write_u8(buf, first_id)?;
                 w.write_i32(buf, x.len() as i32)?;
