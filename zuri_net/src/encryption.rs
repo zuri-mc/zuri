@@ -1,14 +1,22 @@
+use std::io::Read;
 use aes::Aes256;
 use sha2::Digest;
 use bytes::BufMut;
-use cipher::{InnerIvInit, KeyInit, StreamCipherCore};
+use cipher::{KeyIvInit, StreamCipher, StreamCipherSeek, StreamCipherSeekCore};
+use cipher::consts::U32;
+use cipher::generic_array::{ArrayLength, GenericArray};
+use cipher::typenum::U16;
 
-type Ctr128BE<Cipher> = ctr::CtrCore<Cipher, ctr::flavors::Ctr128BE>;
+type Aes256Ctr = ctr::Ctr32BE<Aes256>;
 
 pub struct Encryption {
-    send_counter: u64,
+    sent: u64,
+    read: u64,
+
+    cipher: Aes256Ctr,
+    decipher: Aes256Ctr,
+
     key: Vec<u8>,
-    cipher: Box<ctr::CtrCore<Aes256, ctr::flavors::Ctr128BE>>,
 }
 
 impl Encryption {
@@ -17,43 +25,45 @@ impl Encryption {
         iv.truncate(12);
         iv.extend_from_slice(&[0, 0, 0, 2]);
 
-        let cipher = Box::new(Aes256::new_from_slice(&key)
-            .and_then(|aes| Ctr128BE::inner_iv_slice_init(aes, &iv))
-            .unwrap());
-
+        let base_cipher = Aes256Ctr::new(key.as_slice().into(), iv.as_slice().into());
         Self {
-            send_counter: 0,
-            cipher,
+            sent: 0,
+            read: 0,
+
+            cipher: base_cipher.clone(),
+            decipher: base_cipher,
+
             key,
         }
     }
 
     pub fn encrypt(&mut self, data: &mut Vec<u8>) {
         let mut send_buf = Vec::new();
-        send_buf.put_u64_le(self.send_counter);
-        self.send_counter += 1;
+        send_buf.put_u64_le(self.sent);
+        self.sent += 1;
 
         let mut digest = sha2::Sha256::new();
         digest.update(&send_buf);
         digest.update(&data);
         digest.update(&self.key);
 
-        data.append(&mut digest.finalize()[0..8].to_vec());
+        let mut our_checksum = digest.finalize()[0..8].to_vec();
+        data.append(&mut our_checksum);
 
-        self.cipher.clone().apply_keystream_partial(data.as_mut_slice().into());
+        self.cipher.apply_keystream(data);
     }
 
     pub fn decrypt(&mut self, data: &mut Vec<u8>) -> Result<(), String> {
-        self.cipher.clone().apply_keystream_partial(data.as_mut_slice().into());
+        self.decipher.apply_keystream(data);
         if data.len() < 8 {
-            Err("encrypted packet must be at least 8 bytes long")?
+            return Err("encrypted packet must be at least 8 bytes long")?;
         }
 
         let their_checksum: Vec<u8> = data.iter().rev().take(8).rev().cloned().collect();
 
         let mut send_buf = Vec::new();
-        send_buf.put_u64_le(self.send_counter);
-        self.send_counter += 1;
+        send_buf.put_u64_le(self.read);
+        self.read += 1;
 
         data.truncate(data.len() - 8);
 
@@ -64,10 +74,9 @@ impl Encryption {
 
         let our_checksum = digest.finalize()[0..8].to_vec();
         if their_checksum != our_checksum {
-            Err(format!("invalid checksum (expected {:?}, got {:?})", our_checksum, their_checksum))?
+            return Err(format!("invalid checksum (expected {:?}, got {:?})", our_checksum, their_checksum))?;
         }
 
         Ok(())
     }
 }
-

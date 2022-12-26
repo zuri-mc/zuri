@@ -7,7 +7,7 @@ use zuri_proto::types::device::Device;
 #[serde(rename_all = "camelCase")]
 pub struct IdentityData {
     #[serde(rename = "XUID")]
-    pub xuid: Option<String>,
+    pub xuid: String,
 
     pub identity: String,
 

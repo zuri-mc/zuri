@@ -171,15 +171,15 @@ impl Writer {
     }
 
     pub fn block_pos(&mut self, x: IVec3) {
-        self.i32(x.x);
-        self.i32(x.y);
-        self.i32(x.z);
+        self.var_i32(x.x);
+        self.var_i32(x.y);
+        self.var_i32(x.z);
     }
 
     pub fn u_block_pos(&mut self, x: IVec3) {
-        self.i32(x.x);
-        self.u32(x.y as u32);
-        self.i32(x.z);
+        self.var_i32(x.x);
+        self.var_u32(x.y as u32);
+        self.var_i32(x.z);
     }
 
     pub fn vec2(&mut self, x: Vec2) {
@@ -405,17 +405,17 @@ impl Reader {
 
     pub fn block_pos(&mut self) -> IVec3 {
         IVec3 {
-            x: self.i32(),
-            y: self.i32(),
-            z: self.i32(),
+            x: self.var_i32(),
+            y: self.var_i32(),
+            z: self.var_i32(),
         }
     }
 
     pub fn u_block_pos(&mut self) -> IVec3 {
         IVec3 {
-            x: self.i32(),
-            y: self.u32() as i32,
-            z: self.i32(),
+            x: self.var_i32(),
+            y: self.var_u32() as i32,
+            z: self.var_i32(),
         }
     }
 

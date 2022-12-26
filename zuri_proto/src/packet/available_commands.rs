@@ -121,7 +121,11 @@ impl PacketType for AvailableCommands {
     }
 
     fn read(_reader: &mut Reader) -> Self {
-        todo!()
+        // TODO: IMPLEMENT THIS
+        Self {
+            commands: vec![],
+            constraints: vec![],
+        }
         // Self {
         //     LEN: reader.read_TODO(),
         //     commands: reader.read_Command(),

@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use bytes::Bytes;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
@@ -13,16 +14,11 @@ use crate::compression::Compression;
 use crate::encode::Encoder;
 use crate::encryption::Encryption;
 
-#[async_trait]
-pub trait Sequence<E> {
-    async fn execute(self, conn: &Mutex<Connection>) -> Result<(), E>;
-}
-
 pub struct Connection {
     socket: RaknetSocket,
 
     buffered_batch: Vec<Vec<u8>>,
-    queued_packets: Vec<Packet>,
+    queued_packets: VecDeque<Packet>,
 
     signing_key: SigningKey,
 
@@ -35,7 +31,7 @@ impl Connection {
             socket,
 
             buffered_batch: Vec::new(),
-            queued_packets: Vec::new(),
+            queued_packets: VecDeque::new(),
 
             signing_key: SigningKey::random(&mut rand::thread_rng()),
 
@@ -74,10 +70,10 @@ impl Connection {
 
     pub async fn read_next_packet(&mut self) -> Result<Packet, ConnError> {
         loop {
-            if let Some(packet) = self.queued_packets.pop() {
+            if let Some(packet) = self.queued_packets.pop_front() {
                 return Ok(packet);
             }
-            self.queued_packets = self.read_next_batch().await?;
+            self.queued_packets = self.read_next_batch().await?.into();
         }
     }
 
@@ -95,6 +91,11 @@ impl Connection {
 
         Ok(packets)
     }
+}
+
+#[async_trait]
+pub trait Sequence<E> {
+    async fn execute(self, conn: &Mutex<Connection>) -> Result<(), E>;
 }
 
 #[derive(Debug)]

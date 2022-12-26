@@ -1,53 +1,133 @@
-use std::ops::Sub;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use async_trait::async_trait;
-use base64ct::{Base64, Encoding};
-use jsonwebtoken::{Algorithm, EncodingKey};
-use p384::pkcs8::{EncodePrivateKey, EncodePublicKey};
+use base64ct::{Base64, Base64Unpadded, Encoding};
+use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Validation};
+use p384::ecdsa::VerifyingKey;
+use p384::pkcs8::{DecodePublicKey, EncodePrivateKey, EncodePublicKey};
+use sha2::{Sha256, Digest};
 use tokio::sync::Mutex;
 use zuri_proto::CURRENT_PROTOCOL;
+use zuri_proto::packet::client_cache_status::ClientCacheStatus;
+use zuri_proto::packet::client_to_server_handshake::ClientToServerHandshake;
 use zuri_proto::packet::login::Login;
 use zuri_proto::packet::network_settings::NetworkSettings;
 use zuri_proto::packet::Packet;
+use zuri_proto::packet::play_status::{PlayStatus, PlayStatusType};
+use zuri_proto::packet::request_chunk_radius::RequestChunkRadius;
 use zuri_proto::packet::request_network_settings::RequestNetworkSettings;
+use zuri_proto::packet::resource_pack_client_response::ResourcePackClientResponse;
+use zuri_proto::packet::resource_pack_stack::ResourcePackStack;
+use zuri_proto::packet::resource_packs_info::ResourcePacksInfo;
+use zuri_proto::packet::set_local_player_as_initialised::SetLocalPlayerAsInitialised;
+use zuri_proto::packet::start_game::StartGame;
+use zuri_proto::types::resource_pack::ResourcePackResponse;
 
 use crate::connection::*;
-use crate::auth::{IdentityClaims, Request};
-use crate::data::{ClientData, IdentityData};
+use crate::client::auth::{IdentityClaims, Request, SaltClaims};
+use crate::client::data::{ClientData, IdentityData};
+use crate::encryption::Encryption;
 
 pub struct LoginSequence<'a> {
     client_data: &'a ClientData,
     identity_data: &'a IdentityData,
+    cache_chunks: bool,
+    // TODO: Make a general GameData system.
 }
 
 #[async_trait]
 impl<'a> Sequence<()> for LoginSequence<'a> {
     async fn execute(self, conn_mu: &Mutex<Connection>) -> Result<(), ()> {
         let mut conn = conn_mu.lock().await;
+        println!("[{}:{}] Requesting network settings...", file!(), line!());
         self.adapt_network_settings(&mut conn).await.unwrap();
+        println!("[{}:{}] Adapted to network settings, sending login...", file!(), line!());
         self.send_login(&mut conn).await.unwrap();
+        println!("[{}:{}] Sent login, waiting for next step...", file!(), line!());
 
-        match conn.read_next_packet().await? {
-            Packet::ServerToClientHandshake(pk) => {
-                self.adapt_encryption(&mut conn, pk).await.unwrap();
-                self.await_login_success(&mut conn).await.unwrap();
-                received_handshake = true;
-            },
-            Packet::PlayStatus(pk) => {
-                self.await_login_success(&mut conn).await.unwrap();
+        match conn.read_next_packet().await.unwrap() {
+            Packet::ServerToClientHandshake(handshake) => {
+                println!("[{}:{}] Received server to client handshake, adapting encryption...", file!(), line!());
+                self.adapt_encryption(
+                    &mut conn,
+                    String::from_utf8(handshake.jwt.to_vec()).unwrap(),
+                ).await.unwrap();
+                println!("[{}:{}] Adapted encryption, awaiting successful login...", file!(), line!());
+
+                let play_status = PlayStatus::try_from(
+                    conn.read_next_packet().await.unwrap(),
+                ).unwrap();
+                if play_status.status != PlayStatusType::LoginSuccess {
+                    panic!("login failed"); // TODO: proper error handling.
+                }
+                println!("[{}:{}] Login successful!", file!(), line!());
+            }
+            Packet::PlayStatus(play_status) => {
+                if play_status.status != PlayStatusType::LoginSuccess {
+                    panic!("login failed"); // TODO: proper error handling.
+                }
+                println!("[{}:{}] Login successful!", file!(), line!());
             }
             _ => return Err(()), // todo
         }
 
+        println!("[{}:{}] Sending client cache status...", file!(), line!());
+        conn.write_packet(&mut ClientCacheStatus { enabled: self.cache_chunks }.into());
+        conn.flush().await.unwrap();
+        println!("[{}:{}] Sent client cache status, awaiting resource packs...", file!(), line!());
+
+        self.download_resource_packs(&mut conn).await.unwrap();
+        println!("[{}:{}] Downloaded resource packs, awaiting start game...", file!(), line!());
+
+        // The start game packet contains our runtime ID which we need later in the sequence. In the
+        // future, we should really have a generalized game data, but for now we'll just store it in
+        // a local variable.
+        let mut rid = 0;
+        self.await_start_game(&mut conn, &mut rid).await.unwrap();
+        println!("[{}:{}] Received start game and sent chunk radius.", file!(), line!());
+        println!("[{}:{}] Sent request radius, awaiting response(s)...", file!(), line!());
+
+        // TODO: FIX THE BELOW OH MY GOD WE'RE SO CLOSE
+        // // We receive two packets here, ChunkRadiusUpdated and PlayStatus. The order in which these
+        // // come in is not guaranteed, so we need to handle both cases.
+        // let mut received_play_status = false;
+        // let mut received_chunk_radius = false;
+        // while !received_chunk_radius || !received_play_status {
+        //     match conn.read_next_packet().await.unwrap() {
+        //         Packet::ChunkRadiusUpdated(_) => {
+        //             // TODO: Store the chunk radius we received.
+        //             received_chunk_radius = true
+        //         }
+        //         Packet::PlayStatus(play_status) => {
+        //             if play_status.status != PlayStatusType::PlayerSpawn {
+        //                 panic!("login failed"); // TODO: proper error handling.
+        //             }
+        //             received_play_status = true;
+        //         }
+        //         _ => return Err(()), // todo
+        //     }
+        // }
+
+        println!("[{}:{}] Received response(s), sending set local player as initialised...", file!(), line!());
+
+        // Notify the server that we're initialized.
+        conn.write_packet(&mut SetLocalPlayerAsInitialised {
+            entity_runtime_id: rid,
+        }.into());
+        conn.flush().await.unwrap();
+
+        println!("[{}:{}] Login sequence complete!", file!(), line!());
+
+        // We're done!
         Ok(())
     }
 }
 
 impl<'a> LoginSequence<'a> {
-    pub fn new(client_data: &'a ClientData, identity_data: &'a IdentityData) -> Self {
+    pub fn new(client_data: &'a ClientData, identity_data: &'a IdentityData, cache_chunks: bool) -> Self {
         Self {
             client_data,
             identity_data,
+            cache_chunks,
         }
     }
 
@@ -63,8 +143,47 @@ impl<'a> LoginSequence<'a> {
         Ok(())
     }
 
-    async fn adapt_encryption(&self, conn: &mut Connection) -> Result<(), ConnError> {
+    async fn adapt_encryption(&self, conn: &mut Connection, jwt: String) -> Result<(), ConnError> {
+        let header = jsonwebtoken::decode_header(&jwt).unwrap();
 
+        let mut validation = Validation::new(header.alg);
+        validation.insecure_disable_signature_validation(); // TODO: This definitely is not right.
+        validation.set_required_spec_claims::<String>(&[]);
+
+        let unparsed_key = Base64::decode_vec(
+            &header.x5u.unwrap(),
+        ).unwrap();
+        let server_verifying_key = VerifyingKey::from_public_key_der(
+            &unparsed_key,
+        ).unwrap();
+
+        let token = jsonwebtoken::decode::<SaltClaims>(
+            &jwt,
+            &DecodingKey::from_ec_der(&unparsed_key), &validation,
+        ).unwrap();
+
+        let salt = Base64Unpadded::decode_vec(
+            token.claims.salt.trim_end_matches('='),
+        ).unwrap();
+
+        let signing_key = conn.signing_key();
+        let unsalted_secret = p384::ecdh::diffie_hellman(
+            signing_key.as_nonzero_scalar(),
+            server_verifying_key.as_affine(),
+        );
+
+        let mut hasher = Sha256::new();
+        hasher.update(&salt);
+        hasher.update(&unsalted_secret.raw_secret_bytes());
+
+        let shared_secret = hasher.finalize().to_vec();
+
+        conn.set_encryption(Encryption::new(shared_secret));
+
+        conn.write_packet(&mut ClientToServerHandshake.into());
+        conn.flush().await?;
+
+        Ok(())
     }
 
     async fn send_login(&self, conn: &mut Connection) -> Result<(), ConnError> {
@@ -100,6 +219,38 @@ impl<'a> LoginSequence<'a> {
                 token: data_jwt.as_str().to_string(),
             }.encode().into(),
         }.into());
+        conn.flush().await?;
+
+        Ok(())
+    }
+
+    async fn download_resource_packs(&self, conn: &mut Connection) -> Result<(), ConnError> {
+        ResourcePacksInfo::try_from(
+            conn.read_next_packet().await.unwrap(),
+        ).unwrap();
+
+        // TODO: Implement proper resource pack downloading
+
+        conn.write_packet(&mut ResourcePackClientResponse {
+            response: ResourcePackResponse::Completed,
+            packs_to_download: Vec::new(),
+        }.into());
+        conn.flush().await?;
+
+        Ok(())
+    }
+
+    async fn await_start_game(&self, conn: &mut Connection, rid: &mut u64) -> Result<(), ConnError> {
+        let start_game = StartGame::try_from(
+            conn.read_next_packet().await.unwrap(),
+        ).unwrap();
+
+        // TODO: Store rest of game data and update shield ID.
+        *rid = start_game.entity_runtime_id;
+
+        // We need to request a sample radius of chunks around the player in order for the server
+        // to allow us to spawn in. This is a bit of a hack, but it's necessary.
+        conn.write_packet(&mut RequestChunkRadius { chunk_radius: 16 }.into());
         conn.flush().await?;
 
         Ok(())

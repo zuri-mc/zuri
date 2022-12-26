@@ -1,15 +1,17 @@
 use std::net::SocketAddr;
-use std::sync::{Arc};
+use std::sync::Arc;
 use rust_raknet::RaknetSocket;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::Mutex;
 use zuri_proto::packet::Packet;
-use crate::client::login::LoginSequence;
 
-use crate::data::{ClientData, IdentityData};
+use crate::client::login::LoginSequence;
+use crate::client::data::{ClientData, IdentityData};
 use crate::connection::{Connection, ConnError, Sequence};
 
 mod login;
+mod auth;
+mod data;
 
 pub struct Client<H: Handler + Send + 'static> {
     conn: Arc<Mutex<Connection>>,
@@ -36,7 +38,7 @@ impl<H: Handler + Send + 'static> Client<H> {
             client_data,
             identity_data,
         };
-        client.exec_sequence(LoginSequence::new(&client.client_data, &client.identity_data)).await.unwrap();
+        client.exec_sequence(LoginSequence::new(&client.client_data, &client.identity_data, false)).await.unwrap();
 
         tokio::spawn(Self::read_loop(send, client.conn.clone()));
         tokio::spawn(Self::handle_loop(recv, client.handler.clone(), client.conn.clone()));
@@ -121,14 +123,13 @@ mod tests {
     #[tokio::test]
     async fn connect_test() {
         let client = Client::connect(
-            &"127.0.0.1:19132".parse().unwrap(),
-            //&"172.10.117.138:19132".parse().unwrap(),
+            &"127.0.0.1:19131".parse().unwrap(),
             ClientData::default(),
             IdentityData {
-                display_name: "Zuri".into(),
                 identity: Uuid::new_v4().to_string(),
+                display_name: "Zuri".into(),
+                xuid: String::new(),
                 title_id: None,
-                xuid: None,
             },
             TestHandler,
         ).await.unwrap();

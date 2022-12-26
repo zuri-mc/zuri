@@ -1,7 +1,7 @@
 use bytes::{BufMut};
 use serde::{Serialize, Deserialize};
 
-use crate::data::IdentityData;
+use crate::client::data::IdentityData;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct IdentityClaims {

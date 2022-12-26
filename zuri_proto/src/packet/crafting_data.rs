@@ -38,7 +38,14 @@ impl PacketType for CraftingData {
     }
 
     fn read(_reader: &mut Reader) -> Self {
-        todo!()
+        // TODO: IMPLEMENT THIS
+        Self {
+            recipes: vec![],
+            potion_recipes: vec![],
+            potion_container_change_recipes: vec![],
+            material_reducers: vec![],
+            clear_recipes: false,
+        }
         // Self {
         //     LEN: reader.read_TODO(),
         //     recipes: reader.read_Recipe(),

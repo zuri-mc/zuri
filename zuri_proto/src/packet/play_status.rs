@@ -12,7 +12,7 @@ pub struct PlayStatus {
     pub status: PlayStatusType,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum PlayStatusType {
     LoginSuccess,
     LoginFailedClient,
