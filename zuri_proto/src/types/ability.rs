@@ -81,10 +81,8 @@ impl AbilityLayer {
     }
 
     pub fn read(reader: &mut Reader) -> Self {
-        let u = reader.u8();
-        println!("ability type {}", u);
         Self {
-            layer_type: AbilityLayerType::from_u8(1).unwrap(),
+            layer_type: AbilityLayerType::from_u8(reader.u8()).unwrap(),
             abilities: reader.u32(),
             values: reader.u32(),
             fly_speed: reader.f32(),
