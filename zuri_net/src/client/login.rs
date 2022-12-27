@@ -131,7 +131,7 @@ impl<'a> LoginSequence<'a> {
         }
     }
 
-    async fn adapt_network_settings(&self, conn: &mut Connection) -> coResult<(), ConnError> {
+    async fn adapt_network_settings(&self, conn: &mut Connection) -> Result<(), ConnError> {
         conn.write_packet(&mut RequestNetworkSettings {
             client_protocol: CURRENT_PROTOCOL,
         }.into());
