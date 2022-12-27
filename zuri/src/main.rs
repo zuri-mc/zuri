@@ -10,15 +10,12 @@ use bevy::{
 use bevy::core_pipeline::clear_color::ClearColorConfig;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::window::{CursorGrabMode, PresentMode};
-use bytes::{Buf, Bytes};
-use noise::{NoiseFn, SuperSimplex};
 
-use zuri_net::proto::io::Reader;
 use zuri_net::proto::packet::level_chunk::LevelChunk;
+use zuri_net::proto::io::Reader;
+
 use zuri_world::chunk::Chunk;
-use zuri_world::pos::ChunkIndex;
 use zuri_world::range::YRange;
-use zuri_world::sub_chunk::SubChunk;
 use zuri_world::WorldPlugin;
 
 use crate::client::ClientPlugin;

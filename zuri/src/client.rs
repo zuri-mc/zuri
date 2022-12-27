@@ -1,18 +1,16 @@
-use std::net::SocketAddr;
 use async_trait::async_trait;
-use bevy::app::AppExit;
-
 use bevy::prelude::*;
-use bevy::tasks::{IoTaskPool, Task};
 use futures_lite::future;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::mpsc::error::TryRecvError;
 use tokio::task::JoinHandle;
+
 use uuid::Uuid;
 use zuri_net::client::{Client, Handler};
 use zuri_net::client::data::{ClientData, IdentityData};
 use zuri_net::proto::packet::level_chunk::LevelChunk;
 use zuri_net::proto::packet::Packet;
+use zuri_xbox::live;
 
 pub struct ClientPlugin;
 
@@ -48,7 +46,7 @@ fn init_client(world: &mut World) {
     let (send, recv) = channel(4);
     world.insert_non_send_resource(ClientWaiter {
         task: tokio::spawn(Client::connect(
-            "127.0.0.1:19132".parse().unwrap(),
+            "51.195.206.139:19132".parse().unwrap(),
             ClientData::default(),
             Some(IdentityData {
                 display_name: "Zuri".into(),

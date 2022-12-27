@@ -13,7 +13,7 @@ pub struct MoveActorDelta {
 
 impl PacketType for MoveActorDelta {
     fn write(&self, writer: &mut Writer) {
-        writer.u64(self.entity_runtime_id);
+        writer.var_u64(self.entity_runtime_id);
         writer.u16(self.flags);
         if self.flags & MoveActorDeltaFlag::HasX.flag() != 0 {
             writer.f32(self.position.x);
@@ -36,7 +36,7 @@ impl PacketType for MoveActorDelta {
     }
 
     fn read(reader: &mut Reader) -> Self {
-        let entity_runtime_id = reader.u64();
+        let entity_runtime_id = reader.var_u64();
         let flags = reader.u16();
         Self {
             entity_runtime_id,

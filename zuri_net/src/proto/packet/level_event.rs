@@ -28,7 +28,8 @@ impl PacketType for LevelEvent {
 
     fn read(reader: &mut Reader) -> Self {
         Self {
-            event_type: LevelEventType::from_i32(reader.var_i32()).unwrap(),
+            event_type: LevelEventType::from_i32(reader.var_i32())
+                .unwrap_or(LevelEventType::Undefined),
             position: reader.vec3(),
             event_data: reader.var_i32(),
         }

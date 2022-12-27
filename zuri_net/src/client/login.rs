@@ -29,6 +29,8 @@ use crate::connection::*;
 use crate::client::auth::{IdentityClaims, IdentityPublicKeyClaims, Request, SaltClaims};
 use crate::client::data::{ClientData, IdentityData};
 use crate::encryption::Encryption;
+use crate::proto::packet::resource_pack_stack::ResourcePackStack;
+use crate::proto::packet::tick_sync::TickSync;
 
 pub struct LoginSequence<'a> {
     client_data: &'a ClientData,
@@ -91,26 +93,26 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
         println!("[{}:{}] Received start game and sent chunk radius.", file!(), line!());
         println!("[{}:{}] Sent request radius, awaiting response(s)...", file!(), line!());
 
-        // TODO: FIX THE BELOW OH MY GOD WE'RE SO CLOSE
-        // // We receive two packets here, ChunkRadiusUpdated and PlayStatus. The order in which these
-        // // come in is not guaranteed, so we need to handle both cases.
-        // let mut received_play_status = false;
-        // let mut received_chunk_radius = false;
-        // while !received_chunk_radius || !received_play_status {
-        //     match reader.recv().unwrap() {
-        //         Packet::ChunkRadiusUpdated(_) => {
-        //             // TODO: Store the chunk radius we received.
-        //             received_chunk_radius = true
-        //         }
-        //         Packet::PlayStatus(play_status) => {
-        //             if play_status.status != PlayStatusType::PlayerSpawn {
-        //                 panic!("login failed"); // TODO: proper error handling.
-        //             }
-        //             received_play_status = true;
-        //         }
-        //         _ => return Err(()), // todo
-        //     }
-        // }
+        // We receive two packets here, ChunkRadiusUpdated and PlayStatus. The order in which these
+        // come in is not guaranteed, so we need to handle both cases.
+        let mut received_play_status = false;
+        let mut received_chunk_radius = false;
+        while !received_chunk_radius || !received_play_status {
+            let packet = reader.recv().unwrap();
+            match packet {
+                Packet::ChunkRadiusUpdated(_) => {
+                    // TODO: Store the chunk radius we received.
+                    received_chunk_radius = true
+                }
+                Packet::PlayStatus(play_status) => {
+                    if play_status.status != PlayStatusType::PlayerSpawn {
+                        panic!("login failed"); // TODO: proper error handling.
+                    }
+                    received_play_status = true;
+                }
+                _ => {}
+            }
+        }
 
         println!("[{}:{}] Received response(s), sending set local player as initialised...", file!(), line!());
 
@@ -220,6 +222,16 @@ impl<'a> LoginSequence<'a> {
         ).unwrap();
 
         // TODO: Implement proper resource pack downloading
+
+        conn.write_packet(&mut ResourcePackClientResponse {
+            response: ResourcePackResponse::AllPacksDownloaded,
+            packs_to_download: Vec::new(),
+        }.into()).await;
+        conn.flush().await?;
+
+        ResourcePackStack::try_from(
+            reader.recv().unwrap(),
+        ).unwrap();
 
         conn.write_packet(&mut ResourcePackClientResponse {
             response: ResourcePackResponse::Completed,

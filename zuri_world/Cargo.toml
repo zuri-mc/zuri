@@ -5,5 +5,5 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.9.1"
-zuri_net = { path = "../zuri_net" }
 zuri_nbt = { path = "../zuri_nbt" }
+zuri_net = { path = "../zuri_net" }

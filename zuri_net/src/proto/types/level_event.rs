@@ -2,6 +2,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum LevelEventType {
+    Undefined,
     SoundClick = 1000,
     SoundClickFail = 1001,
     SoundLaunch = 1002,

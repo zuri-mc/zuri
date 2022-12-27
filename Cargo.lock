@@ -4834,6 +4834,7 @@ dependencies = [
  "zuri_nbt",
  "zuri_net",
  "zuri_world",
+ "zuri_xbox",
 ]
 
 [[package]]

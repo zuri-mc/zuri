@@ -11,9 +11,9 @@ pub enum ScoreboardAction {
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum ScoreboardIdentity {
-    Player,
-    Entity,
-    FakePlayer,
+    Player = 1,
+    Entity = 2,
+    FakePlayer = 3,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, FromPrimitive, ToPrimitive)]
@@ -88,8 +88,8 @@ impl ScoreboardEntry {
             objective_name: reader.string(),
             score: reader.i32(),
             identity_type: ScoreboardIdentity::Player,
+            display_name: String::new(),
             entity_unique_id: 0,
-            display_name: "".into(),
         };
         if action == ScoreboardAction::Modify {
             entry.identity_type = ScoreboardIdentity::from_u8(reader.u8()).unwrap();

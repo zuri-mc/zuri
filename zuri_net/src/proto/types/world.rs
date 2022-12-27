@@ -184,8 +184,8 @@ impl EntityLink {
 
     pub fn read(reader: &mut Reader) -> Self {
         Self {
-            ridden_entity_unique_id: reader.i64(),
-            rider_entity_unique_id: reader.i64(),
+            ridden_entity_unique_id: reader.var_i64(),
+            rider_entity_unique_id: reader.var_i64(),
             link_type: EntityLinkType::from_u8(reader.u8()).unwrap(),
             immediate: reader.bool(),
             rider_initiated: reader.bool(),
