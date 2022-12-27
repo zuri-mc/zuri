@@ -2,6 +2,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use base64ct::{Base64, Base64Unpadded, Encoding};
 use chrono::{Duration, Utc};
+use crossbeam::channel::Receiver;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Validation};
 use oauth2::basic::BasicTokenResponse;
 use p384::ecdsa::VerifyingKey;
@@ -40,24 +41,25 @@ pub struct LoginSequence<'a> {
 
 #[async_trait]
 impl<'a> Sequence<()> for LoginSequence<'a> {
-    async fn execute(self, conn: Arc<Connection>) -> Result<(), ()> {
+    async fn execute(self, reader: Receiver<Packet>, conn: Arc<Connection>) -> Result<(), ()> {
         println!("[{}:{}] Requesting network settings...", file!(), line!());
-        self.adapt_network_settings(&conn).await.unwrap();
+        self.adapt_network_settings(&reader, &conn).await.unwrap();
         println!("[{}:{}] Adapted to network settings, sending login...", file!(), line!());
-        self.send_login(&conn).await.unwrap();
+        self.send_login(&reader, &conn).await.unwrap();
         println!("[{}:{}] Sent login, waiting for next step...", file!(), line!());
 
-        match conn.read_next_packet().await.unwrap() {
+        match reader.recv().unwrap() {
             Packet::ServerToClientHandshake(handshake) => {
                 println!("[{}:{}] Received server to client handshake, adapting encryption...", file!(), line!());
                 self.adapt_encryption(
+                    &reader,
                     &conn,
                     String::from_utf8(handshake.jwt.to_vec()).unwrap(),
                 ).await.unwrap();
                 println!("[{}:{}] Adapted encryption, awaiting successful login...", file!(), line!());
 
                 let play_status = PlayStatus::try_from(
-                    conn.read_next_packet().await.unwrap(),
+                    reader.recv().unwrap(),
                 ).unwrap();
                 if play_status.status != PlayStatusType::LoginSuccess {
                     panic!("login failed"); // TODO: proper error handling.
@@ -78,14 +80,14 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
         conn.flush().await.unwrap();
         println!("[{}:{}] Sent client cache status, awaiting resource packs...", file!(), line!());
 
-        self.download_resource_packs(&conn).await.unwrap();
+        self.download_resource_packs(&reader, &conn).await.unwrap();
         println!("[{}:{}] Downloaded resource packs, awaiting start game...", file!(), line!());
 
         // The start game packet contains our runtime ID which we need later in the sequence. In the
         // future, we should really have a generalized game data, but for now we'll just store it in
         // a local variable.
         let mut rid = 0;
-        self.await_start_game(&conn, &mut rid).await.unwrap();
+        self.await_start_game(&reader, &conn, &mut rid).await.unwrap();
         println!("[{}:{}] Received start game and sent chunk radius.", file!(), line!());
         println!("[{}:{}] Sent request radius, awaiting response(s)...", file!(), line!());
 
@@ -95,7 +97,7 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
         // let mut received_play_status = false;
         // let mut received_chunk_radius = false;
         // while !received_chunk_radius || !received_play_status {
-        //     match conn.read_next_packet().await.unwrap() {
+        //     match reader.recv().unwrap() {
         //         Packet::ChunkRadiusUpdated(_) => {
         //             // TODO: Store the chunk radius we received.
         //             received_chunk_radius = true
@@ -135,19 +137,18 @@ impl<'a> LoginSequence<'a> {
         }
     }
 
-    async fn adapt_network_settings(&self, conn: &Connection) -> Result<(), ConnError> {
+    async fn adapt_network_settings(&self, reader: &Receiver<Packet>, conn: &Connection) -> Result<(), ConnError> {
         conn.write_packet(&mut RequestNetworkSettings {
             client_protocol: CURRENT_PROTOCOL,
         }.into()).await;
         conn.flush().await?;
 
-        let pk = NetworkSettings::try_from(conn.read_next_packet().await?).unwrap();
+        let pk = NetworkSettings::try_from(reader.recv().unwrap()).unwrap();
         conn.set_compression(pk.compression_algorithm.into()).await;
-
         Ok(())
     }
 
-    async fn adapt_encryption(&self, conn: &Connection, jwt: String) -> Result<(), ConnError> {
+    async fn adapt_encryption(&self, reader: &Receiver<Packet>, conn: &Connection, jwt: String) -> Result<(), ConnError> {
         let header = jsonwebtoken::decode_header(&jwt).unwrap();
 
         let mut validation = Validation::new(header.alg);
@@ -190,11 +191,11 @@ impl<'a> LoginSequence<'a> {
         Ok(())
     }
 
-    async fn send_login(&self, conn: &Connection) -> Result<(), ConnError> {
+    async fn send_login(&self, reader: &Receiver<Packet>, conn: &Connection) -> Result<(), ConnError> {
         let mut request = if self.live_token.is_none() {
-            self.encode_offline_request(conn)?
+            self.encode_offline_request(reader, conn)?
         } else {
-            self.encode_online_request(conn, minecraft::request_minecraft_chain(
+            self.encode_online_request(reader, conn, minecraft::request_minecraft_chain(
                 xbox::request_xbl_token(
                     self.live_token.as_ref().unwrap(),
                     "https://multiplayer.minecraft.net/".into(),
@@ -213,9 +214,9 @@ impl<'a> LoginSequence<'a> {
         Ok(())
     }
 
-    async fn download_resource_packs(&self, conn: &Connection) -> Result<(), ConnError> {
+    async fn download_resource_packs(&self, reader: &Receiver<Packet>, conn: &Connection) -> Result<(), ConnError> {
         ResourcePacksInfo::try_from(
-            conn.read_next_packet().await?,
+            reader.recv().unwrap(),
         ).unwrap();
 
         // TODO: Implement proper resource pack downloading
@@ -229,9 +230,9 @@ impl<'a> LoginSequence<'a> {
         Ok(())
     }
 
-    async fn await_start_game(&self, conn: &Connection, rid: &mut u64) -> Result<(), ConnError> {
+    async fn await_start_game(&self, reader: &Receiver<Packet>, conn: &Connection, rid: &mut u64) -> Result<(), ConnError> {
         let start_game = StartGame::try_from(
-            conn.read_next_packet().await?,
+            reader.recv().unwrap(),
         ).unwrap();
 
         // TODO: Store rest of game data and update shield ID.
@@ -245,7 +246,7 @@ impl<'a> LoginSequence<'a> {
         Ok(())
     }
 
-    fn encode_offline_request(&self, conn: &Connection) -> Result<Request, ConnError> {
+    fn encode_offline_request(&self, reader: &Receiver<Packet>, conn: &Connection) -> Result<Request, ConnError> {
         // TODO: CLEAN UP
         let signing_key = conn.signing_key();
         let encoding_key = EncodingKey::from_ec_der(
@@ -277,7 +278,7 @@ impl<'a> LoginSequence<'a> {
         })
     }
 
-    fn encode_online_request(&self, conn: &Connection, signed_chain: String) -> Result<Request, ConnError> {
+    fn encode_online_request(&self, reader: &Receiver<Packet>, conn: &Connection, signed_chain: String) -> Result<Request, ConnError> {
         dbg!(signed_chain.clone());
         let mut request: Request = serde_json::from_str(&signed_chain).unwrap();
 

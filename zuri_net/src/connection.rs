@@ -4,6 +4,7 @@ use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 use std::sync::Arc;
 use async_trait::async_trait;
+use crossbeam::channel::Receiver;
 use p384::ecdsa::SigningKey;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::Packet;
@@ -54,6 +55,9 @@ impl Connection {
 
     pub async fn flush(&self) -> Result<(), ConnError> {
         let mut batch_mu = self.buffered_batch.lock().await;
+        if batch_mu.is_empty() {
+            return Ok(());
+        }
         let batch = self.encoder.lock().await
             .encode(&mut *batch_mu)
             .map_err(|s| ConnError::EncodeError(s))?;
@@ -98,7 +102,7 @@ impl Connection {
 
 #[async_trait]
 pub trait Sequence<E> {
-    async fn execute(self, conn: Arc<Connection>) -> Result<(), E>;
+    async fn execute(self, reader: Receiver<Packet>, conn: Arc<Connection>) -> Result<(), E>;
 }
 
 #[derive(Debug)]

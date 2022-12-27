@@ -20,6 +20,7 @@ pub mod plugin;
 pub struct Client<H: Handler + Send + 'static> {
     conn: Arc<Connection>,
     handler: Arc<Mutex<H>>,
+    seq_chan: Sender<crossbeam::channel::Sender<Packet>>,
 
     client_data: ClientData,
     identity_data: IdentityData,
@@ -36,9 +37,11 @@ impl<H: Handler + Send + 'static> Client<H> {
         let socket = RaknetSocket::connect_with_version(&ip, 11).await.expect("TODO: panic message"); // TODO: panic message
 
         let (send, recv) = channel(1);
+        let (seq_send, seq_recv) = channel(1);
         let client = Self {
             conn: Arc::new(Connection::new(socket)),
             handler: Arc::new(Mutex::new(handler)),
+            seq_chan: seq_send,
 
             client_data,
             identity_data: identity_data.unwrap_or(IdentityData {
@@ -48,15 +51,15 @@ impl<H: Handler + Send + 'static> Client<H> {
                 title_id: None,
             }), // TODO: Parse from live_token if present.
         };
+        tokio::spawn(Self::read_loop(send, client.conn.clone(), seq_recv));
+        tokio::spawn(Self::handle_loop(recv, client.handler.clone(), client.conn.clone()));
+
         client.exec_sequence(LoginSequence::new(
             &client.client_data,
             &client.identity_data,
             live_token,
             false,
         )).await.unwrap();
-
-        tokio::spawn(Self::read_loop(send, client.conn.clone()));
-        tokio::spawn(Self::handle_loop(recv, client.handler.clone(), client.conn.clone()));
         Ok(client)
     }
 
@@ -79,17 +82,32 @@ impl<H: Handler + Send + 'static> Client<H> {
     }
 
     pub async fn exec_sequence<E>(&self, seq: impl Sequence<E>) -> Result<(), E> {
-        seq.execute(self.conn.clone()).await
+        let (send, recv) = crossbeam::channel::bounded(0);
+        self.seq_chan.send(send).await.unwrap();
+        seq.execute(recv, self.conn.clone()).await
     }
 
-    async fn read_loop(chan: Sender<Packet>, conn: Arc<Connection>) {
+    async fn read_loop(chan: Sender<Packet>, conn: Arc<Connection>, mut seq_recv: Receiver<crossbeam::channel::Sender<Packet>>) {
+        let mut seq_chan = None;
         loop {
             let result = conn.read_next_packet().await;
-            //let pks = b.await;
-            //let pks = mu.read_next_batch().await;
-            //drop(mu);
+            if seq_chan.is_none() {
+                if let Ok(c) = seq_recv.try_recv() {
+                    seq_chan = Some(c);
+                }
+            }
+
             match result {
                 Ok(pk) => {
+                    let mut seq_done = false;
+                    if let Some(chan) = &mut seq_chan {
+                        if chan.send(pk.clone()).is_err() {
+                            seq_done = true;
+                        }
+                    }
+                    if seq_done {
+                        seq_chan = None;
+                    }
                     // We can call expect here: the handler stops if the read loop stops.
                     chan.send(pk).await.expect("Could not send packet to handler");
                 }
