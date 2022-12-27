@@ -10,7 +10,6 @@ noise = "0.8.2"
 json = "0.12.4"
 uuid = "1.2.2"
 tokio = { version = "1.20.1", features = ["full"] }
-zuri_proto = { path = "../zuri_proto" }
 zuri_math = { path = "../zuri_math" }
 zuri_world = { path = "../zuri_world" }
 zuri_net = { path = "../zuri_net", features = ["bevy"] }

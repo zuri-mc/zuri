@@ -1,10 +1,11 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 use async_trait::async_trait;
+use oauth2::basic::BasicTokenResponse;
 use rust_raknet::RaknetSocket;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::Mutex;
-use zuri_proto::packet::Packet;
+use crate::proto::packet::Packet;
 
 use crate::client::login::LoginSequence;
 use crate::client::data::{ClientData, IdentityData};
@@ -28,7 +29,8 @@ impl<H: Handler + Send + 'static> Client<H> {
     pub async fn connect(
         ip: SocketAddr,
         client_data: ClientData,
-        identity_data: IdentityData,
+        identity_data: Option<IdentityData>,
+        live_token: Option<BasicTokenResponse>,
         handler: H,
     ) -> Result<Self, String> {
         let socket = RaknetSocket::connect_with_version(&ip, 11).await.expect("TODO: panic message"); // TODO: panic message
@@ -39,9 +41,19 @@ impl<H: Handler + Send + 'static> Client<H> {
             handler: Arc::new(Mutex::new(handler)),
 
             client_data,
-            identity_data,
+            identity_data: identity_data.unwrap_or(IdentityData {
+                xuid: "".into(),
+                identity: "".into(),
+                display_name: "".into(),
+                title_id: None,
+            }), // TODO: Parse from live_token if present.
         };
-        client.exec_sequence(LoginSequence::new(&client.client_data, &client.identity_data, false)).await.unwrap();
+        client.exec_sequence(LoginSequence::new(
+            &client.client_data,
+            &client.identity_data,
+            live_token,
+            false,
+        )).await.unwrap();
 
         tokio::spawn(Self::read_loop(send, client.conn.clone()));
         tokio::spawn(Self::handle_loop(recv, client.handler.clone(), client.conn.clone()));
@@ -128,12 +140,13 @@ mod tests {
         let client = Client::connect(
             "127.0.0.1:19131".parse().unwrap(),
             ClientData::default(),
-            IdentityData {
+            Some(IdentityData {
                 identity: Uuid::new_v4().to_string(),
                 display_name: "Zuri".into(),
                 xuid: String::new(),
                 title_id: None,
-            },
+            }),
+            None,
             TestHandler,
         ).await.unwrap();
         sleep(Duration::from_secs(3)).await;

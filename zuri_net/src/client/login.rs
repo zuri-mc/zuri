@@ -1,35 +1,38 @@
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use async_trait::async_trait;
 use base64ct::{Base64, Base64Unpadded, Encoding};
+use chrono::{Duration, Utc};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Validation};
+use oauth2::basic::BasicTokenResponse;
 use p384::ecdsa::VerifyingKey;
 use p384::pkcs8::{DecodePublicKey, EncodePrivateKey, EncodePublicKey};
 use sha2::{Sha256, Digest};
 use tokio::sync::Mutex;
-use zuri_proto::CURRENT_PROTOCOL;
-use zuri_proto::packet::client_cache_status::ClientCacheStatus;
-use zuri_proto::packet::client_to_server_handshake::ClientToServerHandshake;
-use zuri_proto::packet::login::Login;
-use zuri_proto::packet::network_settings::NetworkSettings;
-use zuri_proto::packet::Packet;
-use zuri_proto::packet::play_status::{PlayStatus, PlayStatusType};
-use zuri_proto::packet::request_chunk_radius::RequestChunkRadius;
-use zuri_proto::packet::request_network_settings::RequestNetworkSettings;
-use zuri_proto::packet::resource_pack_client_response::ResourcePackClientResponse;
-use zuri_proto::packet::resource_pack_stack::ResourcePackStack;
-use zuri_proto::packet::resource_packs_info::ResourcePacksInfo;
-use zuri_proto::packet::set_local_player_as_initialised::SetLocalPlayerAsInitialised;
-use zuri_proto::packet::start_game::StartGame;
-use zuri_proto::types::resource_pack::ResourcePackResponse;
+use zuri_xbox::{minecraft, xbox};
+use crate::proto::{CURRENT_PROTOCOL, CURRENT_VERSION};
+use crate::proto::packet::client_cache_status::ClientCacheStatus;
+use crate::proto::packet::client_to_server_handshake::ClientToServerHandshake;
+use crate::proto::packet::login::Login;
+use crate::proto::packet::network_settings::NetworkSettings;
+use crate::proto::packet::Packet;
+use crate::proto::packet::play_status::{PlayStatus, PlayStatusType};
+use crate::proto::packet::request_chunk_radius::RequestChunkRadius;
+use crate::proto::packet::request_network_settings::RequestNetworkSettings;
+use crate::proto::packet::resource_pack_client_response::ResourcePackClientResponse;
+use crate::proto::packet::resource_packs_info::ResourcePacksInfo;
+use crate::proto::packet::set_local_player_as_initialised::SetLocalPlayerAsInitialised;
+use crate::proto::packet::start_game::StartGame;
+use crate::proto::types::resource_pack::ResourcePackResponse;
 
 use crate::connection::*;
-use crate::client::auth::{IdentityClaims, Request, SaltClaims};
+use crate::client::auth::{IdentityClaims, IdentityPublicKeyClaims, Request, SaltClaims};
 use crate::client::data::{ClientData, IdentityData};
 use crate::encryption::Encryption;
 
 pub struct LoginSequence<'a> {
     client_data: &'a ClientData,
     identity_data: &'a IdentityData,
+    live_token: Option<BasicTokenResponse>,
+
     cache_chunks: bool,
     // TODO: Make a general GameData system.
 }
@@ -123,8 +126,9 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
 }
 
 impl<'a> LoginSequence<'a> {
-    pub fn new(client_data: &'a ClientData, identity_data: &'a IdentityData, cache_chunks: bool) -> Self {
+    pub fn new(client_data: &'a ClientData, identity_data: &'a IdentityData, live_token: Option<BasicTokenResponse>, cache_chunks: bool) -> Self {
         Self {
+            live_token,
             client_data,
             identity_data,
             cache_chunks,
@@ -172,11 +176,11 @@ impl<'a> LoginSequence<'a> {
             server_verifying_key.as_affine(),
         );
 
-        let mut hasher = Sha256::new();
-        hasher.update(&salt);
-        hasher.update(&unsalted_secret.raw_secret_bytes());
+        let mut digest = Sha256::new();
+        digest.update(&salt);
+        digest.update(&unsalted_secret.raw_secret_bytes());
 
-        let shared_secret = hasher.finalize().to_vec();
+        let shared_secret = digest.finalize().to_vec();
 
         conn.set_encryption(Encryption::new(shared_secret));
 
@@ -187,37 +191,22 @@ impl<'a> LoginSequence<'a> {
     }
 
     async fn send_login(&self, conn: &mut Connection) -> Result<(), ConnError> {
-        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-
-        let signing_key = conn.signing_key();
-        let encoding_key = EncodingKey::from_ec_der(
-            signing_key.to_pkcs8_der().unwrap().as_bytes(),
-        );
-        let identity_public_key = Base64::encode_string(
-            signing_key.verifying_key().to_public_key_der().unwrap().as_bytes(),
-        );
-
-        let mut header = jsonwebtoken::Header::new(Algorithm::ES384);
-        header.x5u = Some(identity_public_key.clone());
-        header.typ = None;
-
-        let identity_jwt = jsonwebtoken::encode(&header, &IdentityClaims {
-            expiration: (now + Duration::from_secs(6 * 60 * 60)).as_secs(),
-            not_before: (now - Duration::from_secs(6 * 60 * 60)).as_secs(),
-            identity_data: self.identity_data.clone(),
-            identity_public_key: identity_public_key.clone(),
-        }, &encoding_key).unwrap();
-
-        let data_jwt = jsonwebtoken::encode(
-            &header, &self.client_data, &encoding_key,
-        ).unwrap();
+        let mut request = if self.live_token.is_none() {
+            self.encode_offline_request(conn)?
+        } else {
+            self.encode_online_request(conn, minecraft::request_minecraft_chain(
+                xbox::request_xbl_token(
+                    self.live_token.as_ref().unwrap(),
+                    "https://multiplayer.minecraft.net/".into(),
+                ),
+                CURRENT_VERSION.into(),
+                conn.signing_key(),
+            ))?
+        };
 
         conn.write_packet(&mut Login {
             client_protocol: CURRENT_PROTOCOL,
-            connection_request: Request {
-                chain: vec![identity_jwt.as_str().to_string()],
-                token: data_jwt.as_str().to_string(),
-            }.encode().into(),
+            connection_request: request.encode().into(),
         }.into());
         conn.flush().await?;
 
@@ -226,7 +215,7 @@ impl<'a> LoginSequence<'a> {
 
     async fn download_resource_packs(&self, conn: &mut Connection) -> Result<(), ConnError> {
         ResourcePacksInfo::try_from(
-            conn.read_next_packet().await.unwrap(),
+            conn.read_next_packet().await?,
         ).unwrap();
 
         // TODO: Implement proper resource pack downloading
@@ -242,7 +231,7 @@ impl<'a> LoginSequence<'a> {
 
     async fn await_start_game(&self, conn: &mut Connection, rid: &mut u64) -> Result<(), ConnError> {
         let start_game = StartGame::try_from(
-            conn.read_next_packet().await.unwrap(),
+            conn.read_next_packet().await?,
         ).unwrap();
 
         // TODO: Store rest of game data and update shield ID.
@@ -254,5 +243,73 @@ impl<'a> LoginSequence<'a> {
         conn.flush().await?;
 
         Ok(())
+    }
+
+    fn encode_offline_request(&self, conn: &mut Connection) -> Result<Request, ConnError> {
+        // TODO: CLEAN UP
+        let signing_key = conn.signing_key();
+        let encoding_key = EncodingKey::from_ec_der(
+            signing_key.to_pkcs8_der().unwrap().as_bytes(),
+        );
+        let identity_public_key = Base64::encode_string(
+            signing_key.verifying_key().to_public_key_der().unwrap().as_bytes(),
+        );
+
+        let mut header = jsonwebtoken::Header::new(Algorithm::ES384);
+        header.x5u = Some(identity_public_key.clone());
+        header.typ = None;
+
+        let now = Utc::now();
+        let identity_jwt = jsonwebtoken::encode(&header, &IdentityClaims {
+            expiration: (now + Duration::hours(6)).timestamp() as u64,
+            not_before: (now - Duration::hours(6)).timestamp() as u64,
+            identity_data: self.identity_data.clone(),
+            identity_public_key: identity_public_key.clone(),
+        }, &encoding_key).unwrap();
+
+        let data_jwt = jsonwebtoken::encode(
+            &header, &self.client_data, &encoding_key,
+        ).unwrap();
+
+        Ok(Request {
+            chain: vec![identity_jwt.as_str().to_string()],
+            token: data_jwt.as_str().to_string(),
+        })
+    }
+
+    fn encode_online_request(&self, conn: &mut Connection, signed_chain: String) -> Result<Request, ConnError> {
+        dbg!(signed_chain.clone());
+        let mut request: Request = serde_json::from_str(&signed_chain).unwrap();
+
+        // TODO: CLEAN UP
+        let signing_key = conn.signing_key();
+        let encoding_key = EncodingKey::from_ec_der(
+            signing_key.to_pkcs8_der().unwrap().as_bytes(),
+        );
+        let identity_public_key = Base64::encode_string(
+            signing_key.verifying_key().to_public_key_der().unwrap().as_bytes(),
+        );
+
+        let mut header = jsonwebtoken::Header::new(Algorithm::ES384);
+        header.x5u = Some(identity_public_key.clone());
+        header.typ = None;
+
+        let now = Utc::now();
+        let identity_public_key_jwt = jsonwebtoken::encode(&header, &IdentityPublicKeyClaims {
+            expiration: (now + Duration::hours(6)).timestamp() as u64,
+            not_before: (now - Duration::hours(6)).timestamp() as u64,
+            identity_public_key: jsonwebtoken::decode_header(&request.chain[0]).unwrap().x5u.unwrap(),
+            certificate_authority: Some(true),
+        }, &encoding_key).unwrap();
+
+        let data_jwt = jsonwebtoken::encode(
+            &header, &self.client_data, &encoding_key,
+        ).unwrap();
+
+        // prepend our identity public key JWT to the chain
+        request.chain.insert(0, identity_public_key_jwt);
+        request.token = data_jwt.as_str().to_string();
+
+        Ok(request)
     }
 }

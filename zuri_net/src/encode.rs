@@ -1,5 +1,5 @@
 use bytes::Bytes;
-use zuri_proto::io::{Reader, Writer};
+use crate::proto::io::{Reader, Writer};
 
 use crate::encryption::Encryption;
 use crate::compression::Compression;

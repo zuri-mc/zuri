@@ -1,7 +1,8 @@
 extern crate core;
 
-pub mod compression;
-pub mod encryption;
-pub mod encode;
 pub mod client;
-mod connection;
+pub mod compression;
+pub mod connection;
+pub mod encode;
+pub mod encryption;
+pub mod proto;

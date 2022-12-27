@@ -19,6 +19,21 @@ pub struct IdentityClaims {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct IdentityPublicKeyClaims {
+    #[serde(rename = "exp")]
+    pub expiration: u64,
+
+    #[serde(rename = "nbf")]
+    pub not_before: u64,
+
+    #[serde(rename = "identityPublicKey")]
+    pub identity_public_key: String,
+
+    #[serde(rename = "certificateAuthority", skip_serializing_if = "Option::is_none")]
+    pub certificate_authority: Option<bool>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct SaltClaims {
     pub salt: String,
 }
@@ -28,7 +43,7 @@ pub struct Request {
     #[serde(rename = "chain")]
     pub chain: Vec<String>,
 
-    #[serde(skip_serializing)]
+    #[serde(skip_serializing, skip_deserializing)]
     pub token: String,
 }
 
