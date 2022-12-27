@@ -1,7 +1,7 @@
 use uuid::Uuid;
 use base64ct::{Base64, Encoding};
 use serde::{Serialize, Deserialize};
-use zuri_proto::types::device::Device;
+use crate::proto::types::device::Device;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -125,7 +125,7 @@ impl Default for ClientData {
             device_model: String::new(),
             device_os: Device::Android,
             device_id: Uuid::new_v4().to_string(),
-            game_version: zuri_proto::CURRENT_VERSION.to_string(),
+            game_version: crate::proto::CURRENT_VERSION.to_string(),
             gui_scale: 0,
             editor_mode: false,
             language_code: String::from("en_US"),
