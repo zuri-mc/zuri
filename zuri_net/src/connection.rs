@@ -2,14 +2,12 @@ use std::collections::VecDeque;
 use bytes::Bytes;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
-use std::sync::Arc;
 use async_trait::async_trait;
 use p384::ecdsa::SigningKey;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::Packet;
 use rust_raknet::{RaknetSocket, Reliability};
 use rust_raknet::error::RaknetError;
-use tokio::sync::mpsc::Receiver;
 use tokio::sync::Mutex;
 use crate::compression::Compression;
 
@@ -97,38 +95,7 @@ impl Connection {
 
 #[async_trait]
 pub trait Sequence<E> {
-    async fn execute(self, mut reader: Receiver<Packet>, writer: SequenceConn) -> Result<(), E>;
-}
-
-#[derive(Clone)]
-pub struct SequenceConn {
-    conn: Arc<Mutex<Connection>>,
-}
-
-impl SequenceConn {
-    pub fn new(conn: Arc<Mutex<Connection>>) -> Self {
-        Self {
-            conn
-        }
-    }
-
-    pub async fn write_packet(&self, mut pk: Packet) -> Result<(), ConnError> {
-        let mut conn = self.conn.lock().await;
-        conn.write_packet(&mut pk);
-        conn.flush().await
-    }
-
-    pub async fn signing_key(&self) -> SigningKey {
-        self.conn.lock().await.signing_key.clone()
-    }
-
-    pub async fn set_encryption(&self, e: Encryption) {
-        self.conn.lock().await.set_encryption(e);
-    }
-
-    pub async fn set_compression(&self, e: Compression) {
-        self.conn.lock().await.set_compression(e);
-    }
+    async fn execute(self, conn: &Mutex<Connection>) -> Result<(), E>;
 }
 
 #[derive(Debug)]

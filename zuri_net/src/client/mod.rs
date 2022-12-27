@@ -1,6 +1,5 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
-use std::sync::mpsc::sync_channel;
 use async_trait::async_trait;
 use oauth2::basic::BasicTokenResponse;
 use rust_raknet::RaknetSocket;
@@ -10,7 +9,7 @@ use crate::proto::packet::Packet;
 
 use crate::client::login::LoginSequence;
 use crate::client::data::{ClientData, IdentityData};
-use crate::connection::{Connection, ConnError, Sequence, SequenceConn};
+use crate::connection::{Connection, ConnError, Sequence};
 
 mod login;
 mod auth;
@@ -21,7 +20,6 @@ pub mod plugin;
 pub struct Client<H: Handler + Send + 'static> {
     conn: Arc<Mutex<Connection>>,
     handler: Arc<Mutex<H>>,
-    seq_chan: Sender<Sender<Packet>>,
 
     client_data: ClientData,
     identity_data: IdentityData,
@@ -37,13 +35,10 @@ impl<H: Handler + Send + 'static> Client<H> {
     ) -> Result<Self, String> {
         let socket = RaknetSocket::connect_with_version(&ip, 11).await.expect("TODO: panic message"); // TODO: panic message
 
-
         let (send, recv) = channel(1);
-        let (seq_send, seq_recv) = channel(1);
         let client = Self {
             conn: Arc::new(Mutex::new(Connection::new(socket))),
             handler: Arc::new(Mutex::new(handler)),
-            seq_chan: seq_send,
 
             client_data,
             identity_data: identity_data.unwrap_or(IdentityData {
@@ -60,7 +55,7 @@ impl<H: Handler + Send + 'static> Client<H> {
             false,
         )).await.unwrap();
 
-        tokio::spawn(Self::read_loop(send, client.conn.clone(), seq_recv));
+        tokio::spawn(Self::read_loop(send, client.conn.clone()));
         tokio::spawn(Self::handle_loop(recv, client.handler.clone(), client.conn.clone()));
         Ok(client)
     }
@@ -84,34 +79,18 @@ impl<H: Handler + Send + 'static> Client<H> {
     }
 
     pub async fn exec_sequence<E>(&self, seq: impl Sequence<E>) -> Result<(), E> {
-        let (send, recv) = channel(1);
-        self.seq_chan.send(send).await.unwrap();
-        seq.execute(recv, SequenceConn::new(self.conn.clone())).await
+        seq.execute(&self.conn).await
     }
 
-    async fn read_loop(chan: Sender<Packet>, conn: Arc<Mutex<Connection>>, mut seq_chan: Receiver<Sender<Packet>>) {
-        let mut seq = None;
+    async fn read_loop(chan: Sender<Packet>, conn: Arc<Mutex<Connection>>) {
         loop {
             let result = conn.lock().await.read_next_packet().await;
-
-            if seq.is_none() {
-                if let Ok(s) = seq_chan.try_recv() {
-                    seq = Some(s);
-                }
-            }
+            //let pks = b.await;
+            //let pks = mu.read_next_batch().await;
+            //drop(mu);
             match result {
                 Ok(pk) => {
-                    // If there is an ongoing sequence, send it a clone of the packet first.
-                    let mut complete_seq = false;
-                    if let Some(seq_sender) = &mut seq {
-                        if let Err(_) = seq_sender.send(pk.clone()).await {
-                            complete_seq = true;
-                        }
-                    }
-                    if complete_seq {
-                        seq = None;
-                    }
-                    // We can call expect here: the handler stops only if the read loop stops first.
+                    // We can call expect here: the handler stops if the read loop stops.
                     chan.send(pk).await.expect("Could not send packet to handler");
                 }
                 Err(_) => {
