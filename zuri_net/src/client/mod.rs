@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use rust_raknet::RaknetSocket;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::Mutex;
-use zuri_proto::packet::Packet;
+use crate::proto::packet::Packet;
 
 use crate::client::login::LoginSequence;
 use crate::client::data::{ClientData, IdentityData};

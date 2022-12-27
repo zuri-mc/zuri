@@ -4235,7 +4235,6 @@ dependencies = [
  "uuid",
  "zuri_math",
  "zuri_net",
- "zuri_proto",
  "zuri_world",
 ]
 
@@ -4267,8 +4266,12 @@ dependencies = [
  "cipher 0.4.3",
  "ctr 0.9.2",
  "futures-lite",
+ "glam",
  "jsonwebtoken",
  "libdeflater",
+ "num",
+ "num-derive",
+ "num-traits",
  "p384",
  "rand 0.8.5",
  "rust-raknet",
@@ -4278,21 +4281,6 @@ dependencies = [
  "sha2",
  "snap",
  "tokio",
- "uuid",
- "zuri_proto",
-]
-
-[[package]]
-name = "zuri_proto"
-version = "0.1.0"
-dependencies = [
- "bytes",
- "glam",
- "num",
- "num-derive",
- "num-traits",
- "serde",
- "serde_repr",
  "uuid",
  "zuri_nbt",
 ]

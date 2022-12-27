@@ -2,7 +2,6 @@
 resolver = "2"
 members = [
     "zuri",
-    "zuri_proto",
     "zuri_net",
     "zuri_math",
     "zuri_nbt",

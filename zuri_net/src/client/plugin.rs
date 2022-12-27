@@ -9,7 +9,7 @@ use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::mpsc::error::TryRecvError;
 use tokio::task::JoinHandle;
 use uuid::Uuid;
-use zuri_proto::packet::Packet;
+use crate::proto::packet::Packet;
 
 use crate::client::{Client, Handler};
 use crate::client::data::{ClientData, IdentityData};

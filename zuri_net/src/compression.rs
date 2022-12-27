@@ -1,6 +1,6 @@
 use std::io::{Read, Write};
 use bytes::Buf;
-use zuri_proto::packet::network_settings::CompressionType;
+use crate::proto::packet::network_settings::CompressionType;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Compression {
