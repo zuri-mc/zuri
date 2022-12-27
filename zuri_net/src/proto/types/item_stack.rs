@@ -9,7 +9,7 @@ use crate::proto::types::item::ItemStack;
 use crate::proto::types::item_descriptor::ItemDescriptorCount;
 
 encodable_enum!(
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     pub enum StackRequestAction {
         TakeStackRequestAction = 0,
         PlaceStackRequestAction = 1,
@@ -34,7 +34,7 @@ encodable_enum!(
     }
 );
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum StackRequestActionType {
     Take,
     Place,
@@ -88,7 +88,7 @@ pub enum ItemStackResponseStatus {
     Error,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ItemComponentEntry {
     pub name: String,
     pub data: Value,
@@ -108,7 +108,7 @@ impl ItemComponentEntry {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ItemEnchantments {
     pub slot: i32,
     pub enchantments: [Vec<EnchantmentInstance>; 3],
@@ -135,7 +135,7 @@ impl ItemEnchantments {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EnchantmentInstance {
     pub enchantment_type: u8,
     pub level: u8,
@@ -155,7 +155,7 @@ impl EnchantmentInstance {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EnchantmentOption {
     pub cost: u32,
     pub enchantments: ItemEnchantments,
@@ -181,7 +181,7 @@ impl EnchantmentOption {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ItemEntry {
     pub name: String,
     pub runtime_id: i16,
@@ -204,7 +204,7 @@ impl ItemEntry {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct ItemStackRequestEntry {
     pub request_id: i32,
     pub actions: Vec<StackRequestAction>,
@@ -236,7 +236,7 @@ impl ItemStackRequestEntry {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ItemStackResponseEntry {
     pub status: ItemStackResponseStatus,
     pub request_id: i32,
@@ -263,7 +263,7 @@ impl ItemStackResponseEntry {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StackRequestSlotInfo {
     pub container_id: u8,
     pub slot: u8,
@@ -286,7 +286,7 @@ impl StackRequestSlotInfo {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DestroyStackRequestAction {
     pub count: u8,
     pub source: StackRequestSlotInfo,
@@ -306,7 +306,7 @@ impl DestroyStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DropStackRequestAction {
     pub count: u8,
     pub source: StackRequestSlotInfo,
@@ -329,7 +329,7 @@ impl DropStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AutoCraftRecipeStackRequestAction {
     pub recipe_network_id: u32,
     pub times_crafted: u8,
@@ -353,7 +353,7 @@ impl AutoCraftRecipeStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BeaconPaymentStackRequestAction {
     pub primary_effect: i32,
     pub secondary_effect: i32,
@@ -373,7 +373,7 @@ impl BeaconPaymentStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MineBlockStackRequestAction {
     pub hotbar_slot: i32,
     pub predicted_durability: i32,
@@ -396,7 +396,7 @@ impl MineBlockStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LabTableCombineStackRequestAction {}
 
 impl LabTableCombineStackRequestAction {
@@ -407,7 +407,7 @@ impl LabTableCombineStackRequestAction {
     fn write(&self, _: &mut Writer) {}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TakeStackRequestAction {
     pub count: u8,
     pub source: StackRequestSlotInfo,
@@ -430,7 +430,7 @@ impl TakeStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SwapStackRequestAction {
     pub source: StackRequestSlotInfo,
     pub destination: StackRequestSlotInfo,
@@ -450,7 +450,7 @@ impl SwapStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TakeOutContainerStackRequestAction {
     pub count: u8,
     pub source: StackRequestSlotInfo,
@@ -473,7 +473,7 @@ impl TakeOutContainerStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ConsumeStackRequestAction {
     pub count: u8,
     pub source: StackRequestSlotInfo,
@@ -493,7 +493,7 @@ impl ConsumeStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CraftCreativeStackRequestAction {
     pub creative_item_network_id: u32,
 }
@@ -510,7 +510,7 @@ impl CraftCreativeStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CraftGrindstoneRecipeStackRequestAction {
     pub recipe_network_id: u32,
     pub cost: i32,
@@ -530,7 +530,7 @@ impl CraftGrindstoneRecipeStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CraftLoomRecipeStackRequestAction {
     pub pattern: String,
 }
@@ -547,7 +547,7 @@ impl CraftLoomRecipeStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CraftNonImplementedStackRequestAction {}
 
 impl CraftNonImplementedStackRequestAction {
@@ -558,7 +558,7 @@ impl CraftNonImplementedStackRequestAction {
     pub fn write(&self, _: &mut Writer) {}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CraftRecipeOptionalStackRequestAction {
     pub recipe_network_id: u32,
     pub filter_string_index: i32,
@@ -578,7 +578,7 @@ impl CraftRecipeOptionalStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CraftRecipeStackRequestAction {
     pub recipe_network_id: u32,
 }
@@ -595,7 +595,7 @@ impl CraftRecipeStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CraftResultsDeprecatedStackRequestAction {
     pub result_items: Vec<ItemStack>,
     pub times_crafted: u8,
@@ -616,7 +616,7 @@ impl CraftResultsDeprecatedStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CreateStackRequestAction {
     pub results_slot: u8,
 }
@@ -633,7 +633,7 @@ impl CreateStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PlaceInContainerStackRequestAction {
     pub count: u8,
     pub source: StackRequestSlotInfo,
@@ -656,7 +656,7 @@ impl PlaceInContainerStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PlaceStackRequestAction {
     pub count: u8,
     pub source: StackRequestSlotInfo,
@@ -679,7 +679,7 @@ impl PlaceStackRequestAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StackResponseContainerInfo {
     pub container_id: u8,
     pub slot_info: Vec<StackResponseSlotInfo>,
@@ -700,7 +700,7 @@ impl StackResponseContainerInfo {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StackResponseSlotInfo {
     pub slot: u8,
     pub hotbar_slot: u8,

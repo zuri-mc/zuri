@@ -2,14 +2,14 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{ToPrimitive, FromPrimitive};
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum AttributeModifierOperand {
     Min,
     Max,
     Current,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum AttributeModifierOperation {
     Addition,
     MultiplyBase,
@@ -17,7 +17,7 @@ pub enum AttributeModifierOperation {
     Cap,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct Attribute {
     pub value: AttributeValue,
     pub default: f32,
@@ -51,7 +51,7 @@ impl Attribute {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AttributeModifier {
     pub id: String,
     pub name: String,
@@ -83,7 +83,7 @@ impl AttributeModifier {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct AttributeValue {
     pub name: String,
     pub min: f32,

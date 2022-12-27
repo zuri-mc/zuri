@@ -7,7 +7,7 @@ use crate::proto::types::level_event::LevelEventType;
 
 /// Sent by the server to make a certain event in the level occur. It ranges from particles, to
 /// sounds, and other events such as starting rain and block breaking.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LevelEvent {
     /// The event that is being 'called'.
     pub event_type: LevelEventType,

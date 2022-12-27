@@ -8,7 +8,7 @@ use crate::proto::io::{Reader, Writer};
 /// Sent by the server to make a player respawn client-side. It is sent in response to a PlayerAction packet with the
 /// action type Respawn. As of 1.13, the server sends two of these packets with different states, and the client sends
 /// one of these back in order to complete the respawn.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Respawn {
     /// The position on which the player should be respawned. The position might be in a different dimension, in which
     /// case the client should first be sent a ChangeDimension packet.
@@ -21,7 +21,7 @@ pub struct Respawn {
     pub entity_runtime_id: u64,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum RespawnState {
     SearchingForSpawn,
     ReadyToSpawn,

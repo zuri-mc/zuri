@@ -1,7 +1,7 @@
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GameTestResults {
     pub name: String,
     pub succeeded: bool,

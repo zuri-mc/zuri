@@ -9,7 +9,7 @@ use crate::encodable_enum;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::item::ItemInstance;
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum Window {
     Inventory = 0,
     OffHand = 119,
@@ -25,7 +25,7 @@ pub enum InventoryActionSource {
     TODO = 99999,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct InventoryAction {
     pub source_type: InventoryActionSource,
     pub window: Window,
@@ -86,7 +86,7 @@ impl Default for InventoryAction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LegacySetItemSlot {
     pub container_id: u8,
     pub slots: Bytes,
@@ -107,7 +107,7 @@ impl LegacySetItemSlot {
 }
 
 encodable_enum!(
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     pub enum InventoryTransactionData {
         NormalTransaction = 0,
         MismatchTransaction = 1,
@@ -117,7 +117,7 @@ encodable_enum!(
     }
 );
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MismatchTransaction;
 
 impl MismatchTransaction {
@@ -128,7 +128,7 @@ impl MismatchTransaction {
     pub fn write(&self, _: &mut Writer) {}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NormalTransaction {}
 
 impl NormalTransaction {
@@ -139,7 +139,7 @@ impl NormalTransaction {
     pub fn write(&self, _: &mut Writer) {}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ReleaseItemTransaction {
     pub action_type: ReleaseItemAction,
     pub hot_bar_slot: i32,
@@ -147,7 +147,7 @@ pub struct ReleaseItemTransaction {
     pub head_position: Vec3,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum ReleaseItemAction {
     Release,
     Consume,
@@ -171,7 +171,7 @@ impl ReleaseItemTransaction {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UseItemOnEntityTransaction {
     pub target_entity_runtime_id: u64,
     pub action_type: u32,
@@ -203,7 +203,7 @@ impl UseItemOnEntityTransaction {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct UseItemTransactionData {
     pub legacy_request_id: i32,
     pub legacy_set_item_slots: Vec<LegacySetItemSlot>,

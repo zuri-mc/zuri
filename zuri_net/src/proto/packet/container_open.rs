@@ -9,7 +9,7 @@ use crate::proto::types::container::ContainerType;
 /// Sent by the server to open a container client-side. This container must be physically present in the world, for the
 /// packet to have any effect. Unlike Java Edition, Bedrock Edition requires that chests for example must be present and
 /// in range to open its inventory.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ContainerOpen {
     /// The window that is being opened. It may be used later to close the container using a ContainerClose packet.
     pub window: Window,

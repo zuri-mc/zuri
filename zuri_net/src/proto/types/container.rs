@@ -121,7 +121,7 @@ pub enum ContainerType {
     ChestBoat = 34,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ContainerDataKey(pub i32);
 
 impl Into<ContainerDataKey> for ContainerDataFurnace {

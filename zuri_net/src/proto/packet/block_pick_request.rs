@@ -3,7 +3,7 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
 /// Sent by the client when it requests to pick a block in the world and place its item in their inventory.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BlockPickRequest {
     /// The position at which the client requested to pick the block. The block at that position should have its item
     /// put in HotBarSlot if it is empty.

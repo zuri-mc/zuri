@@ -3,7 +3,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MoveActorDelta {
     pub entity_runtime_id: u64,
     pub flags: u16,

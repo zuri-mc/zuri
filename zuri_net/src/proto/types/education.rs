@@ -1,6 +1,6 @@
 use crate::proto::io::{Read, Reader, Write, Writer};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EducationExternalLinkSettings {
     pub url: String,
     pub display_name: String,
@@ -32,7 +32,7 @@ impl Read<EducationExternalLinkSettings> for EducationExternalLinkSettings {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EducationSharedResourceURI {
     pub button_name: String,
     pub link_uri: String,

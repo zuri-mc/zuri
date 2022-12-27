@@ -2,7 +2,7 @@ use uuid::Uuid;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EmoteList {
     pub player_runtime_id: u64,
     pub emote_pieces: Vec<Uuid>,

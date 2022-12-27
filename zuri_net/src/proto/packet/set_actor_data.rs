@@ -3,7 +3,7 @@ use crate::proto::packet::PacketType;
 
 /// Sent by the server to update the entity metadata of an entity. It includes flags such as if the entity is on fire,
 /// but also properties such as the air it has left until it starts drowning.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SetActorData {
     /// The runtime ID of the entity. The runtime ID is unique for each world session, and entities are generally
     /// identified in packets using this runtime ID.

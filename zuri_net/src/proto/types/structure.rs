@@ -3,7 +3,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{ToPrimitive, FromPrimitive};
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum StructureBlockType {
     Data,
     Save,
@@ -13,7 +13,7 @@ pub enum StructureBlockType {
     Export,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum StructureMirrorAxis {
     None,
     X,
@@ -21,13 +21,13 @@ pub enum StructureMirrorAxis {
     Both,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum StructureRedstoneSaveMode {
     Memory,
     Disk,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum StructureRotation {
     None,
     Rotate90,
@@ -35,7 +35,7 @@ pub enum StructureRotation {
     Rotate270,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum StructureTemplateDataRequestType {
     None,
     ExportFromSave,
@@ -44,21 +44,21 @@ pub enum StructureTemplateDataRequestType {
     ImportFromSave,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum StructureTemplateDataResponseType {
     Export,
     Query,
     Import,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum AnimationMode {
     None,
     Layers,
     Blocks,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StructureSettings {
     pub palette_name: String,
     pub ignore_entities: bool,

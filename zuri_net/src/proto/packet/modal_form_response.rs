@@ -5,13 +5,13 @@ use num_traits::{ToPrimitive, FromPrimitive};
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Read, Reader, Write, Writer};
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum ModalFormCancelReason {
     UserClosed,
     UserBusy,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ModalFormResponse {
     pub form_id: u32,
     pub response_data: Option<Bytes>,

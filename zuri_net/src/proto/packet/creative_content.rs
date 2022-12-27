@@ -2,7 +2,7 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::item::ItemStack;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CreativeContent {
     pub items: Vec<CreativeItem>,
 }
@@ -18,7 +18,7 @@ impl PacketType for CreativeContent {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CreativeItem {
     pub creative_item_network_id: u32,
     pub item: ItemStack,

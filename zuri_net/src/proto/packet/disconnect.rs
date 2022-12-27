@@ -2,7 +2,7 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
 /// Sent by the server to disconnect the client using an optional message to send as the disconnect screen.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Disconnect {
     /// An optional message to show when disconnected. If left empty, the disconnection screen will be hidden.
     pub message: Option<String>,

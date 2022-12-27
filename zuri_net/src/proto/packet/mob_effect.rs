@@ -4,14 +4,14 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum MobEffectOperation {
     Add,
     Modify,
     Remove,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum MobEffectType {
     Speed,
     Slowness,
@@ -43,7 +43,7 @@ pub enum MobEffectType {
 
 /// Sent by the server to apply an effect to the player, for example an effect like poison. It may also be used to
 /// modify existing effects, or removing them completely.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MobEffect {
     /// The runtime ID of the entity. The runtime ID is unique for each world session, and entities are generally
     /// identified in packets using this runtime ID.

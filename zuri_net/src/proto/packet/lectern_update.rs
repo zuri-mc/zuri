@@ -3,7 +3,7 @@ use glam::IVec3;
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LecternUpdate {
     pub page: u8,
     pub page_count: u8,

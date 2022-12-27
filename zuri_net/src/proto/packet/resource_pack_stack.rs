@@ -4,7 +4,7 @@ use crate::proto::types::world::ExperimentData;
 
 /// Sent by the server to send the order in which resource packs and behaviour packs should be applied (and downloaded)
 /// by the client.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ResourcePackStack {
     /// Specifies if the client must accept the texture packs the server has in order to join the server. If set to
     /// true, the client gets the option to either download the resource packs and join, or quit entirely. Behaviour
@@ -26,7 +26,7 @@ pub struct ResourcePackStack {
     pub experiments_previously_toggled: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StackResourcePack {
     pub uuid: String,
     pub version: String,

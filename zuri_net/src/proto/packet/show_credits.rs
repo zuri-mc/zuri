@@ -3,13 +3,13 @@ use num_traits::{ToPrimitive, FromPrimitive};
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum ShowCreditsStatus {
     Start,
     End,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ShowCredits {
     pub player_runtime_id: u64,
     pub status_type: ShowCreditsStatus,

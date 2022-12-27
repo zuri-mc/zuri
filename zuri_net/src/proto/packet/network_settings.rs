@@ -4,13 +4,13 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, Copy, FromPrimitive, ToPrimitive)]
 pub enum CompressionType {
     Deflate,
     Snappy,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NetworkSettings {
     pub compression_threshold: u16,
     pub compression_algorithm: CompressionType,

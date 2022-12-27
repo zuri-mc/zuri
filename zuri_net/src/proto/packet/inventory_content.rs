@@ -7,7 +7,7 @@ use crate::proto::types::item::ItemInstance;
 
 /// Sent by the server to update the full content of a particular inventory. It is usually sent for the main inventory
 /// of the player, but also works for other inventories that are currently opened by the player.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct InventoryContent {
     /// One of the windows that the client currently has opened, or a consistent one such as the main inventory.
     pub window: Window,

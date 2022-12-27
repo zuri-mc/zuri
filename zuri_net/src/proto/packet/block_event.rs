@@ -6,7 +6,7 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
 /// Sent by the server to initiate a certain event that has to do with blocks in specific, for example opening chests.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BlockEvent {
     /// The position of the block that an event occurred at.
     pub position: IVec3,
@@ -17,7 +17,7 @@ pub struct BlockEvent {
     pub event_data: i32,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum BlockEventType {
     None,
     ChangeChestState,

@@ -14,7 +14,7 @@ impl EmoteFlag {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Emote {
     pub entity_runtime_id: u64,
     pub emote_id: String,

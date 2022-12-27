@@ -6,7 +6,7 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::types::structure::{StructureSettings, StructureTemplateDataRequestType};
 
 /// Sent by the client to request data of a structure.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StructureTemplateDataRequest {
     /// Name of the structure that was set in the structure block's UI. This is the name used to
     /// export the structure to a file.

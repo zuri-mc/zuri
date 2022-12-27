@@ -5,7 +5,7 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum MoveMode {
     Normal,
     Reset,
@@ -13,7 +13,7 @@ pub enum MoveMode {
     Rotation,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum TeleportCause {
     None,
     Projectile,
@@ -24,7 +24,7 @@ pub enum TeleportCause {
 
 /// Sent by players to send their movement to the server, and by the server to update the movement of player entities
 /// to other players. When using the new movement system, this is only sent by the server.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MovePlayer {
     /// The runtime ID of the player. The runtime ID is unique for each world session, and entities are generally
     /// identified in packets using this runtime ID.

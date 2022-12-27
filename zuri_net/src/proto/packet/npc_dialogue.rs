@@ -4,7 +4,7 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NPCDialogue {
     pub entity_unique_id: u64,
     pub action_type: NPCDialogueAction,
@@ -14,7 +14,7 @@ pub struct NPCDialogue {
     pub action_json: String,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum NPCDialogueAction {
     Open,
     Close,

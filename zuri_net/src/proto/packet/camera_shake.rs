@@ -4,7 +4,7 @@ use num_traits::{ToPrimitive, FromPrimitive};
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CameraShake {
     pub intensity: f32,
     pub duration: f32,
@@ -12,13 +12,13 @@ pub struct CameraShake {
     pub action: CameraShakeAction,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum CameraShakeAction {
     Add,
     Stop,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum CameraShakeType {
     Positional,
     Rotational,

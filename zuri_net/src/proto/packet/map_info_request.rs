@@ -2,7 +2,7 @@ use crate::proto::packet::PacketType;
 use crate::proto::types::colour::RGBA;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MapInfoRequest {
     pub map_id: i64,
     pub client_pixels: Vec<PixelRequest>,
@@ -23,7 +23,7 @@ impl PacketType for MapInfoRequest {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PixelRequest {
     colour: RGBA,
     index: u16,

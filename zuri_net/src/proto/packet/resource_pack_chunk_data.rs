@@ -2,7 +2,7 @@ use bytes::Bytes;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ResourcePackChunkData {
     pub uuid: String,
     pub chunk_index: u32,

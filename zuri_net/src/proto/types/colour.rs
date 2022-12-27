@@ -1,6 +1,6 @@
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RGBA {
     pub r: u8,
     pub g: u8,

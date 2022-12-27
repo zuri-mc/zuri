@@ -2,7 +2,7 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 use crate::proto::types::ability::AbilityData;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UpdateAbilities {
     pub ability_data: AbilityData,
 }

@@ -6,26 +6,26 @@ use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum SpawnBiomeType {
     Default,
     USerDefined,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum SpawnType {
     Player,
     World,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum SubChunkRequestMode {
     Legacy,
     Limitless,
     Limited,
 }
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum SubChunkResult {
     Success,
     ChunkNotFound,
@@ -50,7 +50,7 @@ pub enum Dimension {
     End,
 }
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum HeightMapType {
     None,
     HasData,
@@ -58,7 +58,7 @@ pub enum HeightMapType {
     TooLow,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum GameType {
     Survival,
     Creative,
@@ -69,7 +69,7 @@ pub enum GameType {
     Spectator,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum Generator {
     Legacy,
     Overworld,
@@ -79,7 +79,7 @@ pub enum Generator {
     Void,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum PermissionLevel {
     Visitor,
     Member,
@@ -87,20 +87,20 @@ pub enum PermissionLevel {
     Custom,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum EntityLinkType {
     Remove,
     Rider,
     Passenger,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum UpdateBlockTransition {
     BlockToEntity,
     EntityToBlock,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BlockEntry {
     pub name: String,
     pub properties: Value,
@@ -120,7 +120,7 @@ impl BlockEntry {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GenerationFeature {
     name: String,
     json: Bytes,
@@ -140,7 +140,7 @@ impl GenerationFeature {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DimensionDefinition {
     name: String,
     range: [i32; 2],
@@ -164,7 +164,7 @@ impl DimensionDefinition {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EntityLink {
     pub ridden_entity_unique_id: i64,
     pub rider_entity_unique_id: i64,
@@ -193,7 +193,7 @@ impl EntityLink {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SubChunkEntry {
     pub offset: SubChunkOffset,
     pub result: SubChunkResult,
@@ -247,7 +247,7 @@ impl SubChunkEntry {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SubChunkOffset {
     pub x: i8,
     pub y: i8,
@@ -270,7 +270,7 @@ impl SubChunkOffset {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CacheBlob {
     pub hash: u64,
     pub payload: Bytes,
@@ -290,7 +290,7 @@ impl CacheBlob {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ExperimentData {
     pub name: String,
     pub enabled: bool,

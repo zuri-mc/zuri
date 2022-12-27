@@ -4,7 +4,7 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 use crate::proto::types::world::SubChunkRequestMode;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LevelChunk {
     pub position: IVec2,
     pub sub_chunk_request_mode: SubChunkRequestMode,

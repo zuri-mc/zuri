@@ -4,14 +4,14 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LabTable {
     pub action_type: LabTableAction,
     pub position: IVec3,
     pub reaction_type: u8,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum LabTableAction {
     Combine,
     React,

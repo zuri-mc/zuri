@@ -4,7 +4,7 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::ability::Ability;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RequestAbility {
     pub ability: Ability,
     //pub value: dyn Any, // TODO

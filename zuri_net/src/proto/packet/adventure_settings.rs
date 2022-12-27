@@ -6,7 +6,7 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::types::world::PermissionLevel;
 use crate::proto::types::command::CommandPermissionLevel;
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum AdventureFlag {
     WorldImmutable,
     NoPvM,
@@ -21,7 +21,7 @@ pub enum AdventureFlag {
     Muted,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum ActionPermission {
     Mine,
     DoorsAndSwitches,
@@ -34,7 +34,7 @@ pub enum ActionPermission {
     Default,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AdventureSettings {
     pub flags: u32,
     pub command_permission_level: CommandPermissionLevel,

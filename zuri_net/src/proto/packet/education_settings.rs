@@ -2,7 +2,7 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::education::EducationExternalLinkSettings;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EducationSettings {
     pub code_builder_default_uri: String,
     pub code_builder_title: String,

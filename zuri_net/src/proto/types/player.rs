@@ -38,14 +38,14 @@ pub enum PlayerActionType {
     StopItemUseOn,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum PlayerMovementMode {
     Client,
     Server,
     ServerWithRewind,
 }
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum MoveMode {
     Normal,
     Reset,
@@ -53,7 +53,7 @@ pub enum MoveMode {
     Rotation,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum InputMode {
     None,
     Mouse,
@@ -62,14 +62,14 @@ pub enum InputMode {
     MotionController,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum InteractionModel {
     Touch,
     Crosshair,
     Classic,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum TeleportCause {
     None,
     Projectile,
@@ -78,7 +78,7 @@ pub enum TeleportCause {
     Behaviour,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PlayerMovementSettings {
     pub movement_type: i32,
     pub rewind_history_size: i32,
@@ -101,7 +101,7 @@ impl PlayerMovementSettings {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PlayerBlockAction {
     pub action: PlayerActionType,
     pub block_pos: IVec3,

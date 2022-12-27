@@ -7,7 +7,7 @@ use crate::proto::types::item::ItemInstance;
 
 /// Sent by the server to update a single slot in one of the inventory windows that the client currently has opened.
 /// Usually this is the main inventory, but it may also be the off hand or, for example, a chest inventory.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct InventorySlot {
     /// The window that the packet modifies. It must point to one of the windows that the client currently has opened.
     pub window: Window,

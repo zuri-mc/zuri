@@ -3,7 +3,7 @@ use glam::Vec3;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SpawnParticleEffect {
     pub dimension: u8,
     pub entity_unique_id: i64,

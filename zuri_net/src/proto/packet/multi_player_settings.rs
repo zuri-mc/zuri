@@ -3,12 +3,12 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MultiPlayerSettings {
     pub action_type: MultiPlayerSettingsAction,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum MultiPlayerSettingsAction {
     Enable,
     Disable,

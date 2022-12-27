@@ -3,7 +3,7 @@ use bytes::Bytes;
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LevelEventGeneric {
     pub event_id: i32,
     pub serialised_event_data: Bytes,

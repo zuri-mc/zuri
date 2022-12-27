@@ -5,7 +5,7 @@ use crate::proto::types::item::ItemInstance;
 
 /// Sent by the server to the client to make an item entity show up. It is one of the few entities that cannot be sent
 /// using the AddActor packet
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AddItemActor {
     /// The unique ID of the entity. The unique ID is a value that remains consistent across different sessions of the
     /// same world, but most servers simply fill the runtime ID of the entity out for this field.

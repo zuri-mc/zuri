@@ -2,7 +2,7 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
 /// Sent by the client when it tries to pick an entity, so that it gets a spawn egg which can spawn that entity.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ActorPickRequest {
     /// The unique ID of the entity that was attempted to be picked. The server must find the type of that entity and
     /// provide the correct spawn egg to the player.

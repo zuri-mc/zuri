@@ -3,7 +3,7 @@ use crate::proto::packet::PacketType;
 
 /// Sent by the server when a player picks up an item entity. It makes the item entity disappear to viewers and shows
 /// the pick-up animation. The item entity is not actually removed from the world, but it is hidden from viewers.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TakeItemActor {
     /// The entity runtime ID of the item that is being taken by another entity. It will disappear to viewers after
     /// showing the pick-up animation.

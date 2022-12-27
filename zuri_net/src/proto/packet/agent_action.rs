@@ -5,7 +5,7 @@ use num_traits::{ToPrimitive, FromPrimitive};
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum AgentActionType {
     None,
     Attack,
@@ -28,7 +28,7 @@ pub enum AgentActionType {
     Turn,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AgentAction {
     pub identifier: String,
     pub action: AgentActionType,

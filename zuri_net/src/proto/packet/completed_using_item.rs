@@ -1,7 +1,7 @@
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CompletedUsingItem {
     pub used_item_id: i16,
     pub use_method: i32,

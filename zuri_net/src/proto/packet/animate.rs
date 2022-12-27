@@ -16,7 +16,7 @@ pub enum AnimateAction {
 
 /// Sent by the server to send a player animation from one player to all viewers of that player. It is used for a couple
 /// of actions, such as arm swimming and critical hits.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Animate {
     /// The action type to execute.
     pub action_type: AnimateAction,

@@ -1,7 +1,7 @@
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NetworkStackLatency {
     pub timestamp: i64,
     pub needs_response: bool,

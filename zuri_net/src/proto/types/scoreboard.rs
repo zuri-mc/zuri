@@ -9,7 +9,7 @@ pub enum ScoreboardAction {
     Remove,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum ScoreboardIdentity {
     Player,
     Entity,
@@ -22,6 +22,7 @@ pub enum ScoreboardIdentityAction {
     Clear,
 }
 
+#[derive(Debug, Clone)]
 pub enum ScoreboardSlot {
     List,
     Sidebar,
@@ -47,13 +48,13 @@ impl ScoreboardSlot {
     }
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum ScoreboardSortOrder {
     Ascending,
     Descending,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ScoreboardEntry {
     pub entry_id: i64,
     pub objective_name: String,
@@ -106,7 +107,7 @@ impl ScoreboardEntry {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ScoreboardIdentityEntry {
     pub entry_id: i64,
     pub entity_unique_id: i64,

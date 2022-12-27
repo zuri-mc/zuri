@@ -55,7 +55,7 @@ impl InputFlag {
     }
 }
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum PlayMode {
     Normal,
     Teaser,
@@ -69,7 +69,7 @@ pub enum PlayMode {
     NumModes,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PlayerAuthInput {
     pub pitch: f32,
     pub yaw: f32,

@@ -3,7 +3,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum MoveFlag {
     OnGround,
     Teleport,
@@ -11,7 +11,7 @@ pub enum MoveFlag {
 
 /// Sent by the server to move an entity to an absolute position. It is typically used for movements where high accuracy
 /// isn't needed, such as for long range teleporting.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MoveActorAbsolute {
     /// The runtime ID of the entity. The runtime ID is unique for each world session, and entities are generally
     /// identified in packets using this runtime ID.

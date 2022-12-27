@@ -3,7 +3,7 @@ use crate::proto::packet::PacketType;
 
 /// Sent by the server to inform the client on what resource packs the server has. It sends a list of the resource packs
 /// it has and basic information on them like the version and description.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ResourcePacksInfo {
     /// Specifies if the client must accept the texture packs the server has in order to join the server. If set to
     /// true, the client gets the option to either download the resource packs and join, or quit entirely. Behaviour
@@ -22,7 +22,7 @@ pub struct ResourcePacksInfo {
     pub forcing_server_packs: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BehaviourPackInfo {
     pub uuid: String,
     pub version: String,
@@ -33,7 +33,7 @@ pub struct BehaviourPackInfo {
     pub has_scripts: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TexturePackInfo {
     pub uuid: String,
     pub version: String,

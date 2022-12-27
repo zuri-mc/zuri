@@ -4,12 +4,12 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum PositionTrackingDBRequestAction {
     Query
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PositionTrackingDBClientRequest {
     pub request_action: PositionTrackingDBRequestAction,
     pub tracking_id: i32,

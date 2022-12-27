@@ -2,7 +2,7 @@ use glam::Vec2;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PlayerInput {
     pub movement: Vec2,
     pub jumping: bool,

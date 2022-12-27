@@ -4,14 +4,14 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum CodeBuilderCategory {
     None,
     Status,
     Instantiation,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum CodeBuilderOperation {
     None,
     Get,
@@ -19,7 +19,7 @@ pub enum CodeBuilderOperation {
     Reset,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CodeBuilderSource {
     pub operation: CodeBuilderOperation,
     pub category: CodeBuilderCategory,

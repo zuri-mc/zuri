@@ -4,7 +4,7 @@ use crate::encodable_enum;
 use crate::proto::io::{Reader, Writer};
 
 encodable_enum!(
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     pub enum ItemDescriptor {
         InvalidDescriptor = 0,
         DefaultDescriptor = 1,
@@ -14,7 +14,7 @@ encodable_enum!(
     }
 );
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ItemDescriptorCount {
     pub item_descriptor: ItemDescriptor,
     pub count: i32,
@@ -43,7 +43,7 @@ impl Default for ItemDescriptorCount {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct InvalidDescriptor;
 
 impl InvalidDescriptor {
@@ -54,7 +54,7 @@ impl InvalidDescriptor {
     pub fn write(&self, _: &mut Writer) {}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DefaultDescriptor {
     network_id: i16,
     metadata: i16,
@@ -74,7 +74,7 @@ impl DefaultDescriptor {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MoLangDescriptor {
     expression: String,
     version: u8,
@@ -94,7 +94,7 @@ impl MoLangDescriptor {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ItemTagDescriptor {
     tag: String,
 }
@@ -111,7 +111,7 @@ impl ItemTagDescriptor {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DeferredDescriptor {
     name: String,
     metadata: i16,

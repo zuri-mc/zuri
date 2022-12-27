@@ -2,7 +2,7 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 use crate::proto::types::command::CommandOrigin;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CommandRequest {
     pub command_line: String,
     pub command_origin: CommandOrigin,

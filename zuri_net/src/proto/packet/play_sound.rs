@@ -4,7 +4,7 @@ use std::ops::{Div, Mul};
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PlaySound {
     pub sound_name: String,
     pub position: Vec3,

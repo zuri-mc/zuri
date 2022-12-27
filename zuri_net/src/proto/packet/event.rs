@@ -2,7 +2,7 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::event::EventType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Event {
     pub entity_runtime_id: u64,
     pub use_player_id: u8,

@@ -2,7 +2,7 @@ use bytes::Bytes;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ServerSettingsResponse {
     pub form_id: u32,
     pub form_data: Bytes,

@@ -3,7 +3,7 @@ use glam::{IVec2, IVec3};
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NetworkChunkPublisherUpdate {
     pub position: IVec3,
     pub radius: u32,

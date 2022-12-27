@@ -2,7 +2,7 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 use crate::proto::types::item_stack::ItemStackRequestEntry;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ItemStackRequest {
     pub requests: Vec<ItemStackRequestEntry>,
 }

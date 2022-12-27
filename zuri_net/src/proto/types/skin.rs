@@ -1,7 +1,7 @@
 use bytes::Bytes;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Skin {
     pub skin_id: String,
     pub play_fab_id: String,
@@ -89,7 +89,7 @@ impl Skin {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SkinAnimation {
     pub image_width: u32,
     pub image_height: u32,
@@ -121,7 +121,7 @@ impl SkinAnimation {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PersonaPiece {
     pub piece_id: String,
     pub piece_type: String,
@@ -150,7 +150,7 @@ impl PersonaPiece {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PersonaPieceTintColour {
     pub piece_type: String,
     pub colours: Vec<String>,

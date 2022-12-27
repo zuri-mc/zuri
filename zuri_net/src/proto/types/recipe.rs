@@ -5,7 +5,7 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::types::item::ItemStack;
 use crate::proto::types::item_descriptor::ItemDescriptorCount;
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum RecipeType {
     Shapeless,
     Shaped,
@@ -17,7 +17,7 @@ pub enum RecipeType {
     ShapedChemistry,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MultiRecipe {
     pub uuid: Uuid,
     pub recipe_network_id: u32,
@@ -37,7 +37,7 @@ impl MultiRecipe {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FurnaceDataRecipe {
     pub furnace_recipe: FurnaceRecipe,
 }
@@ -54,7 +54,7 @@ impl FurnaceDataRecipe {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FurnaceRecipe {
     pub network_id: i32,
     pub output: ItemStack,
@@ -77,7 +77,7 @@ impl FurnaceRecipe {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PotionRecipe {
     pub input_potion_id: i32,
     pub input_potion_metadata: i32,
@@ -111,7 +111,7 @@ impl PotionRecipe {
 
 pub type ShapedChemistryRecipe = ShapedRecipe;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct ShapedRecipe {
     pub recipe_id: String,
     pub width: i32,
@@ -164,7 +164,7 @@ impl ShapedRecipe {
 
 pub type ShapelessChemistryRecipe = ShapelessRecipe;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ShapelessRecipe {
     pub recipe_id: String,
     pub input: Vec<ItemDescriptorCount>,
@@ -201,7 +201,7 @@ impl ShapelessRecipe {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MaterialReducer {
     pub network_id: i32,
     pub metadata_value: u32,
@@ -224,7 +224,7 @@ impl MaterialReducer {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MaterialReducerOutput {
     pub network_id: i32,
     pub count: i32,
@@ -244,7 +244,7 @@ impl MaterialReducerOutput {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PotionContainerChangeRecipe {
     pub input_item_id: i32,
     pub reagent_item_id: i32,

@@ -5,7 +5,7 @@ use crate::proto::types::inventory::*;
 /// Sent by the client. It essentially exists out of multiple sub-packets, each of which have something to do with the
 /// inventory in one way or another. Some of these sub-packets directly relate to the inventory, others relate to
 /// interaction with the world, that could potentially result in a change in the inventory.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct InventoryTransaction {
     /// ID that is only non-zero at times when sent by the client. The server should always send 0 for this. When this
     /// field is not zero, the legacy_set_item_slots slice below will have values in it. legacy_request_id ties in with

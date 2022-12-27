@@ -5,7 +5,7 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::structure::{StructureBlockType, StructureRedstoneSaveMode, StructureSettings};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StructureBlockUpdate {
     pub position: IVec3,
     pub structure_name: String,

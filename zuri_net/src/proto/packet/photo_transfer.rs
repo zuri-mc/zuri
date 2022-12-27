@@ -4,7 +4,7 @@ use num_traits::{ToPrimitive, FromPrimitive};
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PhotoTransfer {
     pub photo_name: String,
     pub photo_data: Bytes,
@@ -15,7 +15,7 @@ pub struct PhotoTransfer {
     pub new_photo_name: String,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum PhotoType {
     Portfolio,
     PhotoItem,

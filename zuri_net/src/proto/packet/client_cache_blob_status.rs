@@ -1,7 +1,7 @@
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ClientCacheBlobStatus {
     pub miss_hashes: Vec<u64>,
     pub hit_hashes: Vec<u64>,

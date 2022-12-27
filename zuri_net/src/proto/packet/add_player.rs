@@ -11,7 +11,7 @@ use crate::proto::types::world::{EntityLink, GameType};
 
 /// Sent by the server to the client to make a player entity show up client-side. It is one of the few entities that
 /// cannot be sent using the AddActor packet.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AddPlayer {
     /// The UUID of the player. It is the same UUID that the client sent in the Login packet at the start of the
     /// session. A player with this UUID must exist in the player list (built up using the PlayerList packet), for it to

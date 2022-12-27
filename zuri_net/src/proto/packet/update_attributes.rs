@@ -4,7 +4,7 @@ use crate::proto::types::attribute::Attribute;
 
 /// Sent by the server to update an amount of attributes of any entity in the world. These attributes include ones such
 /// as the health or the movement speed of the entity.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UpdateAttributes {
     /// The runtime ID of the entity. The runtime ID is unique for each world session, and entities are generally
     /// identified in packets using this runtime ID.

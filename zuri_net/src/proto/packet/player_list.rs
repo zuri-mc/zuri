@@ -6,7 +6,7 @@ use crate::proto::packet::PacketType;
 use crate::proto::types::skin::Skin;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PlayerList {
     pub action_type: PlayerListAction,
     pub entries: Vec<PlayerListEntry>,
@@ -18,7 +18,7 @@ pub enum PlayerListAction {
     Remove,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct PlayerListEntry {
     pub uuid: Uuid,
     pub entity_unique_id: i64,

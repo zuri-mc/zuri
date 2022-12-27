@@ -23,7 +23,7 @@ use crate::proto::types::world::{
     SpawnBiomeType,
 };
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum ChatRestrictionLevel {
     None,
     Dropped,
@@ -37,7 +37,7 @@ pub enum EducationEditionRegion {
     China,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum GamePublishSetting {
     None,
     InviteOnly,
@@ -48,7 +48,7 @@ pub enum GamePublishSetting {
 
 /// Sent by the server to send information about the world the player will be spawned in. It contains information about
 /// the position the player spawns in, and information about the world in general such as its game rules.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct StartGame {
     /// The unique ID of the player. The unique ID is a value that remains consistent across different sessions of the
     /// same world, but most servers simply fill the runtime ID of the entity out for this field.

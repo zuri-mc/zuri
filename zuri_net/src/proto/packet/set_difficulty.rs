@@ -4,7 +4,7 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::world::Difficulty;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SetDifficulty {
     pub difficulty: Difficulty,
 }

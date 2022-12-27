@@ -4,14 +4,14 @@ use num_traits::{ToPrimitive, FromPrimitive};
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UpdateClientInputLocks {
     pub locks: ClientInputLock,
     pub position: Vec3,
 }
 
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum ClientInputLock {
     Move,
     Jump,

@@ -6,13 +6,13 @@ use crate::proto::io::{Reader, Writer};
 
 /// Sent by the server to update a player on the play status. This includes failed statuses due to a mismatched version,
 /// but also success statuses.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PlayStatus {
     /// The status of the packet.
     pub status: PlayStatusType,
 }
 
-#[derive(Debug, PartialEq, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum PlayStatusType {
     LoginSuccess,
     LoginFailedClient,

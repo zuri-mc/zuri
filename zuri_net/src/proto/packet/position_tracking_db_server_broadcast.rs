@@ -5,14 +5,14 @@ use zuri_nbt::{Value, encoding::NetworkLittleEndian};
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum PositionTrackingDBBroadcastAction {
     Update,
     Destroy,
     NotFound,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PositionTrackingDBServerBroadcast {
     pub broadcast_action: PositionTrackingDBBroadcastAction,
     pub tracking_id: i32,

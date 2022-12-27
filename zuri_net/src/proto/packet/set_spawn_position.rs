@@ -6,7 +6,7 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::types::world::{Dimension, SpawnType};
 
 /// Sent by the server to update the spawn position of a player, for example when sleeping in a bed.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SetSpawnPosition {
     /// Specifies the behaviour of the spawn set. If World is set, the position that compasses will point to is changed.
     pub spawn_type: SpawnType,

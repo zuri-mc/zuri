@@ -5,7 +5,7 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 use crate::proto::types::world::{Dimension, SubChunkOffset};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SubChunkRequest {
     pub dimension: Dimension,
     pub position: IVec3,

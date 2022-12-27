@@ -6,7 +6,7 @@ use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum CommandArg {
     TypeInt = 1,
     TypeFloat = 3,
@@ -34,14 +34,14 @@ pub enum CommandArg {
     SoftEnum = 0x4000000,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum CommandConstraint {
     CheatsEnabled,
     OperatorPermissions,
     HostPermissions,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum CommandOriginType {
     Player,
     Block,
@@ -80,7 +80,7 @@ pub enum CommandPermissionLevel {
     Internal,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum SoftEnumAction {
     Add,
     Remove,
@@ -88,7 +88,7 @@ pub enum SoftEnumAction {
 }
 
 // todo: figure out where this is used
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum ParamOption {
     None,
     CollapseEnum,
@@ -96,7 +96,7 @@ pub enum ParamOption {
     AsChainedCommand,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Command {
     pub name: String,
     pub description: String,
@@ -170,7 +170,7 @@ impl CommandEnum {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CommandEnumConstraint {
     pub enum_option: String,
     pub enum_name: String,
@@ -193,7 +193,7 @@ impl CommandEnumConstraint {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CommandOrigin {
     pub origin: CommandOriginType,
     pub uuid: Uuid,
@@ -219,7 +219,7 @@ impl CommandOrigin {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CommandOutputMessage {
     pub success: bool,
     pub message: String,
@@ -243,7 +243,7 @@ impl CommandOutputMessage {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CommandOverload {
     pub parameters: Vec<CommandParameter>,
 }
@@ -261,7 +261,7 @@ impl CommandOverload {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CommandParameter {
     pub name: String,
     pub parameter_type: u32,

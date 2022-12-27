@@ -4,7 +4,7 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PacketViolationWarning {
     pub violation_type: PacketViolationType,
     pub severity: PacketViolationSeverity,
@@ -12,12 +12,12 @@ pub struct PacketViolationWarning {
     pub violation_context: String,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum PacketViolationType {
     Malformed,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum PacketViolationSeverity {
     Warning,
     FinalWarning,

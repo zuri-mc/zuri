@@ -7,7 +7,7 @@ use crate::proto::types::container::ContainerDataKey;
 
 /// Sent by the server to update specific data of a single container, meaning a block such as a furnace or a brewing
 /// stand. This data is usually used by the client to display certain features client-side.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ContainerSetData {
     /// The window that the packet modifies. It must point to one of the windows that the client currently has opened.
     pub window: Window,

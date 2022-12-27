@@ -4,7 +4,7 @@ use crate::proto::packet::PacketType;
 
 /// Sent when the client initially tries to join the server. It is the first packet sent and contains information
 /// specific to the player.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Login {
     /// The protocol version of the player. The player is disconnected if the protocol is incompatible with the
     /// protocol of the server. It has been superseded by the protocol version sent in the RequestNetworkSettings

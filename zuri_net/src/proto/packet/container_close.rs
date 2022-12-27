@@ -6,7 +6,7 @@ use crate::proto::types::inventory::Window;
 
 /// Sent by the server to close a container the player currently has opened, which was opened using the ContainerOpen
 /// packet, or by the client to tell the server it closed a particular container, such as the crafting grid.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ContainerClose {
     /// The window of the container that should be closed. It must be equal to the one sent in the ContainerOpen packet
     /// to close the designated window.

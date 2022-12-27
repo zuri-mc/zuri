@@ -5,7 +5,7 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::types::colour::RGBA;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum MapObjectType {
     Entity,
     Block,
@@ -24,7 +24,7 @@ impl MapUpdateFlag {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MapDecoration {
     pub decoration_type: u8,
     pub rotation: u8,
@@ -56,7 +56,7 @@ impl MapDecoration {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MapTrackedObject {
     pub object_type: MapObjectType,
     pub entity_unique_id: i64,

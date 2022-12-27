@@ -4,7 +4,7 @@ use crate::proto::types::item::ItemInstance;
 
 /// Sent by the server to the client to update the armour an entity is wearing. It is sent for both players and other
 /// entities, such as zombies.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MobArmourEquipment {
     /// The runtime ID of the entity. The runtime ID is unique for each world session, and entities are generally
     /// identified in packets using this runtime ID.

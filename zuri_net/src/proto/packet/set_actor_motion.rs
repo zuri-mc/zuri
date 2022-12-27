@@ -4,7 +4,7 @@ use crate::proto::packet::PacketType;
 
 /// Sent by the server to change the client-side velocity of an entity. It is usually used in combination with
 /// server-side movement calculation.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SetActorMotion {
     /// The runtime ID of the entity. The runtime ID is unique for each world session, and entities are generally
     /// identified in packets using this runtime ID.

@@ -5,7 +5,7 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 use crate::proto::types::world::{Dimension, SubChunkEntry};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SubChunk {
     pub cache_enabled: bool,
     pub dimension: Dimension,

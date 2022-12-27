@@ -2,7 +2,7 @@ use glam::IVec3;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UpdateSubChunkBlocks {
     pub position: IVec3,
     pub blocks: Vec<BlockChangeEntry>,
@@ -27,7 +27,7 @@ impl PacketType for UpdateSubChunkBlocks {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BlockChangeEntry {
     pub block_pos: IVec3,
     pub block_runtime_id: u32,

@@ -2,7 +2,7 @@ use glam::Vec3;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CorrectPlayerMovePrediction {
     pub position: Vec3,
     pub delta: Vec3,

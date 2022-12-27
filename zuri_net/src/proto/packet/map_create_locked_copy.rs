@@ -3,7 +3,7 @@ use crate::proto::packet::PacketType;
 
 /// Sent by the server to create a locked copy of one map into another map. In vanilla, it is used in the cartography
 /// table to create a map that is locked and cannot be modified.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MapCreateLockedCopy {
     /// ID of the map that is being copied. The locked copy will obtain all content that is visible on this map, except
     /// the content will not change.

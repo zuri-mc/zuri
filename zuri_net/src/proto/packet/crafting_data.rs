@@ -4,7 +4,7 @@ use crate::proto::types::recipe::{MaterialReducer, PotionContainerChangeRecipe, 
 
 /// Sent by the server to let the client know all crafting data that the server maintains. This includes shapeless
 /// crafting, crafting table recipes, furnace recipes etc. Each crafting station's recipes are included in it.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CraftingData {
     /// List of all recipes available on the server. It includes among others shapeless, shaped and furnace recipes. The
     /// client will only be able to craft these recipes.

@@ -6,7 +6,7 @@ use crate::proto::io::{Reader, Writer};
 
 /// Sent by the client to the server to send chat messages, and by the server to the client to forward or send messages,
 /// which may be chat, popups, tips etc.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Text {
     /// The type of the text sent. When a client sends this to the server, it should always be Chat.
     pub text_type: TextType,

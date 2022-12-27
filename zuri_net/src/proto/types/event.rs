@@ -2,7 +2,7 @@ use crate::encodable_enum;
 use crate::proto::io::{Reader, Writer};
 
 encodable_enum!(
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     pub enum EventType {
         AchievementAwarded = 0,
         EntityInteract = 1,
@@ -37,7 +37,7 @@ encodable_enum!(
     }
 );
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EntityDefinitionTrigger {
     pub event_name: String,
 }
@@ -54,7 +54,7 @@ impl EntityDefinitionTrigger{
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct EntityInteract {
     pub interaction_type: i32,
     pub interaction_entity_type: i32,
@@ -80,7 +80,7 @@ impl EntityInteract {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CauldronInteract {
     pub block_interaction_type: i32,
     pub item_id: i32,
@@ -100,7 +100,7 @@ impl CauldronInteract {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CauldronUsed {
     pub potion_id: i32,
     pub colour: i32,
@@ -123,7 +123,7 @@ impl CauldronUsed {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ComposterInteract {
     pub block_interaction_type: i32,
     pub item_id: i32,
@@ -143,7 +143,7 @@ impl ComposterInteract {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BossKilled {
     pub boss_entity_unique_id: i64,
     pub player_party_size: i32,
@@ -166,7 +166,7 @@ impl BossKilled {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AchievementAwarded {
     pub achievement_id: i32,
 }
@@ -183,7 +183,7 @@ impl AchievementAwarded {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AgentCommand {
     pub agent_result: i32,
     pub data_value: i32,
@@ -212,7 +212,7 @@ impl AgentCommand {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AgentCreated {}
 
 impl AgentCreated {
@@ -223,7 +223,7 @@ impl AgentCreated {
     pub fn write(&self, _: &mut Writer) {}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SlashCommandExecuted {
     pub success_count: i32,
     pub message_count: i32,
@@ -249,7 +249,7 @@ impl SlashCommandExecuted {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MobKilled {
     pub killer_entity_unique_id: i64,
     pub victim_entity_unique_id: i64,
@@ -281,7 +281,7 @@ impl MobKilled {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MovementAnomaly {
     pub event_type: u8,
     pub cheating_score: f32,
@@ -313,7 +313,7 @@ impl MovementAnomaly {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MovementCorrected {
     pub position_delta: f32,
     pub cheating_score: f32,
@@ -342,7 +342,7 @@ impl MovementCorrected {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BellUsed {
     pub item_id: i32,
 }
@@ -359,7 +359,7 @@ impl BellUsed {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ExtractHoney {} // todo
 
 impl ExtractHoney {
@@ -368,7 +368,7 @@ impl ExtractHoney {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FishBucketed {
     pub pattern: i32,
     pub preset: i32,
@@ -394,7 +394,7 @@ impl FishBucketed {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MobBorn {
     pub entity_type: i32,
     pub variant: i32,
@@ -417,7 +417,7 @@ impl MobBorn {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PlayerWaxedOrUnwaxedCopper {}
 
 impl PlayerWaxedOrUnwaxedCopper {
@@ -428,7 +428,7 @@ impl PlayerWaxedOrUnwaxedCopper {
     pub fn write(&self, _: &mut Writer) {}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PetDied {
     pub killed_by_owner: bool,
     pub killer_entity_unique_id: i64,
@@ -457,7 +457,7 @@ impl PetDied {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PlayerDied {
     pub attacker_entity_id: i32,
     pub attacker_variant: i32,
@@ -483,7 +483,7 @@ impl PlayerDied {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PortalBuilt {
     pub dimension_id: i32,
 }
@@ -500,7 +500,7 @@ impl PortalBuilt {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PortalUsed {
     pub from_dimension_id: i32,
     pub to_dimension_id: i32,
@@ -520,7 +520,7 @@ impl PortalUsed {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SneakCloseToSculkSensor {}
 
 impl SneakCloseToSculkSensor {
@@ -531,7 +531,7 @@ impl SneakCloseToSculkSensor {
     pub fn write(&self, _: &mut Writer) {}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PatternRemoved {
     pub item_id: i32,
     pub aux_value: i32,

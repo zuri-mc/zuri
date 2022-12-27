@@ -3,14 +3,14 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use crate::proto::io::{Writer, Reader};
 use zuri_nbt::{Value, encoding::LittleEndian};
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum UseItemAction {
     ClickBlock,
     ClickAir,
     BreakBlock,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum UseItemMethod {
     EquipArmour,
     Eat,
@@ -29,13 +29,13 @@ pub enum UseItemMethod {
     Traded,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum UseItemOnEntityAction {
     Interact,
     Attack,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct ItemInstance {
     pub stack_network_id: i32,
     pub stack: ItemStack,
@@ -137,7 +137,7 @@ impl ItemInstance {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct ItemStack {
     pub network_id: i32,
     pub metadata_value: u32,

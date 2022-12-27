@@ -2,7 +2,7 @@ use zuri_nbt::{Value, encoding::NetworkLittleEndian};
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SyncActorProperty {
     pub property_data: Value,
 }

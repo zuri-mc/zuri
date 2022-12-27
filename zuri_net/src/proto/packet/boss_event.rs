@@ -17,7 +17,7 @@ pub enum BossEventType {
     Request,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum BossEventColour {
     Grey,
     Blue,
@@ -28,7 +28,7 @@ pub enum BossEventColour {
     White,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BossEvent {
     pub boss_entity_unique_id: i64,
     pub event_type: BossEventType,

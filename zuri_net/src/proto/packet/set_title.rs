@@ -3,7 +3,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum TitleAction {
     Clear,
     Reset,
@@ -16,7 +16,7 @@ pub enum TitleAction {
     ActionbarTextObject,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SetTitle {
     pub action_type: i32,
     pub text: String,

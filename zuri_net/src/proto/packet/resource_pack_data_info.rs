@@ -5,7 +5,7 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::resource_pack::ResourcePackType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ResourcePackDataInfo {
     pub uuid: String,
     pub data_chunk_size: u32,

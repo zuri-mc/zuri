@@ -4,7 +4,7 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::world::PermissionLevel;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RequestPermissions {
     pub entity_unique_id: i64,
     pub permission_level: PermissionLevel,

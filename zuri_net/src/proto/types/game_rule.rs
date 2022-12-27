@@ -1,6 +1,6 @@
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GameRule {
     pub name: String,
     pub can_be_modified_by_player: bool,

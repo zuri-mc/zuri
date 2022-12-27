@@ -13,7 +13,7 @@ pub enum BookAction {
     Sign,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BookEdit {
     pub action_type: BookAction,
     pub inventory_slot: u8,

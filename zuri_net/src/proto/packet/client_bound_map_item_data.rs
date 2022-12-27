@@ -4,7 +4,7 @@ use crate::proto::packet::PacketType;
 use crate::proto::types::colour::RGBA;
 use crate::proto::types::map::{MapDecoration, MapTrackedObject, MapUpdateFlag};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 pub struct ClientBoundMapItemData {
     pub map_id: i64,
     pub update_flags: u32,

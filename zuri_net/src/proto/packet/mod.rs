@@ -384,7 +384,7 @@ pub mod update_sub_chunk_blocks;
 pub mod update_trade;
 
 encodable_enum!(
-        #[derive(Debug)]
+        #[derive(Debug, Clone)]
         pub enum Packet {
             Login = 1,
             PlayStatus = 2,

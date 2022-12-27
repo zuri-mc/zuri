@@ -44,15 +44,16 @@ fn init_client(world: &mut World) {
         details.user_code().secret().to_string()
     );
 
-    let live_token = live::await_device_auth(details).unwrap();
+    //let live_token = live::await_device_auth(details).unwrap();
 
     let (send, recv) = channel::<Vec<Packet>>(16);
     world.insert_non_send_resource(ClientWaiter {
         task: tokio::spawn(Client::connect(
             "127.0.0.1:19131".parse().unwrap(),
             ClientData::default(),
+            None
+            //Some(live_token),
             None,
-            Some(live_token),
             PacketHandler {
                 send_chan: send,
             },
@@ -88,7 +89,6 @@ fn receive_packets(world: &mut World) {
                     match pk {
                         _ => {
                             warn!("Unhandled packet {pk}");
-                            dbg!(pk);
                         },
                     }
                 }

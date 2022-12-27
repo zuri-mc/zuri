@@ -6,7 +6,7 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::world::Dimension;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AddVolumeEntity {
     pub entity_runtime_id: u64,
     pub entity_metadata: Value,

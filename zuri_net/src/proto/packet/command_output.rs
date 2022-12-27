@@ -4,7 +4,7 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::command::{CommandOrigin, CommandOutputMessage, CommandOutputType};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CommandOutput {
     pub command_origin: CommandOrigin,
     pub output_type: CommandOutputType,

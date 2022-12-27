@@ -5,7 +5,7 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::sound_event::SoundEvent;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct LevelSoundEvent {
     pub sound: SoundEvent,
     pub position: Vec3,

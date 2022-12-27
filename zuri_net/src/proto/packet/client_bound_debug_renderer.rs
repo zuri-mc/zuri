@@ -12,7 +12,7 @@ pub enum ClientBoundDebugRendererType {
     AddCube,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ClientBoundDebugRenderer {
     pub render_type: ClientBoundDebugRendererType,
     pub text: String,

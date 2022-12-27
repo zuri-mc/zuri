@@ -4,7 +4,7 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::scoreboard::{ScoreboardAction, ScoreboardEntry};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SetScore {
     pub action_type: ScoreboardAction,
     pub entries: Vec<ScoreboardEntry>,

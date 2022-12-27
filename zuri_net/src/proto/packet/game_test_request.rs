@@ -5,7 +5,7 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum GameTestRequestRotation {
     None,
     Rotate90,
@@ -14,7 +14,7 @@ pub enum GameTestRequestRotation {
     Rotate360,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GameTestRequest {
     pub max_tests_per_batch: i32,
     pub repetitions: i32,

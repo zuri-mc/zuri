@@ -5,7 +5,7 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CommandBlockUpdate {
     pub block: bool,
     pub position: IVec3,
@@ -59,7 +59,7 @@ impl PacketType for CommandBlockUpdate {
     }
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum CommandBlock {
     Impulse,
     Repeating,

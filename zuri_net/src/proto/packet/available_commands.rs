@@ -3,7 +3,7 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 use crate::proto::types::command::{Command, CommandEnum, CommandEnumConstraint};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AvailableCommands {
     pub commands: Vec<Command>,
     pub constraints: Vec<CommandEnumConstraint>,

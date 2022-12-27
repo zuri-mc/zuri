@@ -4,7 +4,7 @@ use num_traits::{ToPrimitive, FromPrimitive};
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum NPCRequestAction {
     SetActions,
     ExecuteAction,
@@ -15,7 +15,7 @@ pub enum NPCRequestAction {
     ExecuteOpeningCommands,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NPCRequest {
     pub entity_runtime_id: u64,
     pub request_type: NPCRequestAction,

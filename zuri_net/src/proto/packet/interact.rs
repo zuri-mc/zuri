@@ -7,7 +7,7 @@ use crate::proto::io::{Reader, Writer};
 
 /// Sent by the client when it interacts with another entity in some way. It used to be used for normal entity and block
 /// interaction, but this is no longer the case now.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Interact {
     /// The type of action that was executed by the player.
     pub action_type: InteractionAction,

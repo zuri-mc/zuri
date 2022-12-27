@@ -3,7 +3,7 @@ use num_traits::{ToPrimitive, FromPrimitive};
 
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum Ability {
     Build,
     Mine,
@@ -26,7 +26,7 @@ pub enum Ability {
     Count,
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum AbilityLayerType {
     CustomCache,
     Base,
@@ -35,7 +35,7 @@ pub enum AbilityLayerType {
     Editor,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AbilityData {
     pub(crate) entity_unique_id: i64,
     pub(crate) player_permissions: u8,
@@ -62,7 +62,7 @@ impl AbilityData {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AbilityLayer {
     layer_type: AbilityLayerType,
     abilities: u32,
