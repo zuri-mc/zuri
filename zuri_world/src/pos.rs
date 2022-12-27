@@ -1,40 +1,18 @@
 use bevy::prelude::*;
 
+/// A block position relative to the origin of a chunk. The x and z coordinates are always
+/// guaranteed to be in the range `0..16`.
 #[derive(Copy, Clone)]
-pub struct BlockPos {
-    pub x: i32,
-    pub y: i16,
-    pub z: i32,
-}
-
-impl From<Vec3> for BlockPos {
-    fn from(value: Vec3) -> Self {
-        Self {
-            x: value.x.floor() as i32,
-            y: value.y.floor() as i16,
-            z: value.z.floor() as i32,
-        }
-    }
-}
-
-impl Into<Vec3> for BlockPos {
-    fn into(self) -> Vec3 {
-        Vec3::new(self.x as f32, self.y as f32, self.z as f32)
-    }
-}
-
-/// A block position relative to the origin of a chunk.
-#[derive(Copy, Clone)]
-pub struct ChunkPos {
+pub struct ChunkIndex {
     x: u8,
     y: i16,
     z: u8,
 }
 
-impl ChunkPos {
+impl ChunkIndex {
     pub fn new(x: u8, y: i16, z: u8) -> Self {
         if x >= 16 || z >= 16 {
-            panic!("chunk position out of bounds");
+            panic!("ChunkIndex out of bounds");
         }
         Self { x, y, z }
     }
@@ -52,12 +30,66 @@ impl ChunkPos {
     }
 }
 
-impl From<BlockPos> for ChunkPos {
-    fn from(value: BlockPos) -> Self {
+impl From<IVec3> for ChunkIndex {
+    #[inline]
+    fn from(value: IVec3) -> Self {
         Self {
             x: (value.x % 16) as u8,
-            y: value.y,
+            y: value.y as i16,
             z: (value.z % 16) as u8,
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct SubChunkIndex {
+    x: u8,
+    y: u8,
+    z: u8,
+}
+
+impl SubChunkIndex {
+    pub fn new(x: u8, y: u8, z: u8) -> Self {
+        if x >= 16 || y >= 16 || z >= 16 {
+            panic!("SubChunkIndex out of bounds");
+        }
+        Self { x, y, z }
+    }
+
+    #[inline]
+    pub fn x(&self) -> u8 {
+        self.x
+    }
+
+    #[inline]
+    pub fn y(&self) -> u8 {
+        self.y
+    }
+
+    #[inline]
+    pub fn z(&self) -> u8 {
+        self.z
+    }
+}
+
+impl From<IVec3> for SubChunkIndex {
+    #[inline]
+    fn from(value: IVec3) -> Self {
+        Self {
+            x: (value.x % 16) as u8,
+            y: (value.y % 16) as u8,
+            z: (value.z % 16) as u8,
+        }
+    }
+}
+
+impl From<ChunkIndex> for SubChunkIndex {
+    #[inline]
+    fn from(value: ChunkIndex) -> Self {
+        Self {
+            x: value.x,
+            y: (value.y % 16) as u8,
+            z: value.z,
         }
     }
 }

@@ -1,7 +1,6 @@
 use std::ops::Range;
 
-use crate::pos::{ChunkPos};
-use crate::subchunk::SUBCHUNKS_SIZE;
+use crate::pos::{ChunkIndex};
 
 /// Represents the vertical range of a world.
 #[derive(Copy, Clone)]
@@ -15,8 +14,8 @@ impl YRange {
         if max <= min {
             panic!("range maximum has to be smaller than minimum");
         }
-        if (max - min + 1) % (SUBCHUNKS_SIZE as i16) != 0 {
-            panic!("range height needs to be a multiple of {}", SUBCHUNKS_SIZE);
+        if (max - min + 1) % (16 as i16) != 0 {
+            panic!("range height needs to be a multiple of {}", 16);
         }
         YRange { min, max }
     }
@@ -33,7 +32,7 @@ impl YRange {
         self.max - self.min + 1
     }
 
-    pub fn is_inside(&self, pos: impl Into<ChunkPos>) -> bool {
+    pub fn is_inside(&self, pos: impl Into<ChunkIndex>) -> bool {
         let c = pos.into();
         self.min <= c.y() && self.max >= c.y()
     }

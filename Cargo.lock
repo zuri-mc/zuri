@@ -4303,4 +4303,6 @@ name = "zuri_world"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "zuri_nbt",
+ "zuri_proto",
 ]

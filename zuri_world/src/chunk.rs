@@ -2,55 +2,70 @@ use std::iter;
 
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
+use zuri_proto::io::Reader;
 
-use crate::pos::{ChunkPos};
+use crate::pos::{ChunkIndex};
 use crate::range::YRange;
-use crate::subchunk::*;
+use crate::sub_chunk::*;
 
 #[derive(Component)]
 pub struct Chunk {
+    air_rid: u32,
+
     range: YRange,
-    sub_chunks: Vec<Option<SubChunk>>,
+    sub_chunks: Vec<Option<Box<SubChunk<8>>>>,
 }
 
 impl Chunk {
-    pub fn empty(range: YRange) -> Self {
+    pub fn empty(range: YRange, air_rid: u32) -> Self {
         Self {
+            air_rid,
             range,
             sub_chunks: iter::repeat(None).take((range.height() >> 4) as usize).collect(),
         }
     }
 
-    pub fn from_subchunks(min_pos: i16, sub_chunks: Vec<Option<SubChunk>>) -> Self {
+    pub fn from_subchunks(min_pos: i16, sub_chunks: Vec<Option<Box<SubChunk<8>>>>, air_rid: u32) -> Self {
         Self {
+            air_rid,
             range: YRange::new(min_pos, min_pos + sub_chunks.len() as i16 * 16 - 1),
             sub_chunks,
         }
     }
 
-    pub fn at(&self, pos: ChunkPos) -> bool {
+    pub fn at(&self, pos: ChunkIndex) -> u32 {
         if !self.range.is_inside(pos) {
             panic!("chunk pos is outside of bounds"); // todo: maybe return an option
         }
         if let Some(subchunk) = &self.sub_chunks[self.subchunk_id(pos.y())] {
-            subchunk.at(pos.x(), ((pos.y() - self.range.min()) % 16) as u8, pos.z())
+            subchunk.at(pos.into(), 0)
         } else {
-            false
+            self.air_rid
         }
     }
 
-    pub fn set(&mut self, pos: ChunkPos, val: bool) {
+    pub fn set(&mut self, pos: ChunkIndex, val: u32) {
         if !self.range.is_inside(pos) {
             panic!("chunk pos is outside of bounds"); // todo: do we want to panic here
         }
         let id = self.subchunk_id(pos.y());
         if let Some(subchunk) = &mut self.sub_chunks[id] {
-            subchunk.set(pos.x(), ((pos.y() - self.range.min()) % 16) as u8, pos.z(), val)
+            subchunk.set(pos.into(), 0, val)
         } else {
-            let mut s = SubChunk::default();
-            s.set(pos.x(), ((pos.y() - self.range.min()) % 16) as u8, pos.z(), val);
+            let mut s = Box::new(SubChunk::empty(self.air_rid));
+            s.set(pos.into(), 0, val);
             self.sub_chunks[id] = Some(s);
         }
+    }
+
+    pub fn read(reader: &mut Reader, range: YRange, sub_chunk_count: u32, air_rid: u32) -> Self {
+        let mut chunk = Self::empty(range, air_rid);
+
+        for mut sub_chunk_num in 0..sub_chunk_count {
+            let sub_chunk = SubChunk::read(reader, &mut sub_chunk_num, air_rid);
+            chunk.sub_chunks[sub_chunk_num as usize] = Some(Box::new(sub_chunk));
+        }
+        chunk
     }
 
     fn subchunk_id(&self, y: i16) -> usize {
@@ -64,10 +79,10 @@ impl Chunk {
         let mut normals = Vec::<[f32; 3]>::new();
         let mut vertices = Vec::<[f32; 3]>::new();
         let mut triangles = Vec::<u32>::new();
-        for x in 0..(SUBCHUNKS_SIZE as u8) {
+        for x in 0..(16 as u8) {
             for y in self.range.min()..=self.range.max() {
-                for z in 0..(SUBCHUNKS_SIZE as u8) {
-                    if !self.at(ChunkPos::new(x, y, z)) {
+                for z in 0..(16 as u8) {
+                    if self.at(ChunkIndex::new(x, y, z)) == self.air_rid {
                         continue;
                     }
                     let mut start_index = vertices.len() as u32;
@@ -238,10 +253,10 @@ impl Chunk {
     }
 
     fn face_visible(&self, x: u8, y: i16, z: u8, x_off: i8, y_off: i16, z_off: i8) -> bool {
-        let max = SUBCHUNKS_SIZE as u8 - 1;
+        let max = 16 as u8 - 1;
         if x_off < 0 && x == 0 || x_off > 0 && x == max || y_off < 0 && y == self.range.min() || y_off > 0 && y == self.range.max() || z_off < 0 && z == 0 || z_off > 0 && z == max {
             return true;
         }
-        !self.at(ChunkPos::new((x as i8 + x_off) as u8, (y + y_off) as i16, (z as i8 + z_off) as u8))
+        self.at(ChunkIndex::new((x as i8 + x_off) as u8, (y + y_off) as i16, (z as i8 + z_off) as u8)) == self.air_rid
     }
 }

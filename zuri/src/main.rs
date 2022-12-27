@@ -19,9 +19,9 @@ use zuri_net::client::plugin::ClientPlugin;
 use zuri_proto::io::Reader;
 use zuri_proto::packet::level_chunk::LevelChunk;
 use zuri_world::chunk::Chunk;
-use zuri_world::pos::ChunkPos;
+use zuri_world::pos::ChunkIndex;
 use zuri_world::range::YRange;
-use zuri_world::subchunk::SubChunk;
+use zuri_world::sub_chunk::SubChunk;
 use zuri_world::WorldPlugin;
 
 use crate::entity::Head;
@@ -98,7 +98,8 @@ fn chunk_load_system(
     for event in events.iter() {
         let pos = (event.position * 16);
 
-        let mut s = decode_chunk(event);
+        let mut reader = Reader::from_buf(event.raw_payload.clone(), 0);
+        let s = Chunk::read(&mut reader, YRange::new(-64, 319), event.sub_chunk_count, 10462);
         commands.spawn((
             PbrBundle {
                 mesh: meshes.add(s.build_mesh()),
@@ -115,110 +116,6 @@ fn chunk_load_system(
             s,
         ));
     }
-}
-
-fn decode_chunk(pk: &LevelChunk) -> Chunk {
-    let mut reader = Reader::from_buf(pk.raw_payload.clone(), 0);
-    let mut sub_chunks: Vec<Option<SubChunk>> = Vec::new();
-    for _ in 0..24 {
-        sub_chunks.push(None);
-    }
-
-    for mut sub_chunk_num in 0..pk.sub_chunk_count {
-        let ver = reader.u8();
-        assert!(ver == 8 || ver == 9);
-        let layer_count = reader.u8();
-        if ver == 9 {
-            let u_index = reader.u8();
-            // todo
-        }
-
-        for current_layer in 0..layer_count {
-            let original_block_size = reader.u8();
-            let block_size = original_block_size >> 1;
-
-            let mut total_needed: i32 = 0;
-            if block_size != 0 {
-                total_needed = 4096 / (32 / block_size as i32);
-            }
-            if block_size == 3 || block_size == 5 || block_size == 6 {
-                total_needed += 1;
-            }
-
-            let mut u32s = Vec::<u32>::with_capacity(total_needed as usize);
-            for _ in 0..total_needed {
-                u32s.push(
-                    reader.u8() as u32
-                        | (reader.u8() as u32) << 8
-                        | (reader.u8() as u32) << 16
-                        | (reader.u8() as u32) << 24
-                );
-            }
-
-
-            let mut palette = Vec::new();
-
-            let mut palette_count: i32 = 1;
-            if block_size != 0 {
-                palette_count = reader.var_i32();
-            }
-            if original_block_size&1 != 1 {
-                for _ in 0..palette_count {
-                    let mut buf = reader.into();
-                    let nbt = Value::read(&mut buf, &mut NetworkLittleEndian).unwrap();
-                    reader = Reader::from_buf(buf, 0);
-                    if let Value::Compound(map) = nbt {
-                        if let Value::String(s) = &map["name"] {
-                            println!("{s}");
-                            if s == "minecraft:air" {
-                                palette.push(0);
-                            } else {
-                                palette.push(1);
-                            }
-                        }
-                    } else {
-                        todo!();
-                    }
-                }
-            } else {
-                for _ in 0..palette_count {
-                    palette.push(reader.var_i32() as u32);
-                }
-            }
-            let mut sub = SubChunk::default();
-
-            let bits_per_index = (u32s.len() / 32 / 4) as u16;
-            let index_mask = (1u32 << bits_per_index) - 1;
-            let mut filled_bits_per_index = 0u16;
-            if bits_per_index != 0 {
-                filled_bits_per_index = 32 / bits_per_index * bits_per_index;
-            }
-
-            let mut first = None;
-            for x in 0..16 {
-                for y in 0..16 {
-                    for z in 0..16 {
-                        let palette_index = if bits_per_index == 0 {
-                            0
-                        } else {
-                            let offset = (((x as u16) << 8)
-                                | ((z as u16) << 4) | (y as u16)) * bits_per_index;
-                            let u32_offset = offset / filled_bits_per_index;
-                            let bit_offset = offset % filled_bits_per_index;
-                            ((u32s[u32_offset as usize] >> bit_offset) as u32) & index_mask
-                        };
-                        let id = palette[palette_index as usize];
-                        if let None = first {
-                            first = Some(id);
-                        }
-                        sub.set(x, y, z, id != 10462); // 8333, 12466
-                    }
-                }
-            }
-            sub_chunks[sub_chunk_num as usize] = Some(sub);
-        }
-    }
-    Chunk::from_subchunks(-64, sub_chunks)
 }
 
 fn setup(
