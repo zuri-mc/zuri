@@ -1,6 +1,6 @@
 use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_nbt::Value;
-use zuri_proto::io::Reader;
+use zuri_net::proto::io::Reader;
 
 use crate::pos::{ChunkIndex, SubChunkIndex};
 

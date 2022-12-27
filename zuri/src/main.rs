@@ -12,18 +12,16 @@ use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::window::{CursorGrabMode, PresentMode};
 use bytes::{Buf, Bytes};
 use noise::{NoiseFn, SuperSimplex};
-use zuri_nbt::encoding::NetworkLittleEndian;
-use zuri_nbt::Value;
 
-use zuri_net::client::plugin::ClientPlugin;
-use zuri_proto::io::Reader;
-use zuri_proto::packet::level_chunk::LevelChunk;
+use zuri_net::proto::io::Reader;
+use zuri_net::proto::packet::level_chunk::LevelChunk;
 use zuri_world::chunk::Chunk;
 use zuri_world::pos::ChunkIndex;
 use zuri_world::range::YRange;
 use zuri_world::sub_chunk::SubChunk;
 use zuri_world::WorldPlugin;
 
+use crate::client::ClientPlugin;
 use crate::entity::Head;
 use crate::input::InputPlugin;
 use crate::player::{Local, LocalPlayerPlugin};
@@ -31,6 +29,7 @@ use crate::player::{Local, LocalPlayerPlugin};
 mod entity;
 mod player;
 mod input;
+mod client;
 
 #[tokio::main]
 async fn main() {
@@ -79,7 +78,6 @@ fn cursor_grab_system(
         window.set_cursor_grab_mode(CursorGrabMode::None);
         window.set_cursor_visibility(true);
     }
-
 }
 
 #[derive(Resource, Default)]
@@ -93,7 +91,7 @@ fn chunk_load_system(
     mut events: EventReader<LevelChunk>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    block_tex: Res<BlockTextures>
+    block_tex: Res<BlockTextures>,
 ) {
     for event in events.iter() {
         let pos = (event.position * 16);
