@@ -2,6 +2,7 @@ use std::collections::VecDeque;
 use bytes::Bytes;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
+use std::sync::Arc;
 use async_trait::async_trait;
 use p384::ecdsa::SigningKey;
 use crate::proto::io::{Reader, Writer};
@@ -17,12 +18,12 @@ use crate::encryption::Encryption;
 pub struct Connection {
     socket: RaknetSocket,
 
-    buffered_batch: Vec<Vec<u8>>,
-    queued_packets: VecDeque<Packet>,
+    buffered_batch: Mutex<Vec<Vec<u8>>>,
+    queued_packets: Mutex<VecDeque<Packet>>,
 
     signing_key: SigningKey,
 
-    encoder: Encoder,
+    encoder: Mutex<Encoder>,
 }
 
 impl Connection {
@@ -30,12 +31,12 @@ impl Connection {
         Self {
             socket,
 
-            buffered_batch: Vec::new(),
-            queued_packets: VecDeque::new(),
+            buffered_batch: Mutex::new(Vec::new()),
+            queued_packets: Mutex::new(VecDeque::new()),
 
             signing_key: SigningKey::random(&mut rand::thread_rng()),
 
-            encoder: Encoder::default(),
+            encoder: Mutex::new(Encoder::default()),
         }
     }
 
@@ -43,43 +44,45 @@ impl Connection {
         &self.signing_key
     }
 
-    pub fn set_compression(&mut self, compression: Compression) {
-        self.encoder.set_compression(compression);
+    pub async fn set_compression(&self, compression: Compression) {
+        self.encoder.lock().await.set_compression(compression);
     }
 
-    pub fn set_encryption(&mut self, encryption: Encryption) {
-        self.encoder.set_encryption(encryption);
+    pub async fn set_encryption(&self, encryption: Encryption) {
+        self.encoder.lock().await.set_encryption(encryption);
     }
 
-    pub async fn flush(&mut self) -> Result<(), ConnError> {
-        let batch = self.encoder
-            .encode(&mut self.buffered_batch)
+    pub async fn flush(&self) -> Result<(), ConnError> {
+        let mut batch_mu = self.buffered_batch.lock().await;
+        let batch = self.encoder.lock().await
+            .encode(&mut *batch_mu)
             .map_err(|s| ConnError::EncodeError(s))?;
-
-        self.buffered_batch.clear();
+        batch_mu.clear();
+        drop(batch_mu);
 
         Ok(self.socket.send(&batch, Reliability::ReliableOrdered).await?)
     }
 
-    pub fn write_packet(&mut self, packet: &mut Packet) {
+    pub async fn write_packet(&self, packet: &mut Packet) {
         let mut writer = Writer::new(0); // TODO: Shield ID
         packet.write(&mut writer);
 
-        self.buffered_batch.push(writer.into());
+        self.buffered_batch.lock().await.push(writer.into());
     }
 
-    pub async fn read_next_packet(&mut self) -> Result<Packet, ConnError> {
+    pub async fn read_next_packet(&self) -> Result<Packet, ConnError> {
         loop {
-            if let Some(packet) = self.queued_packets.pop_front() {
+            let mut queue = self.queued_packets.lock().await;
+            if let Some(packet) = queue.pop_front() {
                 return Ok(packet);
             }
-            self.queued_packets = self.read_next_batch().await?.into();
+            *queue = self.read_next_batch().await?.into();
         }
     }
 
-    async fn read_next_batch(&mut self) -> Result<Vec<Packet>, ConnError> {
+    async fn read_next_batch(&self) -> Result<Vec<Packet>, ConnError> {
         let encoded = self.socket.recv().await?;
-        let batch = self.encoder
+        let batch = self.encoder.lock().await
             .decode(&mut encoded.into())
             .map_err(|e| ConnError::DecodeError(e))?;
 
@@ -95,7 +98,7 @@ impl Connection {
 
 #[async_trait]
 pub trait Sequence<E> {
-    async fn execute(self, conn: &Mutex<Connection>) -> Result<(), E>;
+    async fn execute(self, conn: Arc<Connection>) -> Result<(), E>;
 }
 
 #[derive(Debug)]

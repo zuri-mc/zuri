@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use async_trait::async_trait;
 use base64ct::{Base64, Base64Unpadded, Encoding};
 use chrono::{Duration, Utc};
@@ -39,19 +40,18 @@ pub struct LoginSequence<'a> {
 
 #[async_trait]
 impl<'a> Sequence<()> for LoginSequence<'a> {
-    async fn execute(self, conn_mu: &Mutex<Connection>) -> Result<(), ()> {
-        let mut conn = conn_mu.lock().await;
+    async fn execute(self, conn: Arc<Connection>) -> Result<(), ()> {
         println!("[{}:{}] Requesting network settings...", file!(), line!());
-        self.adapt_network_settings(&mut conn).await.unwrap();
+        self.adapt_network_settings(&conn).await.unwrap();
         println!("[{}:{}] Adapted to network settings, sending login...", file!(), line!());
-        self.send_login(&mut conn).await.unwrap();
+        self.send_login(&conn).await.unwrap();
         println!("[{}:{}] Sent login, waiting for next step...", file!(), line!());
 
         match conn.read_next_packet().await.unwrap() {
             Packet::ServerToClientHandshake(handshake) => {
                 println!("[{}:{}] Received server to client handshake, adapting encryption...", file!(), line!());
                 self.adapt_encryption(
-                    &mut conn,
+                    &conn,
                     String::from_utf8(handshake.jwt.to_vec()).unwrap(),
                 ).await.unwrap();
                 println!("[{}:{}] Adapted encryption, awaiting successful login...", file!(), line!());
@@ -74,18 +74,18 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
         }
 
         println!("[{}:{}] Sending client cache status...", file!(), line!());
-        conn.write_packet(&mut ClientCacheStatus { enabled: self.cache_chunks }.into());
+        conn.write_packet(&mut ClientCacheStatus { enabled: self.cache_chunks }.into()).await;
         conn.flush().await.unwrap();
         println!("[{}:{}] Sent client cache status, awaiting resource packs...", file!(), line!());
 
-        self.download_resource_packs(&mut conn).await.unwrap();
+        self.download_resource_packs(&conn).await.unwrap();
         println!("[{}:{}] Downloaded resource packs, awaiting start game...", file!(), line!());
 
         // The start game packet contains our runtime ID which we need later in the sequence. In the
         // future, we should really have a generalized game data, but for now we'll just store it in
         // a local variable.
         let mut rid = 0;
-        self.await_start_game(&mut conn, &mut rid).await.unwrap();
+        self.await_start_game(&conn, &mut rid).await.unwrap();
         println!("[{}:{}] Received start game and sent chunk radius.", file!(), line!());
         println!("[{}:{}] Sent request radius, awaiting response(s)...", file!(), line!());
 
@@ -115,7 +115,7 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
         // Notify the server that we're initialized.
         conn.write_packet(&mut SetLocalPlayerAsInitialised {
             entity_runtime_id: rid,
-        }.into());
+        }.into()).await;
         conn.flush().await.unwrap();
 
         println!("[{}:{}] Login sequence complete!", file!(), line!());
@@ -135,19 +135,19 @@ impl<'a> LoginSequence<'a> {
         }
     }
 
-    async fn adapt_network_settings(&self, conn: &mut Connection) -> Result<(), ConnError> {
+    async fn adapt_network_settings(&self, conn: &Connection) -> Result<(), ConnError> {
         conn.write_packet(&mut RequestNetworkSettings {
             client_protocol: CURRENT_PROTOCOL,
-        }.into());
+        }.into()).await;
         conn.flush().await?;
 
         let pk = NetworkSettings::try_from(conn.read_next_packet().await?).unwrap();
-        conn.set_compression(pk.compression_algorithm.into());
+        conn.set_compression(pk.compression_algorithm.into()).await;
 
         Ok(())
     }
 
-    async fn adapt_encryption(&self, conn: &mut Connection, jwt: String) -> Result<(), ConnError> {
+    async fn adapt_encryption(&self, conn: &Connection, jwt: String) -> Result<(), ConnError> {
         let header = jsonwebtoken::decode_header(&jwt).unwrap();
 
         let mut validation = Validation::new(header.alg);
@@ -182,15 +182,15 @@ impl<'a> LoginSequence<'a> {
 
         let shared_secret = digest.finalize().to_vec();
 
-        conn.set_encryption(Encryption::new(shared_secret));
+        conn.set_encryption(Encryption::new(shared_secret)).await;
 
-        conn.write_packet(&mut ClientToServerHandshake.into());
+        conn.write_packet(&mut ClientToServerHandshake.into()).await;
         conn.flush().await?;
 
         Ok(())
     }
 
-    async fn send_login(&self, conn: &mut Connection) -> Result<(), ConnError> {
+    async fn send_login(&self, conn: &Connection) -> Result<(), ConnError> {
         let mut request = if self.live_token.is_none() {
             self.encode_offline_request(conn)?
         } else {
@@ -207,13 +207,13 @@ impl<'a> LoginSequence<'a> {
         conn.write_packet(&mut Login {
             client_protocol: CURRENT_PROTOCOL,
             connection_request: request.encode().into(),
-        }.into());
+        }.into()).await;
         conn.flush().await?;
 
         Ok(())
     }
 
-    async fn download_resource_packs(&self, conn: &mut Connection) -> Result<(), ConnError> {
+    async fn download_resource_packs(&self, conn: &Connection) -> Result<(), ConnError> {
         ResourcePacksInfo::try_from(
             conn.read_next_packet().await?,
         ).unwrap();
@@ -223,13 +223,13 @@ impl<'a> LoginSequence<'a> {
         conn.write_packet(&mut ResourcePackClientResponse {
             response: ResourcePackResponse::Completed,
             packs_to_download: Vec::new(),
-        }.into());
+        }.into()).await;
         conn.flush().await?;
 
         Ok(())
     }
 
-    async fn await_start_game(&self, conn: &mut Connection, rid: &mut u64) -> Result<(), ConnError> {
+    async fn await_start_game(&self, conn: &Connection, rid: &mut u64) -> Result<(), ConnError> {
         let start_game = StartGame::try_from(
             conn.read_next_packet().await?,
         ).unwrap();
@@ -239,13 +239,13 @@ impl<'a> LoginSequence<'a> {
 
         // We need to request a sample radius of chunks around the player in order for the server
         // to allow us to spawn in. This is a bit of a hack, but it's necessary.
-        conn.write_packet(&mut RequestChunkRadius { chunk_radius: 16 }.into());
+        conn.write_packet(&mut RequestChunkRadius { chunk_radius: 16 }.into()).await;
         conn.flush().await?;
 
         Ok(())
     }
 
-    fn encode_offline_request(&self, conn: &mut Connection) -> Result<Request, ConnError> {
+    fn encode_offline_request(&self, conn: &Connection) -> Result<Request, ConnError> {
         // TODO: CLEAN UP
         let signing_key = conn.signing_key();
         let encoding_key = EncodingKey::from_ec_der(
@@ -277,7 +277,7 @@ impl<'a> LoginSequence<'a> {
         })
     }
 
-    fn encode_online_request(&self, conn: &mut Connection, signed_chain: String) -> Result<Request, ConnError> {
+    fn encode_online_request(&self, conn: &Connection, signed_chain: String) -> Result<Request, ConnError> {
         dbg!(signed_chain.clone());
         let mut request: Request = serde_json::from_str(&signed_chain).unwrap();
 

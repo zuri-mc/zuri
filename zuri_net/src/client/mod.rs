@@ -18,7 +18,7 @@ pub mod data;
 pub mod plugin;
 
 pub struct Client<H: Handler + Send + 'static> {
-    conn: Arc<Mutex<Connection>>,
+    conn: Arc<Connection>,
     handler: Arc<Mutex<H>>,
 
     client_data: ClientData,
@@ -37,7 +37,7 @@ impl<H: Handler + Send + 'static> Client<H> {
 
         let (send, recv) = channel(1);
         let client = Self {
-            conn: Arc::new(Mutex::new(Connection::new(socket))),
+            conn: Arc::new(Connection::new(socket)),
             handler: Arc::new(Mutex::new(handler)),
 
             client_data,
@@ -70,21 +70,21 @@ impl<H: Handler + Send + 'static> Client<H> {
         mu.handle_outgoing(packet).await;
         drop(mu);
 
-        self.conn.lock().await.write_packet(packet);
+        self.conn.write_packet(packet).await;
         Ok(())
     }
 
     pub async fn flush(&mut self) -> Result<(), ConnError> {
-        self.conn.lock().await.flush().await
+        self.conn.flush().await
     }
 
     pub async fn exec_sequence<E>(&self, seq: impl Sequence<E>) -> Result<(), E> {
-        seq.execute(&self.conn).await
+        seq.execute(self.conn.clone()).await
     }
 
-    async fn read_loop(chan: Sender<Packet>, conn: Arc<Mutex<Connection>>) {
+    async fn read_loop(chan: Sender<Packet>, conn: Arc<Connection>) {
         loop {
-            let result = conn.lock().await.read_next_packet().await;
+            let result = conn.read_next_packet().await;
             //let pks = b.await;
             //let pks = mu.read_next_batch().await;
             //drop(mu);
@@ -100,16 +100,15 @@ impl<H: Handler + Send + 'static> Client<H> {
         }
     }
 
-    async fn handle_loop<T: Handler + Send>(mut chan: Receiver<Packet>, handler: Arc<Mutex<T>>, conn: Arc<Mutex<Connection>>) {
+    async fn handle_loop<T: Handler + Send>(mut chan: Receiver<Packet>, handler: Arc<Mutex<T>>, conn: Arc<Connection>) {
         loop {
             if let Some(pk) = chan.recv().await {
                 let mut response = handler.lock().await.handle_incoming(pk).await;
 
-                let mut mu = conn.lock().await;
                 for pk in &mut response {
-                    mu.write_packet(pk);
+                    conn.write_packet(pk).await;
                 }
-                mu.flush().await.unwrap();
+                conn.flush().await.expect("TODO: panic message");
             } else {
                 handler.lock().await.handle_disconnect(None).await; // todo: reason
                 return;
