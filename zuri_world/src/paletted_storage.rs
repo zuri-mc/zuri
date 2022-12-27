@@ -1,6 +1,6 @@
 use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_nbt::Value;
-use zuri_proto::io::Reader;
+use zuri_net::proto::io::Reader;
 
 use crate::pos::{ChunkIndex, SubChunkIndex};
 
@@ -119,8 +119,13 @@ impl PalettedStorage {
             for _ in 0..palette_size {
                 let nbt = reader.nbt(NetworkLittleEndian);
                 if let Value::Compound(map) = nbt {
-                    todo!();
-                    // todo: get block runtime id. this requires a block registry
+                    if let Value::String(name) = map.get("name").unwrap() {
+                        if name == "air" {
+                            palette.push(10462);
+                            continue
+                        }
+                        palette.push(0);
+                    }
                 } else {
                     panic!("unexpected value type for root in nbt palette");
                 }

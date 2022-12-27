@@ -2,7 +2,7 @@ use std::iter;
 
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
-use zuri_proto::io::Reader;
+use zuri_net::proto::io::Reader;
 
 use crate::pos::{ChunkIndex};
 use crate::range::YRange;

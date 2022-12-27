@@ -4772,6 +4772,7 @@ dependencies = [
  "tokio",
  "uuid",
  "zuri_math",
+ "zuri_nbt",
  "zuri_net",
  "zuri_world",
 ]
@@ -4831,6 +4832,8 @@ name = "zuri_world"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "zuri_nbt",
+ "zuri_net",
 ]
 
 [[package]]

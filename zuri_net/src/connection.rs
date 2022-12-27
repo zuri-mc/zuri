@@ -52,6 +52,9 @@ impl Connection {
     }
 
     pub async fn flush(&mut self) -> Result<(), ConnError> {
+        if self.buffered_batch.is_empty() {
+            return Ok(());
+        }
         let batch = self.encoder
             .encode(&mut self.buffered_batch)
             .map_err(|s| ConnError::EncodeError(s))?;
@@ -75,6 +78,10 @@ impl Connection {
             }
             self.queued_packets = self.read_next_batch().await?.into();
         }
+    }
+
+    pub async fn queue_packet(&mut self, packet: Packet) {
+        self.queued_packets.push_back(packet);
     }
 
     async fn read_next_batch(&mut self) -> Result<Vec<Packet>, ConnError> {

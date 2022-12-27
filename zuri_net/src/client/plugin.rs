@@ -1,22 +1,16 @@
-use std::net::SocketAddr;
-
 use async_trait::async_trait;
-use bevy::app::AppExit;
 use bevy::prelude::*;
-use bevy::tasks::{IoTaskPool, Task};
 use futures_lite::future;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::mpsc::error::TryRecvError;
 use tokio::task::JoinHandle;
-use uuid::Uuid;
 
-use zuri_proto::packet::level_chunk::LevelChunk;
 use zuri_xbox::live;
 use crate::proto::packet::Packet;
 
 use crate::client::{Client, Handler};
 use crate::client::data::{ClientData, IdentityData};
-use crate::connection::ConnError;
+use crate::proto::packet::level_chunk::LevelChunk;
 
 pub struct ClientPlugin;
 
@@ -52,7 +46,7 @@ fn init_client(world: &mut World) {
     let (send, recv) = channel::<Packet>(16);
     world.insert_non_send_resource(ClientWaiter {
         task: tokio::spawn(Client::connect(
-            "127.0.0.1:19131".parse().unwrap(),
+            "51.222.44.28:19132".parse().unwrap(),
             ClientData::default(),
             None,
             Some(live_token),
@@ -95,6 +89,9 @@ fn receive_packets(world: &mut World) {
             }
             Ok(pk) => match pk {
                 Packet::LevelChunk(pk) => world.send_event(pk),
+                Packet::Disconnect(pk) => {
+                    dbg!(pk);
+                }
                 _ => {
                     warn!("Packet `{pk}` was discarded");
                 }
