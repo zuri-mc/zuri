@@ -13,7 +13,7 @@ use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
 /// Requests an XBOX Live auth token using the passed Live token pair.
-pub fn request_xbl_token(live_token: BasicTokenResponse, relying_party: String) -> LiveTokenResponse {
+pub fn request_xbl_token(live_token: &BasicTokenResponse, relying_party: String) -> LiveTokenResponse {
     let key = SecretKey::random(&mut rand::thread_rng());
     obtain_xbl_token(&key, live_token, obtain_device_token(&key), relying_party)
 }
@@ -106,7 +106,7 @@ pub struct AuthorizationToken {
     pub token: String,
 }
 
-fn obtain_xbl_token(key: &SecretKey, live_token: BasicTokenResponse, device_token: String, relying_party: String) -> LiveTokenResponse {
+fn obtain_xbl_token(key: &SecretKey, live_token: &BasicTokenResponse, device_token: String, relying_party: String) -> LiveTokenResponse {
     let token_request = LiveTokenRequest {
         access_token: format!("t={}", live_token.access_token().secret()),
         app_id: "0000000048183522".into(),

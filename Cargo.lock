@@ -4801,6 +4801,7 @@ dependencies = [
  "base64ct",
  "bevy",
  "bytes",
+ "chrono",
  "cipher 0.4.3",
  "ctr 0.9.2",
  "futures-lite",
@@ -4810,6 +4811,7 @@ dependencies = [
  "num",
  "num-derive",
  "num-traits",
+ "oauth2",
  "p384",
  "rand 0.8.5",
  "rust-raknet",
@@ -4821,6 +4823,7 @@ dependencies = [
  "tokio",
  "uuid",
  "zuri_nbt",
+ "zuri_xbox",
 ]
 
 [[package]]

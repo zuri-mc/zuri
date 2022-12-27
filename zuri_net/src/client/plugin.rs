@@ -9,6 +9,7 @@ use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::mpsc::error::TryRecvError;
 use tokio::task::JoinHandle;
 use uuid::Uuid;
+use zuri_xbox::live;
 use crate::proto::packet::Packet;
 
 use crate::client::{Client, Handler};
@@ -35,17 +36,23 @@ pub struct ClientContainer {
 }
 
 fn init_client(world: &mut World) {
+    let details = live::start_device_auth().unwrap();
+
+    println!(
+        "Authenticate at {} using the code: {}",
+        details.verification_uri().to_string(),
+        details.user_code().secret().to_string()
+    );
+
+    let live_token = live::await_device_auth(details).unwrap();
+
     let (send, recv) = channel::<Vec<Packet>>(16);
     world.insert_non_send_resource(ClientWaiter {
         task: tokio::spawn(Client::connect(
-            "127.0.0.1:19132".parse().unwrap(),
+            "127.0.0.1:19131".parse().unwrap(),
             ClientData::default(),
-            IdentityData {
-                display_name: "Zuri".into(),
-                identity: Uuid::new_v4().to_string(),
-                title_id: None,
-                xuid: "".into(),
-            },
+            None,
+            Some(live_token),
             PacketHandler {
                 send_chan: send,
             },
