@@ -131,7 +131,7 @@ impl<'a> LoginSequence<'a> {
         }
     }
 
-    async fn adapt_network_settings(&self, conn: &mut Connection) -> Result<(), ConnError> {
+    async fn adapt_network_settings(&self, conn: &mut Connection) -> coResult<(), ConnError> {
         conn.write_packet(&mut RequestNetworkSettings {
             client_protocol: CURRENT_PROTOCOL,
         }.into());
@@ -172,11 +172,11 @@ impl<'a> LoginSequence<'a> {
             server_verifying_key.as_affine(),
         );
 
-        let mut hasher = Sha256::new();
-        hasher.update(&salt);
-        hasher.update(&unsalted_secret.raw_secret_bytes());
+        let mut digest = Sha256::new();
+        digest.update(&salt);
+        digest.update(&unsalted_secret.raw_secret_bytes());
 
-        let shared_secret = hasher.finalize().to_vec();
+        let shared_secret = digest.finalize().to_vec();
 
         conn.set_encryption(Encryption::new(shared_secret));
 
