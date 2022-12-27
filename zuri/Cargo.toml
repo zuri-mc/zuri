@@ -14,6 +14,7 @@ zuri_proto = { path = "../zuri_proto" }
 zuri_math = { path = "../zuri_math" }
 zuri_world = { path = "../zuri_world" }
 zuri_net = { path = "../zuri_net", features = ["bevy"] }
+zuri_nbt = { path = "../zuri_nbt" }
 rand = "0.8.5"
 
 [features]

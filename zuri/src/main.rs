@@ -10,12 +10,18 @@ use bevy::{
 use bevy::core_pipeline::clear_color::ClearColorConfig;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::window::{CursorGrabMode, PresentMode};
+use bytes::{Buf, Bytes};
 use noise::{NoiseFn, SuperSimplex};
-use zuri_net::client::plugin::ClientPlugin;
+use zuri_nbt::encoding::NetworkLittleEndian;
+use zuri_nbt::Value;
 
+use zuri_net::client::plugin::ClientPlugin;
+use zuri_proto::io::Reader;
+use zuri_proto::packet::level_chunk::LevelChunk;
 use zuri_world::chunk::Chunk;
 use zuri_world::pos::ChunkPos;
 use zuri_world::range::YRange;
+use zuri_world::subchunk::SubChunk;
 use zuri_world::WorldPlugin;
 
 use crate::entity::Head;
@@ -50,8 +56,10 @@ async fn main() {
         .add_plugin(LocalPlayerPlugin)
         .add_plugin(WorldPlugin)
 
+        .insert_resource(BlockTextures::default())
         .add_startup_system(setup)
         .add_system(cursor_grab_system)
+        .add_system(chunk_load_system)
         .run();
 }
 
@@ -71,6 +79,146 @@ fn cursor_grab_system(
         window.set_cursor_grab_mode(CursorGrabMode::None);
         window.set_cursor_visibility(true);
     }
+
+}
+
+#[derive(Resource, Default)]
+pub struct BlockTextures {
+    // only support one block for now
+    dirt: Option<Handle<Image>>,
+}
+
+fn chunk_load_system(
+    mut commands: Commands,
+    mut events: EventReader<LevelChunk>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    block_tex: Res<BlockTextures>
+) {
+    for event in events.iter() {
+        let pos = (event.position * 16);
+
+        let mut s = decode_chunk(event);
+        commands.spawn((
+            PbrBundle {
+                mesh: meshes.add(s.build_mesh()),
+                material: materials.add(StandardMaterial {
+                    base_color_texture: Some(block_tex.dirt.clone().unwrap()),
+                    base_color: Color::WHITE,
+                    alpha_mode: AlphaMode::Opaque,
+                    perceptual_roughness: 0.94,
+                    ..default()
+                }),
+                transform: Transform::from_xyz(pos.x as f32, -32., pos.y as f32),
+                ..default()
+            },
+            s,
+        ));
+    }
+}
+
+fn decode_chunk(pk: &LevelChunk) -> Chunk {
+    let mut reader = Reader::from_buf(pk.raw_payload.clone(), 0);
+    let mut sub_chunks: Vec<Option<SubChunk>> = Vec::new();
+    for _ in 0..24 {
+        sub_chunks.push(None);
+    }
+
+    for mut sub_chunk_num in 0..pk.sub_chunk_count {
+        let ver = reader.u8();
+        assert!(ver == 8 || ver == 9);
+        let layer_count = reader.u8();
+        if ver == 9 {
+            let u_index = reader.u8();
+            // todo
+        }
+
+        for current_layer in 0..layer_count {
+            let original_block_size = reader.u8();
+            let block_size = original_block_size >> 1;
+
+            let mut total_needed: i32 = 0;
+            if block_size != 0 {
+                total_needed = 4096 / (32 / block_size as i32);
+            }
+            if block_size == 3 || block_size == 5 || block_size == 6 {
+                total_needed += 1;
+            }
+
+            let mut u32s = Vec::<u32>::with_capacity(total_needed as usize);
+            for _ in 0..total_needed {
+                u32s.push(
+                    reader.u8() as u32
+                        | (reader.u8() as u32) << 8
+                        | (reader.u8() as u32) << 16
+                        | (reader.u8() as u32) << 24
+                );
+            }
+
+
+            let mut palette = Vec::new();
+
+            let mut palette_count: i32 = 1;
+            if block_size != 0 {
+                palette_count = reader.var_i32();
+            }
+            if original_block_size&1 != 1 {
+                for _ in 0..palette_count {
+                    let mut buf = reader.into();
+                    let nbt = Value::read(&mut buf, &mut NetworkLittleEndian).unwrap();
+                    reader = Reader::from_buf(buf, 0);
+                    if let Value::Compound(map) = nbt {
+                        if let Value::String(s) = &map["name"] {
+                            println!("{s}");
+                            if s == "minecraft:air" {
+                                palette.push(0);
+                            } else {
+                                palette.push(1);
+                            }
+                        }
+                    } else {
+                        todo!();
+                    }
+                }
+            } else {
+                for _ in 0..palette_count {
+                    palette.push(reader.var_i32() as u32);
+                }
+            }
+            let mut sub = SubChunk::default();
+
+            let bits_per_index = (u32s.len() / 32 / 4) as u16;
+            let index_mask = (1u32 << bits_per_index) - 1;
+            let mut filled_bits_per_index = 0u16;
+            if bits_per_index != 0 {
+                filled_bits_per_index = 32 / bits_per_index * bits_per_index;
+            }
+
+            let mut first = None;
+            for x in 0..16 {
+                for y in 0..16 {
+                    for z in 0..16 {
+                        let palette_index = if bits_per_index == 0 {
+                            0
+                        } else {
+                            let offset = (((x as u16) << 8)
+                                | ((z as u16) << 4) | (y as u16)) * bits_per_index;
+                            let u32_offset = offset / filled_bits_per_index;
+                            let bit_offset = offset % filled_bits_per_index;
+                            ((u32s[u32_offset as usize] >> bit_offset) as u32) & index_mask
+                        };
+                        let id = palette[palette_index as usize];
+                        if let None = first {
+                            first = Some(id);
+                        }
+                        sub.set(x, y, z, id != 10462); // 8333, 12466
+                    }
+                }
+            }
+            sub_chunks[sub_chunk_num as usize] = Some(sub);
+        }
+    }
+    Chunk::from_subchunks(-64, sub_chunks)
 }
 
 fn setup(
@@ -78,53 +226,13 @@ fn setup(
     mut wireframe_config: ResMut<WireframeConfig>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut block_tex: ResMut<BlockTextures>,
     asset_server: Res<AssetServer>,
 ) {
     wireframe_config.global = false;
 
     let texture_handle = asset_server.load("dirt.png");
-
-    // cubes
-    let mut cube_count = 0;
-    let noise = SuperSimplex::new(rand::random());
-    for chunk_x in 0..16 {
-        for chunk_z in 0..16 {
-            let mut s = Chunk::empty(YRange::new(0, 63));
-            for x in 0..16 {
-                let world_x = chunk_x * 16 + x;
-
-                for z in 0..16 {
-                    let world_z = chunk_z * 16 + z;
-
-                    let max = (noise.get([world_x as f64 / 50., world_z as f64 / 50.]) * 10.) as i32;
-                    for y in 0..max + 50 {
-                        cube_count += 1;
-                        s.set(ChunkPos::new(x, y as i16, z), true);
-                    }
-                }
-            }
-
-            commands.spawn((
-                PbrBundle {
-                    mesh: meshes.add(s.build_mesh()),
-                    material: materials.add(StandardMaterial {
-                        base_color_texture: Some(texture_handle.clone()),
-                        base_color: Color::WHITE,
-                        alpha_mode: AlphaMode::Opaque,
-                        //reflectance: 0.01,
-                        perceptual_roughness: 0.94,
-                        //unlit: true,
-                        ..default()
-                    }),
-                    transform: Transform::from_xyz(chunk_x as f32 * 16., -32., chunk_z as f32 * 16.),
-                    ..default()
-                },
-                //Wireframe,
-                s,
-            ));
-        }
-    }
-    println!("Placed {} cubes", cube_count);
+    block_tex.dirt = Some(texture_handle);
 
     // light
     commands.spawn(PointLightBundle {

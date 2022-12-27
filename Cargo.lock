@@ -4234,6 +4234,7 @@ dependencies = [
  "tokio",
  "uuid",
  "zuri_math",
+ "zuri_nbt",
  "zuri_net",
  "zuri_proto",
  "zuri_world",

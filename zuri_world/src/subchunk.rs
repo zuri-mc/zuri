@@ -37,4 +37,9 @@ impl SubChunk {
         Self::require_inside(x, y, z);
         self.blocks[Self::index(x, y, z)] = val;
     }
+
+    // todo: remove
+    pub fn set_index(&mut self, i: u32, val: bool) {
+        self.blocks[i as usize] = val;
+    }
 }

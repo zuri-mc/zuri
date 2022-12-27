@@ -5,7 +5,7 @@ use crate::system::chunk_update_system;
 pub mod chunk;
 pub mod range;
 pub mod pos;
-mod subchunk;
+pub mod subchunk;
 mod system;
 
 pub struct WorldPlugin;

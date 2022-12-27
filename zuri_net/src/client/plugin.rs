@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
+
 use async_trait::async_trait;
 use bevy::app::AppExit;
-
 use bevy::prelude::*;
 use bevy::tasks::{IoTaskPool, Task};
 use futures_lite::future;
@@ -9,6 +9,8 @@ use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::mpsc::error::TryRecvError;
 use tokio::task::JoinHandle;
 use uuid::Uuid;
+
+use zuri_proto::packet::level_chunk::LevelChunk;
 use zuri_proto::packet::Packet;
 
 use crate::client::{Client, Handler};
@@ -20,6 +22,7 @@ pub struct ClientPlugin;
 impl Plugin for ClientPlugin {
     fn build(&self, app: &mut App) {
         app
+            .add_event::<LevelChunk>()
             .add_startup_system(init_client)
             .add_system(client_connection_system)
             .add_system(receive_packets);
@@ -35,7 +38,7 @@ pub struct ClientContainer {
 }
 
 fn init_client(world: &mut World) {
-    let (send, recv) = channel::<Vec<Packet>>(16);
+    let (send, recv) = channel::<Packet>(16);
     world.insert_non_send_resource(ClientWaiter {
         task: tokio::spawn(Client::connect(
             "127.0.0.1:19132".parse().unwrap(),
@@ -65,25 +68,28 @@ fn client_connection_system(world: &mut World) {
 }
 
 fn receive_packets(world: &mut World) {
-    if let Some(mut chan) = world.get_non_send_resource_mut::<Receiver<Vec<Packet>>>() {
-        match chan.try_recv() {
+    if world.get_non_send_resource_mut::<Receiver<Packet>>().is_none() {
+        return;
+    }
+    loop {
+        // Get the resource from the world each time, since otherwise we are borrowing the world as
+        // mutable more than once at the same time.
+        let pk_res = world.get_non_send_resource_mut::<Receiver<Packet>>()
+            .unwrap().try_recv();
+        match pk_res {
             Err(err) => {
                 match err {
-                    TryRecvError::Empty => {},
+                    TryRecvError::Empty => {}
                     TryRecvError::Disconnected => {
                         world.remove_non_send_resource::<Receiver<Vec<Packet>>>().unwrap();
-                    },
+                    }
                 };
                 return;
             }
-            Ok(vec) => {
-                for pk in vec {
-                    match pk {
-                        _ => {
-                            warn!("Unhandled packet {pk}");
-                            dbg!(pk);
-                        },
-                    }
+            Ok(pk) => match pk {
+                Packet::LevelChunk(pk) => world.send_event(pk),
+                _ => {
+                    warn!("Packet `{pk}` was discarded");
                 }
             }
         };
@@ -91,13 +97,13 @@ fn receive_packets(world: &mut World) {
 }
 
 struct PacketHandler {
-    send_chan: Sender<Vec<Packet>>,
+    send_chan: Sender<Packet>,
 }
 
 #[async_trait]
 impl Handler for PacketHandler {
     async fn handle_incoming(&mut self, pk: Packet) -> Vec<Packet> {
-        self.send_chan.send(vec![pk]).await.expect("TODO: panic message");
+        self.send_chan.send(pk).await.expect("TODO: panic message");
         vec![]
     }
 }

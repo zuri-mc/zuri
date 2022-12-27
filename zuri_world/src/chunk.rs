@@ -21,6 +21,13 @@ impl Chunk {
         }
     }
 
+    pub fn from_subchunks(min_pos: i16, sub_chunks: Vec<Option<SubChunk>>) -> Self {
+        Self {
+            range: YRange::new(min_pos, min_pos + sub_chunks.len() as i16 * 16 - 1),
+            sub_chunks,
+        }
+    }
+
     pub fn at(&self, pos: ChunkPos) -> bool {
         if !self.range.is_inside(pos) {
             panic!("chunk pos is outside of bounds"); // todo: maybe return an option
