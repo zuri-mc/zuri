@@ -51,7 +51,7 @@ fn init_client(world: &mut World) {
         task: tokio::spawn(Client::connect(
             "127.0.0.1:19131".parse().unwrap(),
             ClientData::default(),
-            None
+            None,
             //Some(live_token),
             None,
             PacketHandler {
