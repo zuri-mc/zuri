@@ -11,12 +11,12 @@ use bevy::core_pipeline::clear_color::ClearColorConfig;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::window::{CursorGrabMode, PresentMode};
 use noise::{NoiseFn, SuperSimplex};
-use zuri_net::client::plugin::ClientPlugin;
 
 use zuri_world::chunk::Chunk;
 use zuri_world::pos::ChunkPos;
 use zuri_world::range::YRange;
 use zuri_world::WorldPlugin;
+use crate::client::ClientPlugin;
 
 use crate::entity::Head;
 use crate::input::InputPlugin;
@@ -25,6 +25,7 @@ use crate::player::{Local, LocalPlayerPlugin};
 mod entity;
 mod player;
 mod input;
+mod client;
 
 #[tokio::main]
 async fn main() {

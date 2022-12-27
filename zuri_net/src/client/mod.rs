@@ -13,7 +13,7 @@ use crate::connection::{Connection, ConnError, Sequence};
 
 mod login;
 mod auth;
-mod data;
+pub mod data;
 #[cfg(feature = "bevy")]
 pub mod plugin;
 
