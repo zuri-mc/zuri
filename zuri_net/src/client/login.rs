@@ -29,6 +29,7 @@ use crate::connection::*;
 use crate::client::auth::{IdentityClaims, IdentityPublicKeyClaims, Request, SaltClaims};
 use crate::client::data::{ClientData, IdentityData};
 use crate::encryption::Encryption;
+use crate::proto::packet::server_to_client_handshake::ServerToClientHandshake;
 
 pub struct LoginSequence<'a> {
     client_data: &'a ClientData,
@@ -41,13 +42,17 @@ pub struct LoginSequence<'a> {
 
 #[async_trait]
 impl<'a> Sequence<()> for LoginSequence<'a> {
-    async fn execute(self, reader: Receiver<Packet>, conn: Arc<Connection>) -> Result<(), ()> {
+    async fn execute(self, reader: Receiver<Packet>, conn: Arc<Connection>, expecter: Arc<ExpectedPackets>) -> Result<(), ()> {
         println!("[{}:{}] Requesting network settings...", file!(), line!());
+        expecter.expect::<NetworkSettings>().await;
         self.adapt_network_settings(&reader, &conn).await.unwrap();
         println!("[{}:{}] Adapted to network settings, sending login...", file!(), line!());
         self.send_login(&reader, &conn).await.unwrap();
         println!("[{}:{}] Sent login, waiting for next step...", file!(), line!());
 
+        expecter.expect::<ServerToClientHandshake>().await;
+        expecter.expect::<PlayStatus>().await;
+        expecter.expect::<ResourcePacksInfo>().await;
         match reader.recv().unwrap() {
             Packet::ServerToClientHandshake(handshake) => {
                 println!("[{}:{}] Received server to client handshake, adapting encryption...", file!(), line!());
@@ -87,6 +92,7 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
         // future, we should really have a generalized game data, but for now we'll just store it in
         // a local variable.
         let mut rid = 0;
+        expecter.expect::<StartGame>().await;
         self.await_start_game(&reader, &conn, &mut rid).await.unwrap();
         println!("[{}:{}] Received start game and sent chunk radius.", file!(), line!());
         println!("[{}:{}] Sent request radius, awaiting response(s)...", file!(), line!());

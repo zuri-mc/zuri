@@ -1,3 +1,4 @@
+use std::any::{Any, TypeId};
 use std::collections::VecDeque;
 use bytes::Bytes;
 use std::error::Error;
@@ -102,7 +103,22 @@ impl Connection {
 
 #[async_trait]
 pub trait Sequence<E> {
-    async fn execute(self, reader: Receiver<Packet>, conn: Arc<Connection>) -> Result<(), E>;
+    async fn execute(self, reader: Receiver<Packet>, conn: Arc<Connection>, expecter: Arc<ExpectedPackets>) -> Result<(), E>;
+}
+
+#[derive(Default, Debug)]
+pub struct ExpectedPackets {
+    packets: Mutex<Vec<TypeId>>,
+}
+
+impl ExpectedPackets {
+    pub async fn expect<T: TryFrom<Packet> + 'static>(&self) {
+        self.packets.lock().await.push(TypeId::of::<T>());
+    }
+
+    pub async fn is_expected(&self, pk: &Packet) -> bool {
+        self.packets.lock().await.contains(&pk.inner_type_id())
+    }
 }
 
 #[derive(Debug)]
