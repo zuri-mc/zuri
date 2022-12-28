@@ -6,14 +6,14 @@ use crate::proto::io::{Reader, Writer};
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum MobEffectOperation {
-    Add,
+    Add = 1,
     Modify,
     Remove,
 }
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum MobEffectType {
-    Speed,
+    Speed = 1,
     Slowness,
     Haste,
     MiningFatigue,

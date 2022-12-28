@@ -16,7 +16,7 @@ pub enum GameRuleValue {
     Float(f32),
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 enum GameRuleType {
     Bool = 1,
     Int = 2,
