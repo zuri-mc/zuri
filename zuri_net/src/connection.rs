@@ -103,8 +103,8 @@ impl Connection {
 }
 
 #[async_trait]
-pub trait Sequence<E> {
-    async fn execute(self, reader: PkReceiver, conn: Arc<Connection>, expecter: Arc<ExpectedPackets>) -> Result<(), E>;
+pub trait Sequence<T> {
+    async fn execute(self, reader: PkReceiver, conn: Arc<Connection>, expecter: Arc<ExpectedPackets>) -> T;
 }
 
 #[derive(Default, Debug)]

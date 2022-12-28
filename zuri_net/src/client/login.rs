@@ -43,21 +43,24 @@ pub struct LoginSequence<'a> {
     // TODO: Make a general GameData system.
 }
 
+/// The data returned by the login sequence after it has been (successfully) completed.
+pub struct LoginData {}
+
 #[async_trait]
-impl<'a> Sequence<()> for LoginSequence<'a> {
-    async fn execute(self, mut reader: PkReceiver, conn: Arc<Connection>, expectancies: Arc<ExpectedPackets>) -> Result<(), ()> {
+impl<'a> Sequence<Result<LoginData, ConnError>> for LoginSequence<'a> {
+    async fn execute(self, mut reader: PkReceiver, conn: Arc<Connection>, expectancies: Arc<ExpectedPackets>) -> Result<LoginData, ConnError> {
         // The first bit of the login sequence requires us to request the network settings the
         // server is using from the server. These dictate options for mostly compression, but also
         // various other things that aren't relevant to us.
         expectancies.queue::<NetworkSettings>().await;
-        self.adapt_network_settings(&mut reader, &conn).await.unwrap();
+        self.adapt_network_settings(&mut reader, &conn).await?;
 
         // Once we've received the server's network settings and adapted compression according to
         // the server's standards, we can actually send our login.
         expectancies.queue::<PlayStatus>().await;
         expectancies.queue::<ResourcePacksInfo>().await;
         expectancies.queue::<ServerToClientHandshake>().await;
-        self.send_login(&conn).await.unwrap();
+        self.send_login(&conn).await?;
 
         // We'll either get one of two packets here; an encryption handshake, or a play status if
         // the server doesn't support encryption. We'll handle both cases here.
@@ -67,7 +70,7 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
                 self.adapt_encryption(
                     &conn,
                     String::from_utf8(handshake.jwt.to_vec()).unwrap(),
-                ).await.unwrap();
+                ).await?;
 
                 // We can now expect a PlayStatus indicating a successful login.
                 let play_status = PlayStatus::try_from(reader.recv().await).unwrap();
@@ -84,18 +87,18 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
                 // handshake from the server. We'll just retract our expectation for that.
                 expectancies.retract::<ServerToClientHandshake>().await;
             }
-            _ => return Err(()), // todo
+            _ => todo!(), // todo
         }
 
         // Notify the server of our client cache status. Nintendo Switch clients don't properly
         // support this for whatever reason, so servers have to account for it.
         conn.write_packet(&mut ClientCacheStatus { enabled: self.cache_chunks }.into()).await;
-        conn.flush().await.unwrap();
+        conn.flush().await?;
 
         // The server has entered the resource pack phase. We can expect a ResourcePacksInfo packet
         // containing all the information about the resource packs the server is using.
         expectancies.queue::<StartGame>().await;
-        self.download_resource_packs(&mut reader, &conn).await.unwrap();
+        self.download_resource_packs(&mut reader, &conn).await?;
 
         // The StartGame packet contains our runtime ID which we need later in the sequence.
         let mut rid = 0;
@@ -105,7 +108,7 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
         // to store a lot more information.
         expectancies.queue::<PlayStatus>().await;
         expectancies.queue::<ChunkRadiusUpdated>().await;
-        self.await_start_game(&mut reader, &conn, &mut rid).await.unwrap();
+        self.await_start_game(&mut reader, &conn, &mut rid).await?;
 
         // We'll now need both the chunk radius and the play status to be sent to us. Once both are
         // sent, we can notify the server that we're ready to start playing.
@@ -119,7 +122,7 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
                         panic!("login failed"); // TODO: proper error handling.
                     }
                 }
-                _ => panic!("should never happen")
+                _ => unreachable!()
             }
         }
 
@@ -127,10 +130,10 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
         conn.write_packet(&mut SetLocalPlayerAsInitialised {
             entity_runtime_id: rid,
         }.into()).await;
-        conn.flush().await.unwrap();
+        conn.flush().await?;
 
         // We're done!
-        Ok(())
+        Ok(LoginData {})
     }
 }
 

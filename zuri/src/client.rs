@@ -1,6 +1,7 @@
 use std::env;
 use std::net::ToSocketAddrs;
 use async_trait::async_trait;
+use bevy::app::AppExit;
 
 use bevy::prelude::*;
 use futures_lite::future;
@@ -11,6 +12,8 @@ use tokio::task::JoinHandle;
 use uuid::Uuid;
 use zuri_net::client::{Client, Handler};
 use zuri_net::client::data::{ClientData, IdentityData};
+use zuri_net::client::login::LoginData;
+use zuri_net::connection::ConnError;
 use zuri_net::proto::packet::Packet;
 use zuri_xbox::live;
 
@@ -26,7 +29,7 @@ impl Plugin for ClientPlugin {
 }
 
 pub struct ClientWaiter {
-    task: JoinHandle<Result<Client<PacketHandler>, String>>,
+    task: JoinHandle<Result<(Client<PacketHandler>, LoginData), ConnError>>,
 }
 
 fn init_client(world: &mut World) {
@@ -72,10 +75,19 @@ fn init_client(world: &mut World) {
 
 fn client_connection_system(world: &mut World) {
     if let Some(waiter) = world.get_non_send_resource_mut::<ClientWaiter>() {
-        if let Some(client) = future::block_on(future::poll_once(&mut waiter.into_inner().task)) {
-            world.remove_non_send_resource::<ClientWaiter>();
-            world.insert_non_send_resource(client.unwrap());
-            info!("Connection has been completed");
+        if let Some(res) = future::block_on(future::poll_once(&mut waiter.into_inner().task)) {
+            match res.unwrap() {
+                Err(e) => {
+                    error!("Could not connect to the server: {e}");
+                    world.send_event(AppExit);
+                }
+                Ok((client, data)) => {
+                    world.remove_non_send_resource::<ClientWaiter>();
+                    world.insert_non_send_resource(client);
+                    world.insert_non_send_resource(data);
+                    info!("Connection has been completed");
+                }
+            }
         }
     }
 }
