@@ -1,5 +1,4 @@
 extern crate core;
-
 pub mod client;
 pub mod compression;
 pub mod connection;

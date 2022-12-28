@@ -1,6 +1,3 @@
-#![feature(default_free_fn)]
-extern crate core;
-
 pub mod io;
 pub mod packet;
 pub mod types;

@@ -8,7 +8,6 @@ use oauth2::basic::BasicTokenResponse;
 use p384::ecdsa::VerifyingKey;
 use p384::pkcs8::{DecodePublicKey, EncodePrivateKey, EncodePublicKey};
 use sha2::{Sha256, Digest};
-use tokio::sync::Mutex;
 use zuri_xbox::{minecraft, xbox};
 use crate::proto::{CURRENT_PROTOCOL, CURRENT_VERSION};
 use crate::proto::packet::client_cache_status::ClientCacheStatus;
@@ -29,6 +28,7 @@ use crate::connection::*;
 use crate::client::auth::{IdentityClaims, IdentityPublicKeyClaims, Request, SaltClaims};
 use crate::client::data::{ClientData, IdentityData};
 use crate::encryption::Encryption;
+use crate::proto::packet::chunk_radius_updated::ChunkRadiusUpdated;
 use crate::proto::packet::server_to_client_handshake::ServerToClientHandshake;
 
 pub struct LoginSequence<'a> {
@@ -42,91 +42,89 @@ pub struct LoginSequence<'a> {
 
 #[async_trait]
 impl<'a> Sequence<()> for LoginSequence<'a> {
-    async fn execute(self, reader: Receiver<Packet>, conn: Arc<Connection>, expecter: Arc<ExpectedPackets>) -> Result<(), ()> {
-        println!("[{}:{}] Requesting network settings...", file!(), line!());
-        expecter.expect::<NetworkSettings>().await;
+    async fn execute(self, reader: Receiver<Packet>, conn: Arc<Connection>, expectancies: Arc<ExpectedPackets>) -> Result<(), ()> {
+        // The first bit of the login sequence requires us to request the network settings the
+        // server is using from the server. These dictate options for mostly compression, but also
+        // various other things that aren't relevant to us.
+        expectancies.queue::<NetworkSettings>().await;
         self.adapt_network_settings(&reader, &conn).await.unwrap();
-        println!("[{}:{}] Adapted to network settings, sending login...", file!(), line!());
-        self.send_login(&reader, &conn).await.unwrap();
-        println!("[{}:{}] Sent login, waiting for next step...", file!(), line!());
 
-        expecter.expect::<ServerToClientHandshake>().await;
-        expecter.expect::<PlayStatus>().await;
-        expecter.expect::<ResourcePacksInfo>().await;
+        // Once we've received the server's network settings and adapted compression according to
+        // the server's standards, we can actually send our login.
+        expectancies.queue::<PlayStatus>().await;
+        expectancies.queue::<ResourcePacksInfo>().await;
+        expectancies.queue::<ServerToClientHandshake>().await;
+        self.send_login(&conn).await.unwrap();
+
+        // We'll either get one of two packets here; an encryption handshake, or a play status if
+        // the server doesn't support encryption. We'll handle both cases here.
         match reader.recv().unwrap() {
             Packet::ServerToClientHandshake(handshake) => {
-                println!("[{}:{}] Received server to client handshake, adapting encryption...", file!(), line!());
+                // Adapt to encryption using the server's given JWT.
                 self.adapt_encryption(
-                    &reader,
                     &conn,
                     String::from_utf8(handshake.jwt.to_vec()).unwrap(),
                 ).await.unwrap();
-                println!("[{}:{}] Adapted encryption, awaiting successful login...", file!(), line!());
 
-                let play_status = PlayStatus::try_from(
-                    reader.recv().unwrap(),
-                ).unwrap();
+                // We can now expect a PlayStatus indicating a successful login.
+                let play_status = PlayStatus::try_from(reader.recv().unwrap()).unwrap();
                 if play_status.status != PlayStatusType::LoginSuccess {
                     panic!("login failed"); // TODO: proper error handling.
                 }
-                println!("[{}:{}] Login successful!", file!(), line!());
             }
             Packet::PlayStatus(play_status) => {
                 if play_status.status != PlayStatusType::LoginSuccess {
                     panic!("login failed"); // TODO: proper error handling.
                 }
-                println!("[{}:{}] Login successful!", file!(), line!());
+
+                // We didn't have encryption enabled on the server, so we'll still be expecting a
+                // handshake from the server. We'll just retract our expectation for that.
+                expectancies.retract::<ServerToClientHandshake>().await;
             }
             _ => return Err(()), // todo
         }
 
-        println!("[{}:{}] Sending client cache status...", file!(), line!());
+        // Notify the server of our client cache status. Nintendo Switch clients don't properly
+        // support this for whatever reason, so servers have to account for it.
         conn.write_packet(&mut ClientCacheStatus { enabled: self.cache_chunks }.into()).await;
         conn.flush().await.unwrap();
-        println!("[{}:{}] Sent client cache status, awaiting resource packs...", file!(), line!());
 
+        // The server has entered the resource pack phase. We can expect a ResourcePacksInfo packet
+        // containing all the information about the resource packs the server is using.
+        expectancies.queue::<StartGame>().await;
         self.download_resource_packs(&reader, &conn).await.unwrap();
-        println!("[{}:{}] Downloaded resource packs, awaiting start game...", file!(), line!());
 
-        // The start game packet contains our runtime ID which we need later in the sequence. In the
-        // future, we should really have a generalized game data, but for now we'll just store it in
-        // a local variable.
+        // The StartGame packet contains our runtime ID which we need later in the sequence.
         let mut rid = 0;
-        expecter.expect::<StartGame>().await;
+
+        // We can now expect a StartGame packet, which contains all the information we need to start
+        // the game locally. Right now, all we need is the runtime ID, but in the future we'll need
+        // to store a lot more information.
+        expectancies.queue::<PlayStatus>().await;
+        expectancies.queue::<ChunkRadiusUpdated>().await;
         self.await_start_game(&reader, &conn, &mut rid).await.unwrap();
-        println!("[{}:{}] Received start game and sent chunk radius.", file!(), line!());
-        println!("[{}:{}] Sent request radius, awaiting response(s)...", file!(), line!());
 
-        // TODO: FIX THE BELOW OH MY GOD WE'RE SO CLOSE
-        // // We receive two packets here, ChunkRadiusUpdated and PlayStatus. The order in which these
-        // // come in is not guaranteed, so we need to handle both cases.
-        // let mut received_play_status = false;
-        // let mut received_chunk_radius = false;
-        // while !received_chunk_radius || !received_play_status {
-        //     match reader.recv().unwrap() {
-        //         Packet::ChunkRadiusUpdated(_) => {
-        //             // TODO: Store the chunk radius we received.
-        //             received_chunk_radius = true
-        //         }
-        //         Packet::PlayStatus(play_status) => {
-        //             if play_status.status != PlayStatusType::PlayerSpawn {
-        //                 panic!("login failed"); // TODO: proper error handling.
-        //             }
-        //             received_play_status = true;
-        //         }
-        //         _ => return Err(()), // todo
-        //     }
-        // }
-
-        println!("[{}:{}] Received response(s), sending set local player as initialised...", file!(), line!());
+        // We'll now need both the chunk radius and the play status to be sent to us. Once both are
+        // sent, we can notify the server that we're ready to start playing.
+        while expectancies.any().await {
+            match reader.recv().unwrap() {
+                Packet::ChunkRadiusUpdated(_) => {
+                    // TODO: Store the chunk radius we received.
+                }
+                Packet::PlayStatus(play_status) => {
+                    if play_status.status != PlayStatusType::PlayerSpawn {
+                        panic!("login failed"); // TODO: proper error handling.
+                    }
+                }
+                _ => panic!("should never happen")
+            }
+        };
 
         // Notify the server that we're initialized.
         conn.write_packet(&mut SetLocalPlayerAsInitialised {
             entity_runtime_id: rid,
         }.into()).await;
         conn.flush().await.unwrap();
-
-        println!("[{}:{}] Login sequence complete!", file!(), line!());
 
         // We're done!
         Ok(())
@@ -154,7 +152,7 @@ impl<'a> LoginSequence<'a> {
         Ok(())
     }
 
-    async fn adapt_encryption(&self, reader: &Receiver<Packet>, conn: &Connection, jwt: String) -> Result<(), ConnError> {
+    async fn adapt_encryption(&self, conn: &Connection, jwt: String) -> Result<(), ConnError> {
         let header = jsonwebtoken::decode_header(&jwt).unwrap();
 
         let mut validation = Validation::new(header.alg);
@@ -197,11 +195,11 @@ impl<'a> LoginSequence<'a> {
         Ok(())
     }
 
-    async fn send_login(&self, reader: &Receiver<Packet>, conn: &Connection) -> Result<(), ConnError> {
+    async fn send_login(&self, conn: &Connection) -> Result<(), ConnError> {
         let mut request = if self.live_token.is_none() {
-            self.encode_offline_request(reader, conn)?
+            self.encode_offline_request(conn)?
         } else {
-            self.encode_online_request(reader, conn, minecraft::request_minecraft_chain(
+            self.encode_online_request(conn, minecraft::request_minecraft_chain(
                 xbox::request_xbl_token(
                     self.live_token.as_ref().unwrap(),
                     "https://multiplayer.minecraft.net/".into(),
@@ -252,7 +250,7 @@ impl<'a> LoginSequence<'a> {
         Ok(())
     }
 
-    fn encode_offline_request(&self, reader: &Receiver<Packet>, conn: &Connection) -> Result<Request, ConnError> {
+    fn encode_offline_request(&self, conn: &Connection) -> Result<Request, ConnError> {
         // TODO: CLEAN UP
         let signing_key = conn.signing_key();
         let encoding_key = EncodingKey::from_ec_der(
@@ -284,7 +282,7 @@ impl<'a> LoginSequence<'a> {
         })
     }
 
-    fn encode_online_request(&self, reader: &Receiver<Packet>, conn: &Connection, signed_chain: String) -> Result<Request, ConnError> {
+    fn encode_online_request(&self, conn: &Connection, signed_chain: String) -> Result<Request, ConnError> {
         dbg!(signed_chain.clone());
         let mut request: Request = serde_json::from_str(&signed_chain).unwrap();
 

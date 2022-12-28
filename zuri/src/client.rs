@@ -1,9 +1,6 @@
-use std::net::SocketAddr;
 use async_trait::async_trait;
-use bevy::app::AppExit;
 
 use bevy::prelude::*;
-use bevy::tasks::{IoTaskPool, Task};
 use futures_lite::future;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::mpsc::error::TryRecvError;
@@ -28,10 +25,6 @@ pub struct ClientWaiter {
     task: JoinHandle<Result<Client<PacketHandler>, String>>,
 }
 
-pub struct ClientContainer {
-    client: Client<PacketHandler>,
-}
-
 fn init_client(world: &mut World) {
     //let details = live::start_device_auth().unwrap();
 
@@ -46,7 +39,7 @@ fn init_client(world: &mut World) {
     let (send, recv) = channel::<Vec<Packet>>(16);
     world.insert_non_send_resource(ClientWaiter {
         task: tokio::spawn(Client::connect(
-            "127.0.0.1:19132".parse().unwrap(),
+            "127.0.0.1:19131".parse().unwrap(),
             ClientData::default(),
             Some(IdentityData {
                 display_name: "Zuri".into(),

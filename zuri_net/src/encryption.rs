@@ -1,11 +1,7 @@
-use std::io::Read;
 use aes::Aes256;
 use sha2::Digest;
 use bytes::BufMut;
-use cipher::{KeyIvInit, StreamCipher, StreamCipherSeek, StreamCipherSeekCore};
-use cipher::consts::U32;
-use cipher::generic_array::{ArrayLength, GenericArray};
-use cipher::typenum::U16;
+use cipher::{KeyIvInit, StreamCipher};
 
 type Aes256Ctr = ctr::Ctr32BE<Aes256>;
 

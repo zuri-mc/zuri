@@ -14,8 +14,6 @@ use crate::connection::{Connection, ConnError, ExpectedPackets, Sequence};
 mod login;
 mod auth;
 pub mod data;
-#[cfg(feature = "bevy")]
-pub mod plugin;
 
 pub struct Client<H: Handler + Send + 'static> {
     conn: Arc<Connection>,
@@ -144,10 +142,10 @@ impl<H: Handler + Send + 'static> Client<H> {
 /// Handles events such as incoming packets from the connection.
 #[async_trait]
 pub trait Handler {
-    async fn handle_incoming(&mut self, pk: Packet) -> Vec<Packet> { vec![] }
-    async fn handle_outgoing(&mut self, pk: &mut Packet) {}
+    async fn handle_incoming(&mut self, _: Packet) -> Vec<Packet> { vec![] }
+    async fn handle_outgoing(&mut self, _: &mut Packet) {}
 
-    async fn handle_disconnect(&mut self, reason: Option<String>) {}
+    async fn handle_disconnect(&mut self, _: Option<String>) {}
 }
 
 // tests

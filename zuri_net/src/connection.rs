@@ -1,4 +1,4 @@
-use std::any::{Any, TypeId};
+use std::any::TypeId;
 use std::collections::VecDeque;
 use bytes::Bytes;
 use std::error::Error;
@@ -112,8 +112,20 @@ pub struct ExpectedPackets {
 }
 
 impl ExpectedPackets {
-    pub async fn expect<T: TryFrom<Packet> + 'static>(&self) {
+    // TODO: clean this up itself?
+
+    pub async fn queue<T: TryFrom<Packet> + 'static>(&self) {
         self.packets.lock().await.push(TypeId::of::<T>());
+    }
+
+    pub async fn retract<T: TryFrom<Packet> + 'static>(&self) {
+        let mut packets = self.packets.lock().await;
+        let index = packets.iter().position(|t| *t == TypeId::of::<T>()).unwrap();
+        packets.remove(index);
+    }
+
+    pub async fn any(&self) -> bool {
+        !self.packets.lock().await.is_empty()
     }
 
     pub async fn remove_if_expected(&self, pk: &Packet) -> bool {
