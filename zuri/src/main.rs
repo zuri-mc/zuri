@@ -11,6 +11,7 @@ use bevy::core_pipeline::clear_color::ClearColorConfig;
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::window::{CursorGrabMode, PresentMode};
 
+use dotenvy::dotenv;
 use zuri_net::proto::packet::level_chunk::LevelChunk;
 use zuri_net::proto::io::Reader;
 
@@ -30,6 +31,8 @@ mod client;
 
 #[tokio::main]
 async fn main() {
+    // Load environment variables from a `.env` file.
+    dotenv().ok();
     App::new()
         .insert_resource(WgpuSettings {
             features: WgpuFeatures::POLYGON_MODE_LINE,

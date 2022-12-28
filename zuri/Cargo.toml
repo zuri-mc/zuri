@@ -19,6 +19,7 @@ zuri_world = { path = "../zuri_world" }
 zuri_xbox = { path = "../zuri_xbox" }
 rand = "0.8.5"
 oauth2 = "4.3.0"
+dotenvy = "0.15.6"
 
 [features]
 # Compiles the application for the wayland window system protocol instead of x11. Only for linux.

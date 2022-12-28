@@ -1,21 +1,23 @@
 use std::any::TypeId;
 use std::collections::VecDeque;
-use bytes::Bytes;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 use std::sync::Arc;
+
 use async_trait::async_trait;
-use crossbeam::channel::Receiver;
+use bytes::Bytes;
 use p384::ecdsa::SigningKey;
-use crate::proto::io::{Reader, Writer};
-use crate::proto::packet::Packet;
 use rust_raknet::{RaknetSocket, Reliability};
 use rust_raknet::error::RaknetError;
+use tokio::sync::mpsc::{channel, Sender};
 use tokio::sync::Mutex;
-use crate::compression::Compression;
 
+use crate::chan::PkReceiver;
+use crate::compression::Compression;
 use crate::encode::Encoder;
 use crate::encryption::Encryption;
+use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::Packet;
 
 pub struct Connection {
     socket: RaknetSocket,
@@ -96,14 +98,13 @@ impl Connection {
             let mut reader = Reader::from_buf(Bytes::from(buf), 0);
             packets.push(Packet::read(&mut reader));
         }
-
         Ok(packets)
     }
 }
 
 #[async_trait]
 pub trait Sequence<E> {
-    async fn execute(self, reader: Receiver<Packet>, conn: Arc<Connection>, expecter: Arc<ExpectedPackets>) -> Result<(), E>;
+    async fn execute(self, reader: PkReceiver, conn: Arc<Connection>, expecter: Arc<ExpectedPackets>) -> Result<(), E>;
 }
 
 #[derive(Default, Debug)]
@@ -124,25 +125,21 @@ impl ExpectedPackets {
         packets.remove(index);
     }
 
-    pub async fn any(&self) -> bool {
+    pub async fn expecting_any(&self) -> bool {
         !self.packets.lock().await.is_empty()
     }
 
-    pub async fn remove_if_expected(&self, pk: &Packet) -> bool {
-        let mut mu = self.packets.lock().await;
-        let mut index = None;
-        for (i, t) in mu.iter().enumerate() {
-            if *t != pk.inner_type_id() {
-                continue;
-            }
-            index = Some(i);
-            break;
-        }
-        if let Some(i) = index {
-            mu.remove(i);
-            return true;
-        }
-        false
+    // Internal methods
+    // ----------------
+
+    pub(crate) async fn expected(&self, pk: &Packet) -> bool {
+        self.packets.lock().await.contains(&pk.inner_type_id())
+    }
+
+    pub(crate) async fn remove(&self, pk: &Packet) {
+        let mut packets = self.packets.lock().await;
+        let index = packets.iter().position(|t| *t == pk.inner_type_id()).unwrap();
+        packets.remove(index);
     }
 }
 

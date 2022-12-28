@@ -1,6 +1,7 @@
-use uuid::Uuid;
 use base64ct::{Base64, Encoding};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
 use crate::proto::types::device::Device;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

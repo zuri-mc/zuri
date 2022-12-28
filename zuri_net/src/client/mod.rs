@@ -1,15 +1,17 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
+
 use async_trait::async_trait;
 use oauth2::basic::BasicTokenResponse;
 use rust_raknet::RaknetSocket;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::Mutex;
-use crate::proto::packet::Packet;
+use crate::chan::{pk_chan, PkSender};
 
-use crate::client::login::LoginSequence;
 use crate::client::data::{ClientData, IdentityData};
+use crate::client::login::LoginSequence;
 use crate::connection::{Connection, ConnError, ExpectedPackets, Sequence};
+use crate::proto::packet::Packet;
 
 mod login;
 mod auth;
@@ -18,7 +20,7 @@ pub mod data;
 pub struct Client<H: Handler + Send + 'static> {
     conn: Arc<Connection>,
     handler: Arc<Mutex<H>>,
-    seq_chan: Sender<(crossbeam::channel::Sender<Packet>, Arc<ExpectedPackets>)>,
+    seq_chan: Sender<(PkSender, Arc<ExpectedPackets>)>,
 
     client_data: ClientData,
     identity_data: IdentityData,
@@ -43,9 +45,9 @@ impl<H: Handler + Send + 'static> Client<H> {
 
             client_data,
             identity_data: identity_data.unwrap_or(IdentityData {
-                xuid: "".into(),
-                identity: "".into(),
-                display_name: "".into(),
+                xuid: String::new(),
+                identity: String::new(),
+                display_name: String::new(),
                 title_id: None,
             }), // TODO: Parse from live_token if present.
         };
@@ -80,13 +82,13 @@ impl<H: Handler + Send + 'static> Client<H> {
     }
 
     pub async fn exec_sequence<E>(&self, seq: impl Sequence<E>) -> Result<(), E> {
-        let (send, recv) = crossbeam::channel::bounded(0);
+        let (send, recv) = pk_chan();
         let e = Arc::new(ExpectedPackets::default());
         self.seq_chan.send((send, e.clone())).await.expect("Could not send sequence to packet receiver");
         seq.execute(recv, self.conn.clone(), e).await
     }
 
-    async fn read_loop(chan: Sender<Packet>, conn: Arc<Connection>, mut seq_recv: Receiver<(crossbeam::channel::Sender<Packet>, Arc<ExpectedPackets>)>) {
+    async fn read_loop(chan: Sender<Packet>, conn: Arc<Connection>, mut seq_recv: Receiver<(PkSender, Arc<ExpectedPackets>)>) {
         let mut seq_chan = None;
         let mut expecter = None;
         loop {
@@ -100,20 +102,22 @@ impl<H: Handler + Send + 'static> Client<H> {
 
             match result {
                 Ok(pk) => {
-                    if expecter.as_ref().unwrap().remove_if_expected(&pk).await {
+                    if expecter.is_some() && expecter.as_ref().unwrap().expected(&pk).await {
                         let mut seq_done = false;
-                        if let Some(chan) = &mut seq_chan {
-                            if chan.send(pk.clone()).is_err() {
+                        if let Some(c) = &mut seq_chan {
+                            if !c.send(pk.clone()).await {
                                 seq_done = true;
                             }
+                            expecter.as_ref().unwrap().remove(&pk).await;
                         }
                         if seq_done {
                             seq_chan = None;
                             expecter = None;
                         }
+                    } else {
+                        // We can call expect here: the handler stops if the read loop stops.
+                        chan.send(pk).await.expect("Could not send packet to handler");
                     }
-                    // We can call expect here: the handler stops if the read loop stops.
-                    chan.send(pk).await.expect("Could not send packet to handler");
                 }
                 Err(_) => {
                     return;
@@ -130,7 +134,7 @@ impl<H: Handler + Send + 'static> Client<H> {
                 for pk in &mut response {
                     conn.write_packet(pk).await;
                 }
-                conn.flush().await.expect("TODO: panic message");
+                conn.flush().await.unwrap();
             } else {
                 handler.lock().await.handle_disconnect(None).await; // todo: reason
                 return;
