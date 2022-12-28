@@ -116,8 +116,21 @@ impl ExpectedPackets {
         self.packets.lock().await.push(TypeId::of::<T>());
     }
 
-    pub async fn is_expected(&self, pk: &Packet) -> bool {
-        self.packets.lock().await.contains(&pk.inner_type_id())
+    pub async fn remove_if_expected(&self, pk: &Packet) -> bool {
+        let mut mu = self.packets.lock().await;
+        let mut index = None;
+        for (i, t) in mu.iter().enumerate() {
+            if *t != pk.inner_type_id() {
+                continue;
+            }
+            index = Some(i);
+            break;
+        }
+        if let Some(i) = index {
+            mu.remove(i);
+            return true;
+        }
+        false
     }
 }
 

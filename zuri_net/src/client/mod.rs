@@ -102,7 +102,7 @@ impl<H: Handler + Send + 'static> Client<H> {
 
             match result {
                 Ok(pk) => {
-                    if expecter.as_ref().unwrap().is_expected(&pk).await {
+                    if expecter.as_ref().unwrap().remove_if_expected(&pk).await {
                         let mut seq_done = false;
                         if let Some(chan) = &mut seq_chan {
                             if chan.send(pk.clone()).is_err() {
