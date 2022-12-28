@@ -50,8 +50,8 @@ fn init_client(world: &mut World) {
         identity_data = Some(IdentityData {
             display_name: "Zuri".into(),
             identity: Uuid::new_v4().to_string(),
+            xuid: String::new(),
             title_id: None,
-            xuid: "".into(),
         });
     }
 

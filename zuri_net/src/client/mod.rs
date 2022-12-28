@@ -45,9 +45,9 @@ impl<H: Handler + Send + 'static> Client<H> {
 
             client_data,
             identity_data: identity_data.unwrap_or(IdentityData {
-                xuid: "".into(),
-                identity: "".into(),
-                display_name: "".into(),
+                xuid: String::new(),
+                identity: String::new(),
+                display_name: String::new(),
                 title_id: None,
             }), // TODO: Parse from live_token if present.
         };
