@@ -1,5 +1,5 @@
-use bytes::{BufMut};
-use serde::{Serialize, Deserialize};
+use bytes::BufMut;
+use serde::{Deserialize, Serialize};
 
 use crate::client::data::IdentityData;
 

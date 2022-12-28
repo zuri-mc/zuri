@@ -1,15 +1,24 @@
 use std::sync::Arc;
+
 use async_trait::async_trait;
 use base64ct::{Base64, Base64Unpadded, Encoding};
 use chrono::{Duration, Utc};
-use crossbeam::channel::Receiver;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Validation};
 use oauth2::basic::BasicTokenResponse;
 use p384::ecdsa::VerifyingKey;
 use p384::pkcs8::{DecodePublicKey, EncodePrivateKey, EncodePublicKey};
-use sha2::{Sha256, Digest};
+use sha2::{Digest, Sha256};
+use tokio::task::spawn_blocking;
+
 use zuri_xbox::{minecraft, xbox};
+
+use crate::chan::PkReceiver;
+use crate::client::auth::{IdentityClaims, IdentityPublicKeyClaims, Request, SaltClaims};
+use crate::client::data::{ClientData, IdentityData};
+use crate::connection::*;
+use crate::encryption::Encryption;
 use crate::proto::{CURRENT_PROTOCOL, CURRENT_VERSION};
+use crate::proto::packet::chunk_radius_updated::ChunkRadiusUpdated;
 use crate::proto::packet::client_cache_status::ClientCacheStatus;
 use crate::proto::packet::client_to_server_handshake::ClientToServerHandshake;
 use crate::proto::packet::login::Login;
@@ -20,16 +29,10 @@ use crate::proto::packet::request_chunk_radius::RequestChunkRadius;
 use crate::proto::packet::request_network_settings::RequestNetworkSettings;
 use crate::proto::packet::resource_pack_client_response::ResourcePackClientResponse;
 use crate::proto::packet::resource_packs_info::ResourcePacksInfo;
+use crate::proto::packet::server_to_client_handshake::ServerToClientHandshake;
 use crate::proto::packet::set_local_player_as_initialised::SetLocalPlayerAsInitialised;
 use crate::proto::packet::start_game::StartGame;
 use crate::proto::types::resource_pack::ResourcePackResponse;
-
-use crate::connection::*;
-use crate::client::auth::{IdentityClaims, IdentityPublicKeyClaims, Request, SaltClaims};
-use crate::client::data::{ClientData, IdentityData};
-use crate::encryption::Encryption;
-use crate::proto::packet::chunk_radius_updated::ChunkRadiusUpdated;
-use crate::proto::packet::server_to_client_handshake::ServerToClientHandshake;
 
 pub struct LoginSequence<'a> {
     client_data: &'a ClientData,
@@ -42,12 +45,12 @@ pub struct LoginSequence<'a> {
 
 #[async_trait]
 impl<'a> Sequence<()> for LoginSequence<'a> {
-    async fn execute(self, reader: Receiver<Packet>, conn: Arc<Connection>, expectancies: Arc<ExpectedPackets>) -> Result<(), ()> {
+    async fn execute(self, mut reader: PkReceiver, conn: Arc<Connection>, expectancies: Arc<ExpectedPackets>) -> Result<(), ()> {
         // The first bit of the login sequence requires us to request the network settings the
         // server is using from the server. These dictate options for mostly compression, but also
         // various other things that aren't relevant to us.
         expectancies.queue::<NetworkSettings>().await;
-        self.adapt_network_settings(&reader, &conn).await.unwrap();
+        self.adapt_network_settings(&mut reader, &conn).await.unwrap();
 
         // Once we've received the server's network settings and adapted compression according to
         // the server's standards, we can actually send our login.
@@ -58,7 +61,7 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
 
         // We'll either get one of two packets here; an encryption handshake, or a play status if
         // the server doesn't support encryption. We'll handle both cases here.
-        match reader.recv().unwrap() {
+        match reader.recv().await {
             Packet::ServerToClientHandshake(handshake) => {
                 // Adapt to encryption using the server's given JWT.
                 self.adapt_encryption(
@@ -67,7 +70,7 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
                 ).await.unwrap();
 
                 // We can now expect a PlayStatus indicating a successful login.
-                let play_status = PlayStatus::try_from(reader.recv().unwrap()).unwrap();
+                let play_status = PlayStatus::try_from(reader.recv().await).unwrap();
                 if play_status.status != PlayStatusType::LoginSuccess {
                     panic!("login failed"); // TODO: proper error handling.
                 }
@@ -92,7 +95,7 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
         // The server has entered the resource pack phase. We can expect a ResourcePacksInfo packet
         // containing all the information about the resource packs the server is using.
         expectancies.queue::<StartGame>().await;
-        self.download_resource_packs(&reader, &conn).await.unwrap();
+        self.download_resource_packs(&mut reader, &conn).await.unwrap();
 
         // The StartGame packet contains our runtime ID which we need later in the sequence.
         let mut rid = 0;
@@ -102,12 +105,12 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
         // to store a lot more information.
         expectancies.queue::<PlayStatus>().await;
         expectancies.queue::<ChunkRadiusUpdated>().await;
-        self.await_start_game(&reader, &conn, &mut rid).await.unwrap();
+        self.await_start_game(&mut reader, &conn, &mut rid).await.unwrap();
 
         // We'll now need both the chunk radius and the play status to be sent to us. Once both are
         // sent, we can notify the server that we're ready to start playing.
-        while expectancies.any().await {
-            match reader.recv().unwrap() {
+        while expectancies.expecting_any().await {
+            match reader.recv().await {
                 Packet::ChunkRadiusUpdated(_) => {
                     // TODO: Store the chunk radius we received.
                 }
@@ -118,7 +121,7 @@ impl<'a> Sequence<()> for LoginSequence<'a> {
                 }
                 _ => panic!("should never happen")
             }
-        };
+        }
 
         // Notify the server that we're initialized.
         conn.write_packet(&mut SetLocalPlayerAsInitialised {
@@ -141,13 +144,13 @@ impl<'a> LoginSequence<'a> {
         }
     }
 
-    async fn adapt_network_settings(&self, reader: &Receiver<Packet>, conn: &Connection) -> Result<(), ConnError> {
+    async fn adapt_network_settings(&self, reader: &mut PkReceiver, conn: &Connection) -> Result<(), ConnError> {
         conn.write_packet(&mut RequestNetworkSettings {
             client_protocol: CURRENT_PROTOCOL,
         }.into()).await;
         conn.flush().await?;
 
-        let pk = NetworkSettings::try_from(reader.recv().unwrap()).unwrap();
+        let pk = NetworkSettings::try_from(reader.recv().await).unwrap();
         conn.set_compression(pk.compression_algorithm.into()).await;
         Ok(())
     }
@@ -218,9 +221,9 @@ impl<'a> LoginSequence<'a> {
         Ok(())
     }
 
-    async fn download_resource_packs(&self, reader: &Receiver<Packet>, conn: &Connection) -> Result<(), ConnError> {
+    async fn download_resource_packs(&self, reader: &mut PkReceiver, conn: &Connection) -> Result<(), ConnError> {
         ResourcePacksInfo::try_from(
-            reader.recv().unwrap(),
+            reader.recv().await,
         ).unwrap();
 
         // TODO: Implement proper resource pack downloading
@@ -234,9 +237,9 @@ impl<'a> LoginSequence<'a> {
         Ok(())
     }
 
-    async fn await_start_game(&self, reader: &Receiver<Packet>, conn: &Connection, rid: &mut u64) -> Result<(), ConnError> {
+    async fn await_start_game(&self, reader: &mut PkReceiver, conn: &Connection, rid: &mut u64) -> Result<(), ConnError> {
         let start_game = StartGame::try_from(
-            reader.recv().unwrap(),
+            reader.recv().await,
         ).unwrap();
 
         // TODO: Store rest of game data and update shield ID.
