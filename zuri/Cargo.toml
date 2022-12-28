@@ -14,10 +14,12 @@ futures-lite = "1.12.0"
 async-trait = "0.1.60"
 zuri_math = { path = "../zuri_math" }
 zuri_world = { path = "../zuri_world" }
+zuri_xbox = { path = "../zuri_xbox" }
 zuri_net = { path = "../zuri_net" }
 zuri_nbt = { path = "../zuri_nbt" }
 zuri_xbox = { path = "../zuri_xbox" }
 rand = "0.8.5"
+oauth2 = "4.3.0"
 
 [features]
 # Compiles the application for the wayland window system protocol instead of x11. Only for linux.

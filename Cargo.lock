@@ -4827,6 +4827,7 @@ dependencies = [
  "futures-lite",
  "json",
  "noise",
+ "oauth2",
  "rand 0.8.5",
  "tokio",
  "uuid",

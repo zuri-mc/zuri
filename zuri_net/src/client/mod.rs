@@ -9,7 +9,7 @@ use crate::proto::packet::Packet;
 
 use crate::client::login::LoginSequence;
 use crate::client::data::{ClientData, IdentityData};
-use crate::connection::{Connection, ConnError, Sequence};
+use crate::connection::{Connection, ConnError, ExpectedPackets, Sequence};
 
 mod login;
 mod auth;
@@ -18,7 +18,7 @@ pub mod data;
 pub struct Client<H: Handler + Send + 'static> {
     conn: Arc<Connection>,
     handler: Arc<Mutex<H>>,
-    seq_chan: Sender<crossbeam::channel::Sender<Packet>>,
+    seq_chan: Sender<(crossbeam::channel::Sender<Packet>, Arc<ExpectedPackets>)>,
 
     client_data: ClientData,
     identity_data: IdentityData,
@@ -81,30 +81,36 @@ impl<H: Handler + Send + 'static> Client<H> {
 
     pub async fn exec_sequence<E>(&self, seq: impl Sequence<E>) -> Result<(), E> {
         let (send, recv) = crossbeam::channel::bounded(0);
-        self.seq_chan.send(send).await.unwrap();
-        seq.execute(recv, self.conn.clone()).await
+        let e = Arc::new(ExpectedPackets::default());
+        self.seq_chan.send((send, e.clone())).await.expect("Could not send sequence to packet receiver");
+        seq.execute(recv, self.conn.clone(), e).await
     }
 
-    async fn read_loop(chan: Sender<Packet>, conn: Arc<Connection>, mut seq_recv: Receiver<crossbeam::channel::Sender<Packet>>) {
+    async fn read_loop(chan: Sender<Packet>, conn: Arc<Connection>, mut seq_recv: Receiver<(crossbeam::channel::Sender<Packet>, Arc<ExpectedPackets>)>) {
         let mut seq_chan = None;
+        let mut expecter = None;
         loop {
             let result = conn.read_next_packet().await;
             if seq_chan.is_none() {
-                if let Ok(c) = seq_recv.try_recv() {
+                if let Ok((c, e)) = seq_recv.try_recv() {
                     seq_chan = Some(c);
+                    expecter = Some(e);
                 }
             }
 
             match result {
                 Ok(pk) => {
-                    let mut seq_done = false;
-                    if let Some(chan) = &mut seq_chan {
-                        if chan.send(pk.clone()).is_err() {
-                            seq_done = true;
+                    if expecter.as_ref().unwrap().remove_if_expected(&pk).await {
+                        let mut seq_done = false;
+                        if let Some(chan) = &mut seq_chan {
+                            if chan.send(pk.clone()).is_err() {
+                                seq_done = true;
+                            }
                         }
-                    }
-                    if seq_done {
-                        seq_chan = None;
+                        if seq_done {
+                            seq_chan = None;
+                            expecter = None;
+                        }
                     }
                     // We can call expect here: the handler stops if the read loop stops.
                     chan.send(pk).await.expect("Could not send packet to handler");
@@ -140,44 +146,4 @@ pub trait Handler {
     async fn handle_outgoing(&mut self, _: &mut Packet) {}
 
     async fn handle_disconnect(&mut self, _: Option<String>) {}
-}
-
-// tests
-#[cfg(test)]
-mod tests {
-    use std::time::Duration;
-    use tokio::time::sleep;
-    use uuid::Uuid;
-    use super::*;
-
-    #[tokio::test]
-    async fn connect_test() {
-        let client = Client::connect(
-            "127.0.0.1:19131".parse().unwrap(),
-            ClientData::default(),
-            Some(IdentityData {
-                identity: Uuid::new_v4().to_string(),
-                display_name: "Zuri".into(),
-                xuid: String::new(),
-                title_id: None,
-            }),
-            None,
-            TestHandler,
-        ).await.unwrap();
-        sleep(Duration::from_secs(3)).await;
-    }
-
-    struct TestHandler;
-
-    #[async_trait]
-    impl Handler for TestHandler {
-        async fn handle_incoming(&mut self, pk: Packet) -> Vec<Packet> {
-            println!("Incoming packet: {:?}", pk);
-            vec![]
-        }
-
-        async fn handle_outgoing(&mut self, pk: &mut Packet) {
-            println!("Outgoing packet: {:?}", pk);
-        }
-    }
 }

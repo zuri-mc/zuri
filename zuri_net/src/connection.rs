@@ -1,3 +1,4 @@
+use std::any::TypeId;
 use std::collections::VecDeque;
 use bytes::Bytes;
 use std::error::Error;
@@ -102,7 +103,47 @@ impl Connection {
 
 #[async_trait]
 pub trait Sequence<E> {
-    async fn execute(self, reader: Receiver<Packet>, conn: Arc<Connection>) -> Result<(), E>;
+    async fn execute(self, reader: Receiver<Packet>, conn: Arc<Connection>, expecter: Arc<ExpectedPackets>) -> Result<(), E>;
+}
+
+#[derive(Default, Debug)]
+pub struct ExpectedPackets {
+    packets: Mutex<Vec<TypeId>>,
+}
+
+impl ExpectedPackets {
+    // TODO: clean this up itself?
+
+    pub async fn queue<T: TryFrom<Packet> + 'static>(&self) {
+        self.packets.lock().await.push(TypeId::of::<T>());
+    }
+
+    pub async fn retract<T: TryFrom<Packet> + 'static>(&self) {
+        let mut packets = self.packets.lock().await;
+        let index = packets.iter().position(|t| *t == TypeId::of::<T>()).unwrap();
+        packets.remove(index);
+    }
+
+    pub async fn any(&self) -> bool {
+        !self.packets.lock().await.is_empty()
+    }
+
+    pub async fn remove_if_expected(&self, pk: &Packet) -> bool {
+        let mut mu = self.packets.lock().await;
+        let mut index = None;
+        for (i, t) in mu.iter().enumerate() {
+            if *t != pk.inner_type_id() {
+                continue;
+            }
+            index = Some(i);
+            break;
+        }
+        if let Some(i) = index {
+            mu.remove(i);
+            return true;
+        }
+        false
+    }
 }
 
 #[derive(Debug)]

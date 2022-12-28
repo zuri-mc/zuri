@@ -28,6 +28,14 @@ macro_rules! encodable_enum {
                     },)+
                 }
             }
+
+            $vis fn inner_type_id(&self) -> std::any::TypeId {
+                match self {
+                    $($name::$elem(pk) => {
+                        std::any::Any::type_id(pk)
+                    },)+
+                }
+            }
         }
 
         impl std::fmt::Display for $name {

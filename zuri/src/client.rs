@@ -1,13 +1,16 @@
+use std::net::ToSocketAddrs;
 use async_trait::async_trait;
+
 use bevy::prelude::*;
 use futures_lite::future;
+use oauth2::devicecode::StandardDeviceAuthorizationResponse;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::mpsc::error::TryRecvError;
 use tokio::task::JoinHandle;
 
 use uuid::Uuid;
 use zuri_net::client::{Client, Handler};
-use zuri_net::client::data::{ClientData, IdentityData};
+use zuri_net::client::data::ClientData;
 use zuri_net::proto::packet::level_chunk::LevelChunk;
 use zuri_net::proto::packet::Packet;
 use zuri_xbox::live;
@@ -28,33 +31,25 @@ pub struct ClientWaiter {
     task: JoinHandle<Result<Client<PacketHandler>, String>>,
 }
 
-pub struct ClientContainer {
-    client: Client<PacketHandler>,
-}
-
 fn init_client(world: &mut World) {
-    let details = live::start_device_auth().unwrap();
-
-    println!(
-        "Authenticate at {} using the code: {}",
-        details.verification_uri().to_string(),
-        details.user_code().secret().to_string()
+    let address = "ca.hivebedrock.network:19132";
+    let live_token = live::read_or_obtain_token(
+        "token.tok".into(),
+        |details: &StandardDeviceAuthorizationResponse| {
+            println!(
+               "Authenticate at {} using the code: {}",
+               details.verification_uri().to_string(),
+               details.user_code().secret().to_string()
+            );
+        },
     );
-
-    let live_token = live::await_device_auth(details).unwrap();
+    println!("Authenticated.");
 
     let (send, recv) = channel(4);
     world.insert_non_send_resource(ClientWaiter {
         task: tokio::spawn(Client::connect(
-            "127.0.0.1:19132".parse().unwrap(),
+            address.to_socket_addrs().unwrap().next().unwrap(),
             ClientData::default(),
-            //Some(IdentityData {
-            //    display_name: "Zuri".into(),
-            //    identity: Uuid::new_v4().to_string(),
-            //    title_id: None,
-            //    xuid: "".into(),
-            //}),
-            //None,
             None,
             Some(live_token),
             PacketHandler {

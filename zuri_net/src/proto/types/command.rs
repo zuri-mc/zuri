@@ -107,7 +107,7 @@ pub struct Command {
 }
 
 impl Command {
-    pub fn write(&self, writer: &mut Writer) {
+    pub fn write(&self, _: &mut Writer) {
         // writer.string(self.name.as_str());
         // writer.string(self.description.as_str());
         // writer.u16(self.flags);
@@ -119,7 +119,7 @@ impl Command {
         todo!()
     }
 
-    pub fn read(reader: &mut Reader) -> Self {
+    pub fn read(_: &mut Reader) -> Self {
         // Self {
         //     name: reader.string(),
         //     description: reader.string(),
