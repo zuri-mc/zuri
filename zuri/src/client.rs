@@ -30,7 +30,7 @@ pub struct ClientWaiter {
 }
 
 fn init_client(world: &mut World) {
-    let address = "127.0.0.1:19132";
+    let address = env::var("zuri_ip").unwrap_or("127.0.0.1:19132".into());
 
     let mut identity_data = None;
     let mut live_token = None;
