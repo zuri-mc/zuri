@@ -2,21 +2,21 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct GameRule {
     pub name: String,
     pub can_be_modified_by_player: bool,
     pub value: GameRuleValue,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum GameRuleValue {
     Bool(bool),
     Int(u32),
     Float(f32),
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 enum GameRuleType {
     Bool = 1,
     Int = 2,
