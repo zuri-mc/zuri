@@ -4827,12 +4827,14 @@ dependencies = [
  "futures-lite",
  "json",
  "noise",
+ "oauth2",
  "rand 0.8.5",
  "tokio",
  "uuid",
  "zuri_math",
  "zuri_net",
  "zuri_world",
+ "zuri_xbox",
 ]
 
 [[package]]

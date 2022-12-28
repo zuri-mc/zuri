@@ -283,7 +283,6 @@ impl<'a> LoginSequence<'a> {
     }
 
     fn encode_online_request(&self, conn: &Connection, signed_chain: String) -> Result<Request, ConnError> {
-        dbg!(signed_chain.clone());
         let mut request: Request = serde_json::from_str(&signed_chain).unwrap();
 
         // TODO: CLEAN UP

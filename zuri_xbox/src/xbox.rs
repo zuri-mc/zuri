@@ -253,29 +253,3 @@ fn sign(request: &ureq::Request, body: &Vec<u8>, signing_key: SigningKey) -> Str
     // The signature is finally base64 encoded and set as the signature header.
     base64ct::Base64::encode_string(&signature_with_header)
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::live;
-    use super::*;
-
-    #[test]
-    fn test_auth() {
-        let details = live::start_device_auth().unwrap();
-
-        println!(
-            "Authenticate at {} using the code: {}",
-            details.verification_uri().to_string(),
-            details.user_code().secret().to_string()
-        );
-
-        let live_token = live::await_device_auth(details).unwrap();
-        println!("Authenticated.");
-
-        let xbl_token = request_xbl_token(
-            live_token,
-            "https://multiplayer.minecraft.net/".into(),
-        );
-        dbg!(xbl_token);
-    }
-}
