@@ -63,12 +63,12 @@ impl<H: Handler + Send + 'static> Client<H> {
         Ok((client, login_ret))
     }
 
-    pub async fn disconnect(&mut self) -> Result<(), String> {
+    pub async fn disconnect(&self) -> Result<(), String> {
         //self.conn.close()
         todo!()
     }
 
-    pub async fn write_packet(&mut self, packet: &mut Packet) -> Result<(), ConnError> {
+    pub async fn write_packet(&self, packet: &mut Packet) -> Result<(), ConnError> {
         let mut mu = self.handler.lock().await;
         mu.handle_outgoing(packet).await;
         drop(mu);
@@ -77,7 +77,7 @@ impl<H: Handler + Send + 'static> Client<H> {
         Ok(())
     }
 
-    pub async fn flush(&mut self) -> Result<(), ConnError> {
+    pub async fn flush(&self) -> Result<(), ConnError> {
         self.conn.flush().await
     }
 

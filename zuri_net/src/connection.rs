@@ -70,7 +70,7 @@ impl Connection {
         Ok(self.socket.send(&batch, Reliability::ReliableOrdered).await?)
     }
 
-    pub async fn write_packet(&self, packet: &mut Packet) {
+    pub async fn write_packet(&self, packet: &Packet) {
         let mut writer = Writer::new(0); // TODO: Shield ID
         packet.write(&mut writer);
 
