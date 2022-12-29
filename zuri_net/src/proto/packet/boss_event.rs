@@ -42,18 +42,18 @@ pub struct BossEvent {
 
 impl PacketType for BossEvent {
     fn write(&self, writer: &mut Writer) {
-        writer.i64(self.boss_entity_unique_id);
-        writer.u32(self.event_type.to_u32().unwrap());
+        writer.var_i64(self.boss_entity_unique_id);
+        writer.var_u32(self.event_type.to_u32().unwrap());
         match self.event_type {
             BossEventType::Show => {
                 writer.string(self.boss_bar_title.as_str());
                 writer.f32(self.health_percentage);
                 writer.i16(self.screen_darkening);
-                writer.u32(self.colour.to_u32().unwrap());
-                writer.u32(self.overlay);
+                writer.var_u32(self.colour.to_u32().unwrap());
+                writer.var_u32(self.overlay);
             }
             BossEventType::RegisterPlayer | BossEventType::UnregisterPlayer | BossEventType::Request => {
-                writer.i64(self.player_unique_id);
+                writer.var_i64(self.player_unique_id);
             }
             BossEventType::Hide => {}
             BossEventType::HealthPercentage => {
@@ -64,24 +64,24 @@ impl PacketType for BossEvent {
             }
             BossEventType::AppearanceProperties => {
                 writer.i16(self.screen_darkening.to_i16().unwrap());
-                writer.u32(self.colour.to_u32().unwrap());
-                writer.u32(self.overlay);
+                writer.var_u32(self.colour.to_u32().unwrap());
+                writer.var_u32(self.overlay);
             }
             BossEventType::Texture => {
-                writer.u32(self.colour.to_u32().unwrap());
-                writer.u32(self.overlay);
+                writer.var_u32(self.colour.to_u32().unwrap());
+                writer.var_u32(self.overlay);
             }
         }
     }
 
     fn read(reader: &mut Reader) -> Self {
-        let boss_entity_unique_id = reader.i64();
-        let event_type = BossEventType::from_u32(reader.u32()).unwrap();
+        let boss_entity_unique_id = reader.var_i64();
+        let event_type = BossEventType::from_u32(reader.var_u32()).unwrap();
         Self {
             boss_entity_unique_id,
             event_type,
             player_unique_id: if event_type == BossEventType::RegisterPlayer || event_type == BossEventType::UnregisterPlayer || event_type == BossEventType::Request {
-                reader.i64()
+                reader.var_i64()
             } else {
                 0
             },
@@ -89,12 +89,12 @@ impl PacketType for BossEvent {
             health_percentage: if event_type == BossEventType::Show || event_type == BossEventType::HealthPercentage { reader.f32() } else { 0.0 },
             screen_darkening: if event_type == BossEventType::Show || event_type == BossEventType::AppearanceProperties { reader.i16() } else { 0 },
             colour: if event_type == BossEventType::Show || event_type == BossEventType::AppearanceProperties || event_type == BossEventType::Texture {
-                BossEventColour::from_u32(reader.u32()).unwrap()
+                BossEventColour::from_u32(reader.var_u32()).unwrap()
             } else {
                 BossEventColour::Purple
             },
             overlay: if event_type == BossEventType::Show || event_type == BossEventType::AppearanceProperties || event_type == BossEventType::Texture {
-                reader.u32()
+                reader.var_u32()
             } else {
                 0
             },
