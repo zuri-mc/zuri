@@ -9,7 +9,6 @@ use bytes::Bytes;
 use p384::ecdsa::SigningKey;
 use rust_raknet::{RaknetSocket, Reliability};
 use rust_raknet::error::RaknetError;
-use tokio::sync::mpsc::{channel, Sender};
 use tokio::sync::Mutex;
 
 use crate::chan::PkReceiver;
