@@ -59,7 +59,6 @@ impl Compression {
                 data.resize(1024 * 1024 * 4, 0);
 
                 let mut decompressor = libdeflater::Decompressor::new();
-
                 let actual_size = decompressor.deflate_decompress(
                     &temp_input,
                     data,
