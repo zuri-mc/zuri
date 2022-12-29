@@ -6,3 +6,7 @@
 
 # Rust
 /target
+
+# Zuri
+token.tok
+.env
