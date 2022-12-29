@@ -34,7 +34,7 @@ impl GameRule {
             }
             GameRuleValue::Int(value) => {
                 writer.var_u32(GameRuleType::Int.to_u32().unwrap());
-                writer.u32(value);
+                writer.var_u32(value);
             }
             GameRuleValue::Float(value) => {
                 writer.var_u32(GameRuleType::Float.to_u32().unwrap());
@@ -49,7 +49,7 @@ impl GameRule {
             can_be_modified_by_player: reader.bool(),
             value: match GameRuleType::from_u32(reader.var_u32()).unwrap() {
                 GameRuleType::Bool => GameRuleValue::Bool(reader.bool()),
-                GameRuleType::Int => GameRuleValue::Int(reader.u32()),
+                GameRuleType::Int => GameRuleValue::Int(reader.var_u32()),
                 GameRuleType::Float => GameRuleValue::Float(reader.f32())
             },
         }
