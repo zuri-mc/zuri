@@ -63,9 +63,8 @@ impl<H: Handler + Send + 'static> Client<H> {
         Ok((client, login_ret))
     }
 
-    pub async fn disconnect(&self) -> Result<(), String> {
-        //self.conn.close()
-        todo!()
+    pub async fn disconnect(&self) {
+        let _ = self.conn.close().await.map_err(|_| unreachable!());
     }
 
     pub async fn write_packet(&self, packet: &mut Packet) -> Result<(), ConnError> {

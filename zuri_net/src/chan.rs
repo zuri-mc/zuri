@@ -25,8 +25,8 @@ pub struct PkReceiver {
 impl PkReceiver {
     #[must_use]
     pub async fn recv(&mut self) -> Packet {
-        let pk = self.r.recv().await.unwrap();
         self.s.send(()).await.unwrap();
+        let pk = self.r.recv().await.unwrap();
         pk
     }
 }

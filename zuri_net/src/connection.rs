@@ -43,6 +43,11 @@ impl Connection {
         }
     }
 
+    pub async fn close(&self) -> Result<(), ConnError> {
+        self.socket.close().await?;
+        Ok(())
+    }
+
     pub fn signing_key(&self) -> &SigningKey {
         &self.signing_key
     }
