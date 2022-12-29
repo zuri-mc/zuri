@@ -56,7 +56,7 @@ impl Compression {
         let temp_input = data.clone();
         match self {
             Compression::Deflate => {
-                data.resize(1024 * 1024 * 3, 0);
+                data.resize(1024 * 1024 * 4, 0);
 
                 let mut decompressor = libdeflater::Decompressor::new();
 
