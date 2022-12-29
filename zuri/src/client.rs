@@ -1,6 +1,7 @@
 use std::env;
 use std::net::ToSocketAddrs;
 use std::sync::Arc;
+use std::time::Duration;
 use async_trait::async_trait;
 use bevy::app::AppExit;
 
@@ -11,6 +12,7 @@ use tokio::sync::mpsc;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::mpsc::error::TryRecvError;
 use tokio::task::JoinHandle;
+use tokio::time::sleep;
 use uuid::Uuid;
 use zuri_net::client::{Handler};
 use zuri_net::client::data::{ClientData, IdentityData};
@@ -129,15 +131,25 @@ fn client_connection_system(world: &mut World) {
 
             let (send, mut recv) = mpsc::channel::<Vec<Packet>>(1);
             world.insert_non_send_resource(send);
+
+            let cloned_client = client.clone();
             tokio::spawn(async move {
                 loop {
                     if let Some(pks) = recv.recv().await {
                         for mut pk in pks {
-                            client.write_packet(&mut pk).await;
+                            cloned_client.write_packet(&mut pk).await;
                         }
                     } else {
                         return;
                     }
+                }
+            });
+            tokio::spawn(async move {
+                loop {
+                    if client.flush().await.is_err() {
+                        return;
+                    }
+                    sleep(Duration::from_secs_f32(1. / 20.)).await;
                 }
             });
         }
