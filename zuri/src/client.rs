@@ -12,13 +12,21 @@ use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::mpsc::error::TryRecvError;
 use tokio::task::JoinHandle;
 use uuid::Uuid;
-use zuri_net::client::{Client, Handler};
+use zuri_net::client::{Handler};
 use zuri_net::client::data::{ClientData, IdentityData};
 use zuri_net::client::login::LoginData;
 use zuri_net::connection::ConnError;
 use zuri_net::proto::packet::Packet;
 use zuri_xbox::live;
 
+/// The ClientPlugin is responsible for handling and managing the connection to the server.
+///
+/// To write a packet, the `EventWriter<Packet>` should be used. It can be used for packets of any
+/// type.
+/// For reading incoming packets, `EventReader<T>` should be used, where `T` is the type of packet
+/// that is expected to be read in the system. These receive events will stay available for the
+/// frame on which the packet was read and the next frame after that.
+/// todo: manual disconnect
 pub struct ClientPlugin;
 
 impl Plugin for ClientPlugin {
@@ -28,16 +36,33 @@ impl Plugin for ClientPlugin {
             // directly causes it to never be cleared automatically.
             .init_resource::<Events<Packet>>()
             .add_startup_system(init_client)
+            .add_system_to_stage(CoreStage::Last, graceful_disconnect)
             .add_system(client_connection_system)
-            .add_system(receive_packets)
-            .add_system(send_packets);
+            .add_system_to_stage(CoreStage::First, receive_packets)
+            .add_system_to_stage(CoreStage::Last, send_packets);
     }
 }
 
-pub struct ClientWaiter {
-    task: JoinHandle<Result<(Client<PacketHandler>, LoginData), ConnError>>,
+type Client = zuri_net::client::Client<PacketHandler>;
+
+/// When the app shuts down, we want to disconnect the client if it is still connected at this
+/// point.
+fn graceful_disconnect(shutdown: EventReader<AppExit>, client: Option<NonSend<Arc<Client>>>) {
+    if shutdown.is_empty() || client.is_none() {
+        return;
+    }
+    info!("Received shutdown signal, disconnecting client...");
+    let client_clone = client.unwrap().clone();
+    future::block_on(async move { client_clone.disconnect().await });
 }
 
+/// Used to keep track of the task responsible for connecting to the server. It is removed after the
+/// connection has been made.
+struct ClientWaiter {
+    task: JoinHandle<Result<(Client, LoginData), ConnError>>,
+}
+
+/// Temporary system responsible for starting the thread which handles the login sequence.
 fn init_client(world: &mut World) {
     let address = env::var("zuri_ip").unwrap_or("127.0.0.1:19132".into());
 
@@ -129,6 +154,8 @@ fn send_packets(mut packets: ResMut<Events<Packet>>, chan: Option<NonSend<Sender
         .expect("Could not send packets to writer");
 }
 
+/// Receives the packets read by the packet reader thread and sends them as an event so it can be
+/// handled by the ECS. Should run on the main thread due to tokio.
 fn receive_packets(world: &mut World) {
     let mut opt_chan = world.get_non_send_resource_mut::<Receiver<Packet>>();
     if opt_chan.is_none() {
@@ -151,6 +178,8 @@ fn receive_packets(world: &mut World) {
     }
 }
 
+/// Handles incoming packets from the server. It is responsible for sending packets to the main
+/// game thread.
 struct PacketHandler {
     send_chan: Sender<Packet>,
 }
@@ -158,7 +187,7 @@ struct PacketHandler {
 #[async_trait]
 impl Handler for PacketHandler {
     async fn handle_incoming(&mut self, pk: Packet) -> Vec<Packet> {
-        self.send_chan.send(pk).await.expect("TODO: panic message");
+        let _ = self.send_chan.send(pk).await;
         vec![]
     }
 }
