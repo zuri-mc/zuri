@@ -9,7 +9,6 @@ use bytes::Bytes;
 use p384::ecdsa::SigningKey;
 use rust_raknet::{RaknetSocket, Reliability};
 use rust_raknet::error::RaknetError;
-use tokio::sync::mpsc::{channel, Sender};
 use tokio::sync::Mutex;
 
 use crate::chan::PkReceiver;
@@ -44,6 +43,11 @@ impl Connection {
         }
     }
 
+    pub async fn close(&self) -> Result<(), ConnError> {
+        self.socket.close().await?;
+        Ok(())
+    }
+
     pub fn signing_key(&self) -> &SigningKey {
         &self.signing_key
     }
@@ -70,7 +74,7 @@ impl Connection {
         Ok(self.socket.send(&batch, Reliability::ReliableOrdered).await?)
     }
 
-    pub async fn write_packet(&self, packet: &mut Packet) {
+    pub async fn write_packet(&self, packet: &Packet) {
         let mut writer = Writer::new(0); // TODO: Shield ID
         packet.write(&mut writer);
 
@@ -103,8 +107,8 @@ impl Connection {
 }
 
 #[async_trait]
-pub trait Sequence<E> {
-    async fn execute(self, reader: PkReceiver, conn: Arc<Connection>, expecter: Arc<ExpectedPackets>) -> Result<(), E>;
+pub trait Sequence<T> {
+    async fn execute(self, reader: PkReceiver, conn: Arc<Connection>, expecter: Arc<ExpectedPackets>) -> T;
 }
 
 #[derive(Default, Debug)]

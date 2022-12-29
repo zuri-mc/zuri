@@ -9,11 +9,11 @@ use tokio::sync::Mutex;
 use crate::chan::{pk_chan, PkSender};
 
 use crate::client::data::{ClientData, IdentityData};
-use crate::client::login::LoginSequence;
+use crate::client::login::{LoginData, LoginSequence};
 use crate::connection::{Connection, ConnError, ExpectedPackets, Sequence};
 use crate::proto::packet::Packet;
 
-mod login;
+pub mod login;
 mod auth;
 pub mod data;
 
@@ -33,7 +33,7 @@ impl<H: Handler + Send + 'static> Client<H> {
         identity_data: Option<IdentityData>,
         live_token: Option<BasicTokenResponse>,
         handler: H,
-    ) -> Result<Self, String> {
+    ) -> Result<(Self, LoginData), ConnError> {
         let socket = RaknetSocket::connect_with_version(&ip, 11).await.expect("TODO: panic message"); // TODO: panic message
 
         let (send, recv) = channel(1);
@@ -54,21 +54,20 @@ impl<H: Handler + Send + 'static> Client<H> {
         tokio::spawn(Self::read_loop(send, client.conn.clone(), seq_recv));
         tokio::spawn(Self::handle_loop(recv, client.handler.clone(), client.conn.clone()));
 
-        client.exec_sequence(LoginSequence::new(
+        let login_ret = client.exec_sequence(LoginSequence::new(
             &client.client_data,
             &client.identity_data,
             live_token,
             false,
-        )).await.unwrap();
-        Ok(client)
+        )).await?;
+        Ok((client, login_ret))
     }
 
-    pub async fn disconnect(&mut self) -> Result<(), String> {
-        //self.conn.close()
-        todo!()
+    pub async fn disconnect(&self) {
+        let _ = self.conn.close().await.map_err(|_| unreachable!());
     }
 
-    pub async fn write_packet(&mut self, packet: &mut Packet) -> Result<(), ConnError> {
+    pub async fn write_packet(&self, packet: &mut Packet) -> Result<(), ConnError> {
         let mut mu = self.handler.lock().await;
         mu.handle_outgoing(packet).await;
         drop(mu);
@@ -77,11 +76,11 @@ impl<H: Handler + Send + 'static> Client<H> {
         Ok(())
     }
 
-    pub async fn flush(&mut self) -> Result<(), ConnError> {
+    pub async fn flush(&self) -> Result<(), ConnError> {
         self.conn.flush().await
     }
 
-    pub async fn exec_sequence<E>(&self, seq: impl Sequence<E>) -> Result<(), E> {
+    pub async fn exec_sequence<T>(&self, seq: impl Sequence<T>) -> T {
         let (send, recv) = pk_chan();
         let e = Arc::new(ExpectedPackets::default());
         self.seq_chan.send((send, e.clone())).await.expect("Could not send sequence to packet receiver");
