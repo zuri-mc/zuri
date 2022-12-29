@@ -133,7 +133,7 @@ fn client_connection_system(world: &mut World) {
                 loop {
                     if let Some(pks) = recv.recv().await {
                         for mut pk in pks {
-                            client.write_packet(&mut pk);
+                            client.write_packet(&mut pk).await;
                         }
                     } else {
                         return;
