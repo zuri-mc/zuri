@@ -2,7 +2,7 @@ use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_nbt::Value;
 use zuri_net::proto::io::Reader;
 
-use crate::pos::{ChunkIndex, SubChunkIndex};
+use crate::pos::SubChunkIndex;
 
 #[derive(Clone, Debug)]
 pub struct Palette {
@@ -80,7 +80,7 @@ impl PalettedStorage {
             // Dividing 32 (the amount of bits in a u32) by the bits per index gives us the maximum
             // amount of indices we can store per u32. The remainder of this division can be
             // ignored: it will be unused padding.
-            let indices_per_u32 = (32 / bits_per_index as i32);
+            let indices_per_u32 = 32 / bits_per_index as i32;
             // THe total amount of u32s needed can simply be calculated by dividing 4096 (the amount
             // of indices we need to store) by the indices per u32.
             index_u32_count = 4096 / indices_per_u32;

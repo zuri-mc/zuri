@@ -32,7 +32,7 @@ impl<const L: usize> SubChunk<L> {
         self.layers[layer as usize].at(pos)
     }
 
-    pub fn set(&mut self, pos: SubChunkIndex, layer: u8, val: u32) {
+    pub fn set(&mut self, _pos: SubChunkIndex, layer: u8, _val: u32) {
         if layer as usize >= L {
             panic!("layer {layer} is out of bounds")
         }

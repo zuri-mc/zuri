@@ -2,9 +2,9 @@ use std::env;
 use std::net::ToSocketAddrs;
 use std::sync::Arc;
 use std::time::Duration;
+
 use async_trait::async_trait;
 use bevy::app::AppExit;
-
 use bevy::prelude::*;
 use futures_lite::future;
 use oauth2::devicecode::StandardDeviceAuthorizationResponse;
@@ -14,10 +14,12 @@ use tokio::sync::mpsc::error::TryRecvError;
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
 use uuid::Uuid;
-use zuri_net::client::{Handler};
+
+use zuri_net::client::Handler;
 use zuri_net::client::data::{ClientData, IdentityData};
 use zuri_net::client::login::LoginData;
 use zuri_net::connection::ConnError;
+use zuri_net::proto::packet::level_chunk::LevelChunk;
 use zuri_net::proto::packet::Packet;
 use zuri_xbox::live;
 

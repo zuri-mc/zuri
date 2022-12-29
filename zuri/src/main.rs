@@ -94,7 +94,7 @@ fn chunk_load_system(
     block_tex: Res<BlockTextures>,
 ) {
     for event in events.iter() {
-        let pos = (event.position * 16);
+        let pos = event.position * 16;
 
         let mut reader = Reader::from_buf(event.raw_payload.clone(), 0);
         let s = Chunk::read(&mut reader, YRange::new(-64, 319), event.sub_chunk_count, 10462);
@@ -119,8 +119,6 @@ fn chunk_load_system(
 fn setup(
     mut commands: Commands,
     mut wireframe_config: ResMut<WireframeConfig>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
     mut block_tex: ResMut<BlockTextures>,
     asset_server: Res<AssetServer>,
 ) {
