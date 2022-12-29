@@ -42,17 +42,21 @@ impl<const L: usize> SubChunk<L> {
     pub fn read(reader: &mut Reader, y_index: &mut u32, air_id: u32) -> Self {
         // The first byte contains the chunk version. We support version 8 and 9.
         let ver = reader.u8();
-        assert!(ver == 8 || ver == 9);
+        assert!(ver == 1 || ver == 8 || ver == 9);
 
         // Next up is the amount of layers in the sub chunk.
-        let layer_count = reader.u8();
-        if layer_count as usize >= L {
-            panic!("SubChunk layer count overflows may supported layers");
-        }
-        // If the version is 9, there is an extra byte which tells us where the sub chunk is
-        // positioned vertically in the chunk.
-        if ver == 9 {
-            *y_index = reader.u8() as u32;
+        let layer_count: u8 = 1;
+        if ver > 1 {
+            let layer_count = reader.u8();
+            if layer_count as usize >= L {
+                panic!("SubChunk layer count overflows may supported layers");
+            }
+
+            // If the version is 9, there is an extra byte which tells us where the sub chunk is
+            // positioned vertically in the chunk.
+            if ver == 9 {
+                *y_index = reader.u8() as u32;
+            }
         }
 
         // Now, reach each layer of the sub chunk.
