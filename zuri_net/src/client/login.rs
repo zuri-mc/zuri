@@ -27,6 +27,7 @@ use crate::proto::packet::play_status::{PlayStatus, PlayStatusType};
 use crate::proto::packet::request_chunk_radius::RequestChunkRadius;
 use crate::proto::packet::request_network_settings::RequestNetworkSettings;
 use crate::proto::packet::resource_pack_client_response::ResourcePackClientResponse;
+use crate::proto::packet::resource_pack_stack::ResourcePackStack;
 use crate::proto::packet::resource_packs_info::ResourcePacksInfo;
 use crate::proto::packet::server_to_client_handshake::ServerToClientHandshake;
 use crate::proto::packet::set_local_player_as_initialised::SetLocalPlayerAsInitialised;
@@ -97,6 +98,7 @@ impl<'a> Sequence<Result<LoginData, ConnError>> for LoginSequence<'a> {
         // The server has entered the resource pack phase. We can expect a ResourcePacksInfo packet
         // containing all the information about the resource packs the server is using.
         expectancies.queue::<StartGame>().await;
+        expectancies.queue::<ResourcePackStack>().await;
         self.download_resource_packs(&mut reader, &conn).await?;
 
         // The StartGame packet contains our runtime ID which we need later in the sequence.
@@ -229,6 +231,16 @@ impl<'a> LoginSequence<'a> {
         ).unwrap();
 
         // TODO: Implement proper resource pack downloading
+
+        conn.write_packet(&mut ResourcePackClientResponse {
+            response: ResourcePackResponse::AllPacksDownloaded,
+            packs_to_download: Vec::new(),
+        }.into()).await;
+        conn.flush().await?;
+
+        ResourcePackStack::try_from(
+            reader.recv().await,
+        ).unwrap();
 
         conn.write_packet(&mut ResourcePackClientResponse {
             response: ResourcePackResponse::Completed,

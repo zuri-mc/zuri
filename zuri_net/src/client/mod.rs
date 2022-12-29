@@ -34,6 +34,17 @@ impl<H: Handler + Send + 'static> Client<H> {
         live_token: Option<BasicTokenResponse>,
         handler: H,
     ) -> Result<(Self, LoginData), ConnError> {
+        let guaranteed_identity_data = identity_data.unwrap_or(IdentityData {
+            xuid: String::new(),
+            identity: String::new(),
+            display_name: String::new(),
+            title_id: None,
+        }); // TODO: Parse from live_token if present.
+
+        let mut guaranteed_client_data = client_data.clone();
+        guaranteed_client_data.server_address = ip.to_string();
+        guaranteed_client_data.third_party_name = guaranteed_identity_data.display_name.clone();
+
         let socket = RaknetSocket::connect_with_version(&ip, 11).await.expect("TODO: panic message"); // TODO: panic message
 
         let (send, recv) = channel(1);
@@ -43,13 +54,8 @@ impl<H: Handler + Send + 'static> Client<H> {
             handler: Arc::new(Mutex::new(handler)),
             seq_chan: seq_send,
 
-            client_data,
-            identity_data: identity_data.unwrap_or(IdentityData {
-                xuid: String::new(),
-                identity: String::new(),
-                display_name: String::new(),
-                title_id: None,
-            }), // TODO: Parse from live_token if present.
+            client_data: guaranteed_client_data,
+            identity_data: guaranteed_identity_data,
         };
         tokio::spawn(Self::read_loop(send, client.conn.clone(), seq_recv));
         tokio::spawn(Self::handle_loop(recv, client.handler.clone(), client.conn.clone()));
