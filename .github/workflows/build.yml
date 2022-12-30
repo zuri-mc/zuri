@@ -18,8 +18,8 @@ jobs:
           rustup toolchain install stable --profile minimal
       - name: Setup deps
         run: |
-          apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev
+          sudo apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev
           # wayland deps
-          apt-get install libwayland-dev libxkbcommon-dev
+          sudo apt-get install libwayland-dev libxkbcommon-dev
 
       - run: cargo build --release --bin zuri
