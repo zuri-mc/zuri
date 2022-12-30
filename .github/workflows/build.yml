@@ -24,6 +24,4 @@ jobs:
           rustup set auto-self-update disable
           rustup toolchain install stable --profile minimal
 
-      - uses: ./
-
       - run: cargo install cargo-deny --locked
