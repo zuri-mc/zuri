@@ -108,7 +108,7 @@ fn chunk_load_system(
                     perceptual_roughness: 0.94,
                     ..default()
                 }),
-                transform: Transform::from_xyz(pos.x as f32, -32., pos.y as f32),
+                transform: Transform::from_xyz(pos.x as f32, 0., pos.y as f32),
                 ..default()
             },
             s,
@@ -171,8 +171,4 @@ fn setup(
         transform: Transform::from_xyz(-5.0, 2.5, 5.0),
         ..default()
     });
-    commands.spawn(TransformBundle {
-        local: Transform::from_xyz(-5.0, 2.5, 5.0),
-        ..default()
-    }).insert((Head::default(), Local));
 }

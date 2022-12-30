@@ -10,7 +10,7 @@ use futures_lite::future;
 use oauth2::devicecode::StandardDeviceAuthorizationResponse;
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
-use tokio::sync::mpsc::error::TryRecvError;
+use tokio::sync::mpsc::error::{TryRecvError, TrySendError};
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
 use uuid::Uuid;
@@ -20,6 +20,8 @@ use zuri_net::client::data::{ClientData, IdentityData};
 use zuri_net::client::login::LoginData;
 use zuri_net::connection::ConnError;
 use zuri_net::proto::packet::level_chunk::LevelChunk;
+use zuri_net::proto::packet::move_actor_absolute::MoveActorAbsolute;
+use zuri_net::proto::packet::move_actor_delta::MoveActorDelta;
 use zuri_net::proto::packet::Packet;
 use zuri_xbox::live;
 
@@ -39,8 +41,10 @@ impl Plugin for ClientPlugin {
             // Special case for the event for the sending of packets. Initializing the resource
             // directly causes it to never be cleared automatically.
             .init_resource::<Events<Packet>>()
+            .add_event::<LoginEvent>()
             // Packet events go here.
             .add_event::<LevelChunk>()
+            .add_event::<MoveActorAbsolute>()
 
             .add_startup_system(init_client)
             .add_system_to_stage(CoreStage::Last, graceful_disconnect)
@@ -49,6 +53,12 @@ impl Plugin for ClientPlugin {
             .add_system_to_stage(CoreStage::Last, send_packets);
     }
 }
+
+/// An event that gets broadcasted when the login sequence has been completed. Contains the
+/// LoginData produced by the client.
+pub struct LoginEvent(pub LoginData);
+#[derive(Resource)]
+pub struct LoginDataResource(pub LoginData);
 
 type Client = zuri_net::client::Client<PacketHandler>;
 
@@ -131,7 +141,8 @@ fn client_connection_system(world: &mut World) {
             let client = Arc::new(client);
             world.remove_non_send_resource::<ClientWaiter>();
             world.insert_non_send_resource(client.clone());
-            world.insert_non_send_resource(data);
+            world.send_event(LoginEvent(data.clone()));
+            world.insert_resource(LoginDataResource(data));
             info!("Connection has been completed");
 
             let (send, mut recv) = mpsc::channel::<Vec<Packet>>(1);
@@ -154,7 +165,7 @@ fn client_connection_system(world: &mut World) {
                     if client.flush().await.is_err() {
                         return;
                     }
-                    sleep(Duration::from_secs_f32(1. / 20.)).await;
+                    sleep(Duration::from_secs_f32(1. / 40.)).await;
                 }
             });
         }
@@ -167,8 +178,17 @@ fn send_packets(mut packets: ResMut<Events<Packet>>, chan: Option<NonSend<Sender
     if packets.is_empty() || chan.is_none() {
         return;
     }
-    chan.unwrap().blocking_send(packets.drain().collect())
-        .expect("Could not send packets to writer");
+    let mut pks: Vec<Packet> = packets.drain().collect();
+    // todo: hack to send packets: loop here until the channel manages to send.
+    loop {
+         match chan.as_ref().unwrap().try_send(pks) {
+             Ok(_) => return,
+             Err(err) => match err {
+                 TrySendError::Full(v) => pks = v,
+                 TrySendError::Closed(v) => pks = v,
+             },
+         }
+    }
 }
 
 /// Receives the packets read by the packet reader thread and sends them as an event so it can be
@@ -187,6 +207,7 @@ fn receive_packets(world: &mut World) {
             },
             Ok(pk) => match pk {
                 Packet::LevelChunk(pk) => world.send_event(pk),
+                Packet::MoveActorAbsolute(pk) => world.send_event(pk),
                 _ => {
                     warn!("Unhandled packet {pk}");
                 }

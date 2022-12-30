@@ -3,6 +3,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use base64ct::{Base64, Base64Unpadded, Encoding};
 use chrono::{Duration, Utc};
+use glam::{Quat, Vec3};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Validation};
 use oauth2::basic::BasicTokenResponse;
 use p384::ecdsa::VerifyingKey;
@@ -31,6 +32,7 @@ use crate::proto::packet::resource_packs_info::ResourcePacksInfo;
 use crate::proto::packet::server_to_client_handshake::ServerToClientHandshake;
 use crate::proto::packet::set_local_player_as_initialised::SetLocalPlayerAsInitialised;
 use crate::proto::packet::start_game::StartGame;
+use crate::proto::types::player::PlayerMovementSettings;
 use crate::proto::types::resource_pack::ResourcePackResponse;
 
 pub struct LoginSequence<'a> {
@@ -43,7 +45,18 @@ pub struct LoginSequence<'a> {
 }
 
 /// The data returned by the login sequence after it has been (successfully) completed.
-pub struct LoginData {}
+#[derive(Clone)]
+pub struct LoginData {
+    /// The location in the world the player should spawn at when entering the server.
+    pub position: Vec3,
+    pub pitch: f32,
+    pub yaw: f32,
+    /// The server-side runtime ID for the player. Used to identify the player via network
+    /// communication.
+    pub player_runtime_id: u64,
+    /// The movement settings for the player provided by the server.
+    pub player_movement_settings: PlayerMovementSettings,
+}
 
 #[async_trait]
 impl<'a> Sequence<Result<LoginData, ConnError>> for LoginSequence<'a> {
@@ -107,7 +120,7 @@ impl<'a> Sequence<Result<LoginData, ConnError>> for LoginSequence<'a> {
         // to store a lot more information.
         expectancies.queue::<PlayStatus>().await;
         expectancies.queue::<ChunkRadiusUpdated>().await;
-        self.await_start_game(&mut reader, &conn, &mut rid).await?;
+        let start_game = self.await_start_game(&mut reader, &conn, &mut rid).await?;
 
         // We'll now need both the chunk radius and the play status to be sent to us. Once both are
         // sent, we can notify the server that we're ready to start playing.
@@ -132,7 +145,13 @@ impl<'a> Sequence<Result<LoginData, ConnError>> for LoginSequence<'a> {
         conn.flush().await?;
 
         // We're done!
-        Ok(LoginData {})
+        Ok(LoginData {
+            position: start_game.player_position,
+            pitch: start_game.pitch,
+            yaw: start_game.yaw,
+            player_runtime_id: start_game.entity_runtime_id,
+            player_movement_settings: start_game.player_movement_settings,
+        })
     }
 }
 
@@ -239,7 +258,7 @@ impl<'a> LoginSequence<'a> {
         Ok(())
     }
 
-    async fn await_start_game(&self, reader: &mut PkReceiver, conn: &Connection, rid: &mut u64) -> Result<(), ConnError> {
+    async fn await_start_game(&self, reader: &mut PkReceiver, conn: &Connection, rid: &mut u64) -> Result<StartGame, ConnError> {
         let start_game = StartGame::try_from(
             reader.recv().await,
         ).unwrap();
@@ -252,7 +271,7 @@ impl<'a> LoginSequence<'a> {
         conn.write_packet(&mut RequestChunkRadius { chunk_radius: 16 }.into()).await;
         conn.flush().await?;
 
-        Ok(())
+        Ok(start_game)
     }
 
     fn encode_offline_request(&self, conn: &Connection) -> Result<Request, ConnError> {

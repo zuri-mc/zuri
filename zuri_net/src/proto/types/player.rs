@@ -80,21 +80,21 @@ pub enum TeleportCause {
 
 #[derive(Debug, Clone)]
 pub struct PlayerMovementSettings {
-    pub movement_type: i32,
+    pub movement_type: PlayerMovementMode, // todo write / read
     pub rewind_history_size: i32,
     pub server_authoritative_block_breaking: bool,
 }
 
 impl PlayerMovementSettings {
     pub fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.movement_type);
+        writer.var_i32(self.movement_type.to_i32().unwrap());
         writer.var_i32(self.rewind_history_size);
         writer.bool(self.server_authoritative_block_breaking);
     }
 
     pub fn read(reader: &mut Reader) -> Self {
         Self {
-            movement_type: reader.var_i32(),
+            movement_type: PlayerMovementMode::from_i32(reader.var_i32()).unwrap(),
             rewind_history_size: reader.var_i32(),
             server_authoritative_block_breaking: reader.bool(),
         }
