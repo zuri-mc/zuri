@@ -1,27 +1,19 @@
 name: Build
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
-  install:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-
-    name: Test `cargo install` on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+  build:
+    name: Run build
+    runs-on: ubuntu-latest
 
     env:
       CARGO_TERM_COLOR: always
 
     steps:
       - uses: actions/checkout@v3
-
-      # When rustup is updated, it tries to replace its binary, which on Windows is somehow locked.
-      # This can result in the CI failure, see: https://github.com/rust-lang/rustup/issues/3029
       - run: |
           rustup set auto-self-update disable
           rustup toolchain install stable --profile minimal
 
-      - run: cargo install cargo-deny --locked
+      - run: cargo build --release --bin zuri
