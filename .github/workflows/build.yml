@@ -12,8 +12,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - run: |
+      - name: Setup rust
+        run: |
           rustup set auto-self-update disable
           rustup toolchain install stable --profile minimal
+      - name: Setup deps
+        run: |
+          apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev
+          # wayland deps
+          apt-get install libwayland-dev libxkbcommon-dev
 
       - run: cargo build --release --bin zuri
