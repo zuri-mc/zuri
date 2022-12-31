@@ -22,4 +22,11 @@ jobs:
           # wayland deps
           sudo apt-get install libwayland-dev libxkbcommon-dev
 
-      - run: cargo build --release --bin zuri
+      - name: Build zuri
+        run: cargo build --release --bin zuri
+
+      - name: Release binary
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "target/release/zuri"
+          body: "testing release"
