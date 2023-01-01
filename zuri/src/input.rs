@@ -1,4 +1,5 @@
 use bevy::input::mouse::MouseMotion;
+use bevy::pbr::wireframe::WireframeConfig;
 use bevy::prelude::*;
 use bevy::window::CursorGrabMode;
 
@@ -22,7 +23,7 @@ pub struct ClientInput {
     pub sneak: bool,
 }
 
-fn keyboard_input_system(keyboard: Res<Input<KeyCode>>, mut input: ResMut<ClientInput>) {
+fn keyboard_input_system(keyboard: Res<Input<KeyCode>>, mut input: ResMut<ClientInput>, mut wireframe_config: ResMut<WireframeConfig>,) {
     input.movement = Vec2::new(
         if keyboard.pressed(KeyCode::D) {
             1.
@@ -42,6 +43,7 @@ fn keyboard_input_system(keyboard: Res<Input<KeyCode>>, mut input: ResMut<Client
     input.jump = keyboard.pressed(KeyCode::Space);
     input.sprint = keyboard.pressed(KeyCode::LShift);
     input.sneak = keyboard.pressed(KeyCode::LControl);
+    wireframe_config.global = keyboard.pressed(KeyCode::F);
 }
 
 fn mouse_input_system(

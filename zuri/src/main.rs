@@ -8,8 +8,11 @@ use bevy::{
     render::{render_resource::WgpuFeatures, settings::WgpuSettings},
 };
 use bevy::core_pipeline::clear_color::ClearColorConfig;
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+use bevy::diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+use bevy::pbr::wireframe::Wireframe;
 use bevy::window::{CursorGrabMode, PresentMode};
+use zuri_model::geometry::{Geometry, GeometryList};
+use zuri_model::model::Model;
 
 use dotenvy::dotenv;
 use zuri_net::proto::packet::level_chunk::LevelChunk;
@@ -50,7 +53,7 @@ async fn main() {
         .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin)
 
-        .add_plugin(ClientPlugin)
+        //.add_plugin(ClientPlugin)
         .add_plugin(InputPlugin)
         .add_plugin(LocalPlayerPlugin)
         .add_plugin(WorldPlugin)
@@ -58,7 +61,7 @@ async fn main() {
         .insert_resource(BlockTextures::default())
         .add_startup_system(setup)
         .add_system(cursor_grab_system)
-        .add_system(chunk_load_system)
+        //.add_system(chunk_load_system)
         .run();
 }
 
@@ -118,14 +121,32 @@ fn chunk_load_system(
 
 fn setup(
     mut commands: Commands,
-    mut wireframe_config: ResMut<WireframeConfig>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
     mut block_tex: ResMut<BlockTextures>,
     asset_server: Res<AssetServer>,
 ) {
-    wireframe_config.global = false;
-
     let texture_handle = asset_server.load("dirt.png");
     block_tex.dirt = Some(texture_handle);
+
+    let mut geometries = GeometryList::new(include_str!("./test.geo.json"));
+    geometries.into_iter().for_each(|geometry| {
+        let model = Model::new(geometry);
+        commands.spawn((
+            PbrBundle {
+                mesh: meshes.add(model.build_mesh()),
+                material: materials.add(StandardMaterial {
+                    base_color_texture: Some(block_tex.dirt.clone().unwrap()),
+                    base_color: Color::WHITE,
+                    alpha_mode: AlphaMode::Mask(1.),
+                    perceptual_roughness: 0.94,
+                    ..default()
+                }),
+                transform: Transform::from_xyz(0., 0., 0.),
+                ..default()
+            },
+        ));
+    });
 
     // light
     commands.spawn(PointLightBundle {

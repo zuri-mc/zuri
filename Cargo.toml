@@ -4,6 +4,7 @@ members = [
     "zuri",
     "zuri_net",
     "zuri_math",
+    "zuri_model",
     "zuri_nbt",
     "zuri_world",
     "zuri_xbox",

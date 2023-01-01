@@ -1,0 +1,10 @@
+[package]
+name = "zuri_model"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = "0.9.1"
+serde = "1.0.152"
+serde_json = "1.0.91"
+zuri_math = { path = "../zuri_math" }
