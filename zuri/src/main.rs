@@ -14,6 +14,8 @@ use bevy::window::{CursorGrabMode, PresentMode};
 use dotenvy::dotenv;
 use zuri_net::proto::packet::level_chunk::LevelChunk;
 use zuri_net::proto::io::Reader;
+use zuri_world::block::component::geometry::Geometry;
+use zuri_world::block::RuntimeBlocks;
 
 use zuri_world::chunk::Chunk;
 use zuri_world::range::YRange;
@@ -92,6 +94,7 @@ fn chunk_load_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     block_tex: Res<BlockTextures>,
+    blocks: Res<RuntimeBlocks>,
 ) {
     for event in events.iter() {
         let pos = event.position * 16;
@@ -100,7 +103,7 @@ fn chunk_load_system(
         let s = Chunk::read(&mut reader, YRange::new(-64, 319), event.sub_chunk_count, 10462);
         commands.spawn((
             PbrBundle {
-                mesh: meshes.add(s.build_mesh()),
+                mesh: meshes.add(s.build_mesh(blocks.components::<Geometry>())),
                 material: materials.add(StandardMaterial {
                     base_color_texture: Some(block_tex.dirt.clone().unwrap()),
                     base_color: Color::WHITE,

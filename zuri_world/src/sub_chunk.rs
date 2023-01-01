@@ -45,9 +45,9 @@ impl<const L: usize> SubChunk<L> {
         assert!(ver == 1 || ver == 8 || ver == 9);
 
         // Next up is the amount of layers in the sub chunk.
-        let layer_count: u8 = 1;
+        let mut layer_count: u8 = 1;
         if ver > 1 {
-            let layer_count = reader.u8();
+            layer_count = reader.u8();
             if layer_count as usize >= L {
                 panic!("SubChunk layer count overflows may supported layers");
             }
@@ -55,7 +55,9 @@ impl<const L: usize> SubChunk<L> {
             // If the version is 9, there is an extra byte which tells us where the sub chunk is
             // positioned vertically in the chunk.
             if ver == 9 {
-                *y_index = reader.u8() as u32;
+                reader.u8();
+                // todo: this doesnt work
+                //*y_index = reader.u8() as u32;
             }
         }
 

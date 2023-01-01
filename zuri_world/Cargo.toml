@@ -5,5 +5,7 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.9.1"
+bevy_render = "0.9.1"
+downcast-rs = "1.2.0"
 zuri_nbt = { path = "../zuri_nbt" }
 zuri_net = { path = "../zuri_net" }

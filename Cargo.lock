@@ -4841,6 +4841,8 @@ name = "zuri_world"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_render",
+ "downcast-rs",
  "zuri_nbt",
  "zuri_net",
 ]
