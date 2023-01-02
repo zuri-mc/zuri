@@ -14,3 +14,4 @@ jobs:
         with:
           mode: bump
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          with-v: true

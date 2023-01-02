@@ -13,3 +13,4 @@ jobs:
         with:
           mode: validate
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          with-v: true
