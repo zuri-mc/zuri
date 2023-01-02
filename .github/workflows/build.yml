@@ -1,32 +1,41 @@
-name: Build
+name: Cargo Build & Test
 
-on: [push]
+on:
+  push:
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    name: Run build
+  build_and_test:
+    name: Rust project
     runs-on: ubuntu-latest
-
-    env:
-      CARGO_TERM_COLOR: always
-
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+          - beta
+          - nightly
     steps:
       - uses: actions/checkout@v3
-      - name: Setup rust
-        run: |
-          rustup set auto-self-update disable
-          rustup toolchain install stable --profile minimal
       - name: Setup deps
         run: |
           sudo apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev
           # wayland deps
           sudo apt-get install libwayland-dev libxkbcommon-dev
+      - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - run: cargo build --verbose
+      - run: cargo test --verbose
 
-      - name: Build zuri
-        run: cargo build --release --bin zuri
+      - name: Cargo check
+        run: cargo check --frozen --release --workspace
 
-      - name: Release binary
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "target/release/zuri"
-          body: "testing release"
+      # - name: Build zuri
+      #   run: cargo build --release --bin zuri
+
+      # - name: Release binary
+      #   uses: ncipollo/release-action@v1
+      #   with:
+      #     artifacts: "target/release/zuri"
+      #     body: "testing release"
