@@ -1,15 +1,27 @@
-name: Releases
-
+name: Release
 on:
   push:
-    tags:
-      - "*"
-
+    branches:
+      - main
 jobs:
-  build:
+  release:
+    name: Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: jefflinse/pr-semver-bump@99d71e35cf07ca6e2e5f1200c5944c1dc74006ff
+        name: Bump and Tag Version
+        id: bump
+        with:
+          mode: bump
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          with-v: true
+          minor-label: new-feature
+          patch-label: bug-fix
+          require-release-notes: true
+          release-notes-prefix: -- begin release notes --
+          release-notes-suffix: -- end release notes --
+
       - name: Setup deps
         run: |
           sudo apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev
@@ -25,3 +37,4 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: "target/release/zuri"
+          tag: ${{ steps.bump.outputs.version }}
