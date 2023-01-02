@@ -25,7 +25,3 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: "target/release/zuri"
-          body: "testing release"
-      - uses: ncipollo/release-action@v1
-        with:
-          artifacts: "target/release/zuri"
