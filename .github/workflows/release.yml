@@ -22,6 +22,8 @@ jobs:
           release-notes-prefix: -- begin release notes --
           release-notes-suffix: -- end release notes --
 
+      - run: mkdir -p out/
+
       - name: Setup deps
         run: |
           sudo apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev
@@ -30,11 +32,18 @@ jobs:
 
       - run: rustup update stable && rustup default stable
 
-      - name: Build zuri
+      - name: Build zuri X11
         run: cargo build --release --bin zuri
+
+      - run: mv target/release/zuri out/zuri-x11-linux-amd64
+
+      - name: Build zuri wayland
+        run: cargo build --release --bin zuri --features/wayland
+
+      - run: mv target/release/zuri out/zuri-wayland-linux-amd64
 
       - name: Release binary
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "target/release/zuri"
+          artifacts: "out/**"
           tag: ${{ steps.bump.outputs.version }}
