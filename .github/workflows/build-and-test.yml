@@ -23,10 +23,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup deps
-        run: |
-          sudo apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev
-          # wayland deps
-          sudo apt-get install libwayland-dev libxkbcommon-dev
+      - name: Install alsa and udev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
       - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - run: cargo build --verbose
       - run: cargo test --verbose
