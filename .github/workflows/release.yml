@@ -1,11 +1,11 @@
-name: Bump Version
+name: Release
 on:
   push:
     branches:
       - main
 jobs:
-  bump-tag-version:
-    name: Bump and Tag Version
+  release:
+    name: Release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
