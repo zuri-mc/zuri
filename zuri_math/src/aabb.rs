@@ -154,8 +154,7 @@ impl SubAssign<Vec3> for AABB {
 
 #[cfg(test)]
 mod tests {
-    use bevy_math::Vec3;
-
+    use glam::Vec3;
     use crate::aabb::AABB;
 
     #[test]
