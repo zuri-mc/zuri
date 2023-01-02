@@ -17,3 +17,6 @@ jobs:
           with-v: true
           minor-label: new-feature
           patch-label: bug-fix
+          require-release-notes: true
+          release-notes-prefix: -- begin release notes --
+          release-notes-suffix: -- end release notes --
