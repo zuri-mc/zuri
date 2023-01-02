@@ -15,3 +15,5 @@ jobs:
           mode: bump
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           with-v: true
+          minor-label: new-feature
+          patch-label: bug-fix
