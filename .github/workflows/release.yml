@@ -99,7 +99,6 @@ jobs:
         with:
           tag: ${{ jobs.bump.outputs.tag }}
           draft: false
-          omitDraftDuringUpdate: true
           allowUpdates: true
           omitBodyDuringUpdate: true
           omitNameDuringUpdate: true
