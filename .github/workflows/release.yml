@@ -40,9 +40,9 @@ jobs:
     strategy:
       matrix:
         os:
-          # - windows-latest
           - ubuntu-latest
           - macos-latest
+          # - windows-latest
         include:
           - os: ubuntu-latest
             release_suffix: ubuntu
