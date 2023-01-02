@@ -81,7 +81,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: "out/**"
-          tag: ${{ jobs.bump.outputs.tag }}
+          tag: ${{ needs.bump.outputs.tag }}
           draft: true
           omitDraftDuringUpdate: true
           allowUpdates: true
@@ -97,7 +97,7 @@ jobs:
       - name: Release binary
         uses: ncipollo/release-action@v1
         with:
-          tag: ${{ jobs.bump.outputs.tag }}
+          tag: ${{ needs.bump.outputs.tag }}
           draft: false
           allowUpdates: true
           omitBodyDuringUpdate: true
