@@ -67,17 +67,16 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
-      - name: Build zuri X11
-        run: cargo build --release --bin zuri
-
-      - run: mv target/release/zuri out/zuri-x11-${{ matrix.release_suffix }}
+      - name: Build zuri
+        run: |
+          cargo build --release --bin zuri
+          mv target/release/zuri out/zuri-${{ runner.os }}
 
       - name: Build zuri wayland
-        run: cargo build --release --bin zuri --features=wayland
         if: runner.os == 'linux'
-
-      - run: mv target/release/zuri out/zuri-wayland-${{ matrix.release_suffix }}
-        if: runner.os == 'linux'
+        run: |
+          cargo build --release --bin zuri --features=wayland
+          mv target/release/zuri out/zuri-wayland-${{ runner.os }}
 
       - name: Release binary
         uses: ncipollo/release-action@v1
