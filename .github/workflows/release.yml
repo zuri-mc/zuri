@@ -39,14 +39,17 @@ jobs:
     needs: bump
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os:
+          - ubuntu-latest
+          - macos-latest
+          # - windows-latest
         include:
           - os: ubuntu-latest
             release_suffix: ubuntu
           - os: macos-latest
             release_suffix: mac
-          - os: windows-latest
-            release_suffix: windows
+          # - os: windows-latest
+          #   release_suffix: windows
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
@@ -67,22 +70,21 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
-      - name: Build zuri X11
-        run: cargo build --release --bin zuri
-
-      - run: mv target/release/zuri out/zuri-x11-${{ matrix.release_suffix }}
+      - name: Build zuri
+        run: |
+          cargo build --release --bin zuri
+          mv target/release/zuri out/zuri-${{ runner.os }}
 
       - name: Build zuri wayland
-        run: cargo build --release --bin zuri --features=wayland
         if: runner.os == 'linux'
-
-      - run: mv target/release/zuri out/zuri-wayland-${{ matrix.release_suffix }}
-        if: runner.os == 'linux'
+        run: |
+          cargo build --release --bin zuri --features=wayland
+          mv target/release/zuri out/zuri-wayland-${{ runner.os }}
 
       - name: Release binary
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "out/**"
+          artifacts: "out/*"
           tag: ${{ needs.bump.outputs.tag }}
           draft: true
           omitDraftDuringUpdate: true
