@@ -9,7 +9,7 @@ env:
 
 jobs:
   build_and_test:
-    name: Rust project
+    name: Build and Test
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -28,8 +28,8 @@ jobs:
       - run: cargo build --verbose
       - run: cargo test --verbose
 
-      - name: Cargo check
-        run: cargo check --frozen --release --workspace
+      # - name: Cargo check
+      #   run: cargo check --frozen --release --workspace
 
       # - name: Build zuri
       #   run: cargo build --release --bin zuri
