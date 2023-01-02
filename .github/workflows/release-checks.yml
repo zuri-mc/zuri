@@ -1,0 +1,21 @@
+name: Release Info
+on:
+  pull_request:
+    types: [labeled, unlabeled, opened, edited, reopened, synchronize, ready_for_review]
+jobs:
+  check-pr:
+    name: Validate Release Label and Notes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: jefflinse/pr-semver-bump@99d71e35cf07ca6e2e5f1200c5944c1dc74006ff
+        name: Validate Pull Request Metadata
+        with:
+          mode: validate
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          with-v: true
+          minor-label: new-feature
+          patch-label: bug-fix
+          require-release-notes: true
+          release-notes-prefix: -- begin release notes --
+          release-notes-suffix: -- end release notes --
