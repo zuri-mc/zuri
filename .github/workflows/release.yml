@@ -34,7 +34,7 @@ jobs:
           omitPrereleaseDuringUpdate: true
           tag: ${{ steps.bump.outputs.version }}
   build:
-    name: Build and Release Linux
+    name: Build and Release
     runs-on: ${{ matrix.os }}
     needs: bump
     strategy:
