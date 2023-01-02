@@ -82,7 +82,7 @@ jobs:
       - name: Release binary
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "out/**"
+          artifacts: "out/*"
           tag: ${{ needs.bump.outputs.tag }}
           draft: true
           omitDraftDuringUpdate: true
