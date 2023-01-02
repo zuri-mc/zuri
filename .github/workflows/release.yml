@@ -92,7 +92,7 @@ jobs:
           omitPrereleaseDuringUpdate: true
 
   release:
-    name: Bump & Release Draft
+    name: Make release no longer draft
     runs-on: ubuntu-latest
     needs: ["build", "bump"]
     steps:
