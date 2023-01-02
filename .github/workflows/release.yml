@@ -73,7 +73,7 @@ jobs:
       - run: mv target/release/zuri out/zuri-x11-${{ matrix.release_suffix }}
 
       - name: Build zuri wayland
-        run: cargo build --release --bin zuri --features/wayland
+        run: cargo build --release --bin zuri --features=wayland
         if: runner.os == 'linux'
 
       - run: mv target/release/zuri out/zuri-wayland-${{ matrix.release_suffix }}
@@ -92,7 +92,7 @@ jobs:
           omitPrereleaseDuringUpdate: true
 
   release:
-    name: Bump & Release Draft
+    name: Make release no longer draft
     runs-on: ubuntu-latest
     needs: ["build", "bump"]
     steps:
