@@ -34,7 +34,7 @@ jobs:
           omitPrereleaseDuringUpdate: true
           tag: ${{ steps.bump.outputs.version }}
   build:
-    name: Build and Release Linux
+    name: Build and Release
     runs-on: ${{ matrix.os }}
     needs: bump
     strategy:
@@ -58,6 +58,8 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-build-stable-${{ hashFiles('**/Cargo.toml') }}
+
+      - run: mkdir out/
 
       - name: Install alsa and udev
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
