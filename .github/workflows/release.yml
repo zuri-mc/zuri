@@ -40,7 +40,7 @@ jobs:
     strategy:
       matrix:
         os:
-          - windows-latest
+          # - windows-latest
           - ubuntu-latest
           - macos-latest
         include:
@@ -48,8 +48,8 @@ jobs:
             release_suffix: ubuntu
           - os: macos-latest
             release_suffix: mac
-          - os: windows-latest
-            release_suffix: windows
+          # - os: windows-latest
+          #   release_suffix: windows
     steps:
       - uses: actions/checkout@v3
       - uses: actions/cache@v3
