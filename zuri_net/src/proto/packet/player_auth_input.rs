@@ -5,8 +5,22 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::inventory::UseItemTransactionData;
-use crate::proto::types::player::PlayerBlockAction;
+use crate::proto::types::player::{InputMode, InteractionModel, PlayerBlockAction};
 use crate::proto::types::item_stack::ItemStackRequestEntry;
+
+#[derive(Debug, Clone, PartialEq, FromPrimitive, ToPrimitive)]
+pub enum PlayMode {
+    Normal,
+    Teaser,
+    Screen,
+    Viewer,
+    Reality,
+    Placement,
+    LivingRoom,
+    ExitLevel,
+    ExitLevelLivingRoom,
+    NumModes,
+}
 
 #[derive(Clone, Copy, Debug, FromPrimitive, ToPrimitive)]
 pub enum InputFlag {
@@ -55,36 +69,46 @@ impl InputFlag {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, FromPrimitive, ToPrimitive)]
-pub enum PlayMode {
-    Normal,
-    Teaser,
-    Screen,
-    Viewer,
-    Reality,
-    Placement,
-    LivingRoom,
-    ExitLevel,
-    ExitLevelLivingRoom,
-    NumModes,
-}
-
+/// Sent by the client to allow for server authoritative movement. It is used to synchronise the
+/// player input with the position server-side. The client sends this packet when the server
+/// authoritative movement mode field in the StartGame packet is set to true. Instead of the
+/// MovePlayer packet, the client will send this packet once every tick.
 #[derive(Debug, Clone)]
 pub struct PlayerAuthInput {
+    /// The pitch the player reports it has.
     pub pitch: f32,
+    /// The yaw the player reports it has.
     pub yaw: f32,
+    /// The position that the player reports it has.
     pub position: Vec3,
+    /// A Vec2 that specifies the direction in which the player moved, as a combination of X/Z
+    /// values which are created using the WASD/controller stick state.
     pub move_vector: Vec2,
+    /// The horizontal rotation of the head that the player reports it has.
     pub head_yaw: f32,
+    /// A combination of bit flags that together specify the way the player moved last tick.
     pub input_data: u64,
-    pub input_mode: u32,
+    /// Specifies the way that the client inputs data to the screen.
+    pub input_mode: InputMode,
+    /// Specifies the way that the player is playing. The values it holds, which are rather random,
+    /// may be found above.
     pub play_mode: PlayMode,
-    pub interaction_model: i32,
+    /// The interaction model the player is using.
+    pub interaction_model: InteractionModel,
+    /// The direction in which the player is gazing, when the `play_mode` is reality. In other
+    /// words, when the player is playing in virtual reality.
     pub gaze_direction: Vec3,
+    /// The server tick at which the packet was sent. It is used in relation to the
+    /// CorrectPlayerMovePrediction packet.
     pub tick: u64,
+    /// The delta between the old and the new position. There isn't any practical use for this field
+    /// as it can be calculated by the server itself.
     pub delta: Vec3,
+    /// The transaction data if the `input_data` includes an item interaction.
     pub item_interaction_data: UseItemTransactionData,
+    /// Sent by the client to change an item in their inventory.
     pub item_stack_request: ItemStackRequestEntry,
+    /// A list of block actions that the client has interacted with.
     pub block_actions: Vec<PlayerBlockAction>,
 }
 
@@ -96,9 +120,9 @@ impl PacketType for PlayerAuthInput {
         writer.vec2(self.move_vector);
         writer.f32(self.head_yaw);
         writer.var_u64(self.input_data);
-        writer.var_u32(self.input_mode);
+        writer.var_u32(self.input_mode.to_u32().unwrap());
         writer.var_u32(self.play_mode.to_u32().unwrap());
-        writer.i32(self.interaction_model);
+        writer.i32(self.interaction_model.to_i32().unwrap());
         if self.play_mode == PlayMode::Reality {
             writer.vec3(self.gaze_direction);
         }
@@ -125,9 +149,9 @@ impl PacketType for PlayerAuthInput {
             move_vector: reader.vec2(),
             head_yaw: reader.f32(),
             input_data: reader.var_u64(),
-            input_mode: reader.var_u32(),
+            input_mode: InputMode::from_u32(reader.var_u32()).unwrap(),
             play_mode: PlayMode::from_u32(reader.var_u32()).unwrap(),
-            interaction_model: reader.i32(),
+            interaction_model: InteractionModel::from_i32(reader.i32()).unwrap(),
             gaze_direction: Vec3::default(),
             tick: reader.var_u64(),
             delta: reader.vec3(),

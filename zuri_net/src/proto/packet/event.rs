@@ -2,10 +2,16 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::event::EventType;
 
+/// Sent by the server to send an event with additional data. It is typically sent to the client for
+/// telemetry reasons, much like the SimpleEvent packet.
 #[derive(Debug, Clone)]
 pub struct Event {
+    /// The runtime ID of the player. The runtime ID is unique for each world session, and entities
+    /// are generally identified in packets using this runtime ID.
     pub entity_runtime_id: u64,
+    /// It is unclear what this field does.
     pub use_player_id: u8,
+    /// The parsed event data.
     pub event_data: EventType,
 }
 

@@ -4,14 +4,6 @@ use num_traits::{ToPrimitive, FromPrimitive};
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug, Clone)]
-pub struct CameraShake {
-    pub intensity: f32,
-    pub duration: f32,
-    pub shake_type: CameraShakeType,
-    pub action: CameraShakeAction,
-}
-
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum CameraShakeAction {
     Add,
@@ -22,6 +14,22 @@ pub enum CameraShakeAction {
 pub enum CameraShakeType {
     Positional,
     Rotational,
+}
+
+/// Sent by the server to make the camera shake client-side. This feature was added for map-making
+/// partners.
+#[derive(Debug, Clone)]
+pub struct CameraShake {
+    /// The intensity of the shaking. The client limits this value to 4, so anything higher may not
+    /// function, at least as expected.
+    pub intensity: f32,
+    /// The number of seconds the camera will shake for.
+    pub duration: f32,
+    /// The type of shake. The different type affects how the shake looks in game.
+    pub shake_type: CameraShakeType,
+    /// The action to be performed. Currently, the different actions will either add or stop shaking
+    /// the camera client-side.
+    pub action: CameraShakeAction,
 }
 
 impl PacketType for CameraShake {

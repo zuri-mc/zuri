@@ -2,8 +2,10 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 use crate::proto::types::item_stack::ItemComponentEntry;
 
+/// Sent by the server to attach client-side components to a custom item.
 #[derive(Debug, Clone)]
 pub struct ItemComponent {
+    /// A list of all custom items with their respective components set.
     pub items: Vec<ItemComponentEntry>,
 }
 

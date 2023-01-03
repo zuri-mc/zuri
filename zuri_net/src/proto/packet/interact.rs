@@ -5,17 +5,27 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
-/// Sent by the client when it interacts with another entity in some way. It used to be used for normal entity and block
-/// interaction, but this is no longer the case now.
+#[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
+pub enum InteractionAction {
+    LeaveVehicle = 3,
+    MouseOverEntity,
+    NPCOpen,
+    OpenInventory,
+}
+
+/// Sent by the client when it interacts with another entity in some way. It used to be used for
+/// normal entity and block interaction, but this is no longer the case now.
 #[derive(Debug, Clone)]
 pub struct Interact {
     /// The type of action that was executed by the player.
     pub action_type: InteractionAction,
-    /// The runtime ID of the entity that the player interacted with. This is empty for the OpenInventory action type.
+    /// The runtime ID of the entity that the player interacted with. This is empty for the open
+    /// inventory action type.
     pub target_entity_runtime_id: u64,
-    /// Associated with the action type above. For the MouseOverEntity action, this is the position relative to the
-    /// entity moused over over which the player hovered with its mouse/touch. For the LeaveVehicle, this is the
-    /// position that the player spawns at after leaving the vehicle.
+    /// Associated with the action type above. For the mouse over entity action, this is the
+    /// position relative to the entity moused over over which the player hovered with its
+    /// mouse/touch. For the leave vehicle action, this is the position that the player spawns at
+    /// after leaving the vehicle.
     pub position: Vec3,
 }
 
@@ -43,12 +53,4 @@ impl PacketType for Interact {
             },
         }
     }
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
-pub enum InteractionAction {
-    LeaveVehicle = 3,
-    MouseOverEntity = 4,
-    NPCOpen = 5,
-    OpenInventory = 6,
 }

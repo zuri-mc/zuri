@@ -28,15 +28,34 @@ pub enum BossEventColour {
     White,
 }
 
+/// Sent by the server to make a specific 'boss event' occur in the world. It includes features such
+/// as showing a boss bar to the player and turning the sky dark.
 #[derive(Debug, Clone)]
 pub struct BossEvent {
+    /// The unique ID of the boss entity that the boss event sent involves. The health percentage
+    /// and title of the boss bar depend on the health and name tag of this entity.
     pub boss_entity_unique_id: i64,
+    /// The type of the event. The fields written depend on the event type set, and some event types
+    /// are sent by the client, whereas others are sent by the server.
     pub event_type: BossEventType,
+    /// The unique ID of the player that is registered to or unregistered from the boss fight. It is
+    /// set if the event type is either register player or unregister player.
     pub player_unique_id: i64,
+    /// The title shown above the boss bar. It currently does not function, and instead uses the
+    /// name-tag of the boss entity at all times. It is only set if the event type is show or title.
     pub boss_bar_title: String,
+    /// The percentage of health that is shown in the boss bar. It currently does not function, and
+    /// instead uses the health percentage of the boss entity at all times. It is only set if the
+    /// event type is show or health percentage.
     pub health_percentage: f32,
+    /// The purpose of this field is currently unknown.
     pub screen_darkening: i16,
+    /// The colour of the boss bar that is shown when a player is subscribed. It is only set if the
+    /// event type is show, appearance properties or texture. This is functional as of 1.18.
     pub colour: BossEventColour,
+    /// The overlay of the boss bar that is shown on top of the boss bar when a player is
+    /// subscribed. It currently does not function. It is only set if the event type is show,
+    /// appearance properties or texture.
     pub overlay: u32,
 }
 
@@ -85,7 +104,7 @@ impl PacketType for BossEvent {
             } else {
                 0
             },
-            boss_bar_title: if event_type == BossEventType::Show || event_type == BossEventType::Title { reader.string() } else { "".to_string() },
+            boss_bar_title: if event_type == BossEventType::Show || event_type == BossEventType::Title { reader.string() } else { String::new() },
             health_percentage: if event_type == BossEventType::Show || event_type == BossEventType::HealthPercentage { reader.f32() } else { 0.0 },
             screen_darkening: if event_type == BossEventType::Show || event_type == BossEventType::AppearanceProperties { reader.i16() } else { 0 },
             colour: if event_type == BossEventType::Show || event_type == BossEventType::AppearanceProperties || event_type == BossEventType::Texture {

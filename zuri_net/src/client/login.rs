@@ -43,12 +43,9 @@ pub struct LoginSequence<'a> {
     // TODO: Make a general GameData system.
 }
 
-/// The data returned by the login sequence after it has been (successfully) completed.
-pub struct LoginData {}
-
 #[async_trait]
 impl<'a> Sequence<Result<LoginData, ConnError>> for LoginSequence<'a> {
-    async fn execute(self, mut reader: PkReceiver, conn: Arc<Connection>, expectancies: Arc<ExpectedPackets>) -> Result<LoginData, ConnError> {
+    async fn execute(self, mut reader: PkReceiver, conn: Arc<Connection>, expectancies: Arc<ExpectedPackets>) -> Result<(), ConnError> {
         // The first bit of the login sequence requires us to request the network settings the
         // server is using from the server. These dictate options for mostly compression, but also
         // various other things that aren't relevant to us.
@@ -134,7 +131,7 @@ impl<'a> Sequence<Result<LoginData, ConnError>> for LoginSequence<'a> {
         conn.flush().await?;
 
         // We're done!
-        Ok(LoginData {})
+        Ok(())
     }
 }
 
@@ -155,7 +152,8 @@ impl<'a> LoginSequence<'a> {
         conn.flush().await?;
 
         let pk = NetworkSettings::try_from(reader.recv().await).unwrap();
-        conn.set_compression(pk.compression_algorithm.into()).await;
+        conn.set_compression(pk.compression_algorithm).await;
+
         Ok(())
     }
 

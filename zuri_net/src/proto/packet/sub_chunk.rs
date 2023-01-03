@@ -5,11 +5,16 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 use crate::proto::types::world::{Dimension, SubChunkEntry};
 
+/// Sends data about multiple sub-chunks around a center point.
 #[derive(Debug, Clone)]
 pub struct SubChunk {
+    /// Whether client chunk caching is enabled or not.
     pub cache_enabled: bool,
+    /// The dimension the sub-chunks are in.
     pub dimension: Dimension,
+    /// An absolute sub-chunk center point that every SubChunkRequest uses as a reference.
     pub position: IVec3,
+    /// Sub-chunk entries relative to the center point.
     pub sub_chunk_entries: Vec<SubChunkEntry>,
 }
 

@@ -14,8 +14,8 @@ pub struct LevelEvent {
     /// The position of the level event. Practically every event requires this Vec3 set for it, as
     /// particles, sounds and block editing relies on it.
     pub position: Vec3,
-    /// An integer holding additional data of the event. The type of data held depends on the
-    /// EventType.
+    /// An integer holding additional data of the event. The type of data held depends on the event
+    /// type.
     pub event_data: i32,
 }
 

@@ -1,8 +1,8 @@
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-/// Sent by the client to the server when it jumps while riding an entity that has the WASDControlled entity flag set,
-/// for example when riding a horse.
+/// Sent by the client to the server when it jumps while riding an entity that has the
+/// WASDControlled entity flag set, for example when riding a horse.
 #[derive(Debug, Clone)]
 pub struct PassengerJump {
     /// The strength of the jump, depending on how long the rider has held the jump button.

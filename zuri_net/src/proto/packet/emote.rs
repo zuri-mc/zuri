@@ -14,10 +14,17 @@ impl EmoteFlag {
     }
 }
 
+/// Sent by both the server and the client. When the client sends an emote, it sends this packet to
+/// the server, after which the server will broadcast the packet to other players online.
 #[derive(Debug, Clone)]
 pub struct Emote {
+    /// The entity that sent the emote. When a player sends this packet, it has this field set as
+    /// its own entity runtime ID.
     pub entity_runtime_id: u64,
+    /// The ID of the emote to send.
     pub emote_id: String,
+    /// A combination of flags that change the way the Emote packet operates. When the server sends
+    /// this packet to other players, the server side emote flag must be present.
     pub flags: u8,
 }
 

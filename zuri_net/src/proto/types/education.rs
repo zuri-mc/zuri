@@ -1,4 +1,4 @@
-use crate::proto::io::{Read, Reader, Write, Writer};
+use crate::proto::io::{Readable, Reader, Writable, Writer};
 
 #[derive(Debug, Clone)]
 pub struct EducationExternalLinkSettings {
@@ -20,13 +20,13 @@ impl EducationExternalLinkSettings {
     }
 }
 
-impl Write for EducationExternalLinkSettings {
+impl Writable for EducationExternalLinkSettings {
     fn write(&self, writer: &mut Writer) {
         self.write(writer)
     }
 }
 
-impl Read<EducationExternalLinkSettings> for EducationExternalLinkSettings {
+impl Readable<EducationExternalLinkSettings> for EducationExternalLinkSettings {
     fn read(reader: &mut Reader) -> EducationExternalLinkSettings {
         EducationExternalLinkSettings::read(reader)
     }

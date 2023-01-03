@@ -4,20 +4,28 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-#[derive(Debug, Clone)]
-pub struct NPCDialogue {
-    pub entity_unique_id: u64,
-    pub action_type: NPCDialogueAction,
-    pub dialogue: String,
-    pub scene_name: String,
-    pub npc_name: String,
-    pub action_json: String,
-}
-
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum NPCDialogueAction {
     Open,
     Close,
+}
+
+/// Allows the client to display dialog boxes for interacting with NPCs.
+#[derive(Debug, Clone)]
+pub struct NPCDialogue {
+    /// The unique ID of the NPC being requested.
+    pub entity_unique_id: u64,
+    /// The type of action for the packet.
+    pub action_type: NPCDialogueAction,
+    /// The dialogue text that the client should see.
+    pub dialogue: String,
+    /// The identifier of the scene. If this is left empty, the client will use the last scene sent
+    /// to it. (https://docs.microsoft.com/en-us/minecraft/creator/documents/npcdialogue)
+    pub scene_name: String,
+    /// The name of the NPC to be displayed to the client.
+    pub npc_name: String,
+    /// The JSON string of the buttons/actions the server can perform.
+    pub action_json: String,
 }
 
 impl PacketType for NPCDialogue {

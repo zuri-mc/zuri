@@ -2,8 +2,12 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::world::CacheBlob;
 
+/// Part of the blob cache protocol. It is sent by the server in response to a ClientCacheBlobStatus
+/// packet and contains the blob data of all blobs that the client acknowledged not to have yet.
 #[derive(Debug, Clone)]
 pub struct ClientCacheMissResponse {
+    /// A list of all blobs that the client sent misses for in the ClientCacheBlobStatus. These
+    /// blobs hold the data of the blobs with the hashes they are matched with.
     pub blobs: Vec<CacheBlob>,
 }
 

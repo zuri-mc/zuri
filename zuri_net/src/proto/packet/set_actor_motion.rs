@@ -2,14 +2,15 @@ use glam::Vec3;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
-/// Sent by the server to change the client-side velocity of an entity. It is usually used in combination with
-/// server-side movement calculation.
+/// Sent by the server to change the client-side velocity of an entity. It is usually used in
+/// combination with server-side movement calculation.
 #[derive(Debug, Clone)]
 pub struct SetActorMotion {
-    /// The runtime ID of the entity. The runtime ID is unique for each world session, and entities are generally
-    /// identified in packets using this runtime ID.
+    /// The runtime ID of the entity. The runtime ID is unique for each world session, and entities
+    /// are generally identified in packets using this runtime ID.
     pub entity_runtime_id: u64,
-    /// The new velocity the entity gets. This velocity will initiate the client-side movement of the entity.
+    /// The new velocity the entity gets. This velocity will initiate the client-side movement of
+    /// the entity.
     pub velocity: Vec3,
 }
 

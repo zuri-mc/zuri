@@ -2,8 +2,12 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 use crate::proto::types::world::DimensionDefinition;
 
+/// A packet sent from the server to the client containing information about data-driven dimensions
+/// that the server may have registered. This packet does not seem to be sent by default, rather
+/// only being sent when any data-driven dimensions are registered.
 #[derive(Debug, Clone)]
 pub struct DimensionData {
+    /// A list of data-driven dimension definitions registered on the server.
     pub definitions: Vec<DimensionDefinition>,
 }
 

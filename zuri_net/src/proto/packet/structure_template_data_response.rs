@@ -5,11 +5,20 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::structure::StructureTemplateDataRequestType;
 
+/// Sent by the server to send data of a structure to the client in response to a
+/// StructureTemplateDataRequest packet.
 #[derive(Debug, Clone)]
 pub struct StructureTemplateDataResponse {
+    /// The name of the structure that was requested. This is the name used to export the structure
+    /// to a file.
     pub structure_name: String,
+    /// Specifies if a structure template was found by the StructureName that was sent in a
+    /// StructureTemplateDataRequest packet.
     pub success: bool,
+    /// The data of the structure template.
     pub structure_template: Value,
+    /// The response type of the packet. This depends on the RequestType field sent in the
+    /// StructureTemplateDataRequest packet.
     pub response_type: StructureTemplateDataRequestType,
 }
 

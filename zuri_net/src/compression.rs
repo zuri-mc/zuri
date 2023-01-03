@@ -1,29 +1,11 @@
-use std::io::{Read, Write};
 use bytes::Buf;
-use crate::proto::packet::network_settings::CompressionType;
+use std::io::{Read, Write};
+use num_derive::{FromPrimitive, ToPrimitive};
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum Compression {
     Deflate,
     Snappy,
-}
-
-impl From<Compression> for CompressionType {
-    fn from(value: Compression) -> Self {
-        match value {
-            Compression::Deflate => CompressionType::Deflate,
-            Compression::Snappy => CompressionType::Snappy,
-        }
-    }
-}
-
-impl From<CompressionType> for Compression {
-    fn from(value: CompressionType) -> Self {
-        match value {
-            CompressionType::Deflate => Compression::Deflate,
-            CompressionType::Snappy => Compression::Snappy,
-        }
-    }
 }
 
 impl Compression {

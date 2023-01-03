@@ -5,15 +5,17 @@ use num_traits::{ToPrimitive, FromPrimitive};
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
-/// Sent by the server to initiate a certain event that has to do with blocks in specific, for example opening chests.
+/// Sent by the server to initiate a certain event that has to do with blocks in specific, for
+/// example opening chests.
 #[derive(Debug, Clone)]
 pub struct BlockEvent {
     /// The position of the block that an event occurred at.
     pub position: IVec3,
-    /// The type of the block event. The event type decides the way the event data that follows is used.
+    /// The type of the block event. The event type decides the way the event data that follows is
+    /// used.
     pub event_type: BlockEventType,
-    /// Holds event type specific data. For chests, for example, opening the chest means the data must hold one, whereas
-    /// closing it should hold zero.
+    /// Holds event type specific data. For chests, for example, opening the chest means the data
+    /// must hold one, whereas closing it should hold zero.
     pub event_data: i32,
 }
 

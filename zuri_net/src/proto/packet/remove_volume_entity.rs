@@ -4,9 +4,12 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::world::Dimension;
 
+/// Sent to the client to indicate that a volume entity has been removed.
 #[derive(Debug, Clone)]
 pub struct RemoveVolumeEntity {
+    /// The entity runtime ID of the volume entity that was removed.
     pub entity_runtime_id: u64,
+    /// The dimension that the volume entity was in.
     pub dimension: Dimension,
 }
 

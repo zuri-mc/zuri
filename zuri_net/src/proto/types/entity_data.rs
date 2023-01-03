@@ -1,13 +1,95 @@
+use zuri_nbt::Value;
+use glam::{IVec3, Vec3};
+use crate::proto::io::{Reader, Writer};
 use num_derive::{FromPrimitive, ToPrimitive};
+
+#[derive(Debug, Clone)]
+pub struct EntityProperties {
+    pub integer_properties: Vec<IntegerEntityProperty>,
+    pub float_properties: Vec<FloatEntityProperty>,
+}
+
+impl EntityProperties {
+    pub fn write(&self, writer: &mut Writer) {
+        writer.var_u32(self.integer_properties.len() as u32);
+        self.integer_properties.iter().for_each(|p| p.write(writer));
+        writer.var_u32(self.float_properties.len() as u32);
+        self.float_properties.iter().for_each(|p| p.write(writer));
+    }
+
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            integer_properties: (0..reader.var_u32())
+                .map(|_| IntegerEntityProperty::read(reader))
+                .collect(),
+            float_properties: (0..reader.var_u32())
+                .map(|_| FloatEntityProperty::read(reader))
+                .collect(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct IntegerEntityProperty {
+    pub index: u32,
+    pub value: i32,
+}
+
+impl IntegerEntityProperty {
+    pub fn write(&self, writer: &mut Writer) {
+        writer.var_u32(self.index);
+        writer.var_i32(self.value);
+    }
+
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            index: reader.var_u32(),
+            value: reader.var_i32(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct FloatEntityProperty {
+    pub index: u32,
+    pub value: f32,
+}
+
+impl FloatEntityProperty {
+    pub fn write(&self, writer: &mut Writer) {
+        writer.var_u32(self.index);
+        writer.f32(self.value);
+    }
+
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            index: reader.var_u32(),
+            value: reader.f32(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum EntityDataEntry {
+    U8(u8),
+    I16(i16),
+    I32(i32),
+    F32(f32),
+    String(String),
+    NBT(Value),
+    BlockPos(IVec3),
+    I64(i64),
+    Vec3(Vec3),
+}
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum EntityDataType {
-    Byte,
+    U8,
     I16,
     I32,
     F32,
     String,
-    CompoundTag,
+    NBT,
     BlockPos,
     I64,
     Vec3,

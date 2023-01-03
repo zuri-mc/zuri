@@ -4,14 +4,6 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 
-/// Sent by the server to update a player on the play status. This includes failed statuses due to a mismatched version,
-/// but also success statuses.
-#[derive(Debug, Clone)]
-pub struct PlayStatus {
-    /// The status of the packet.
-    pub status: PlayStatusType,
-}
-
 #[derive(Debug, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum PlayStatusType {
     LoginSuccess,
@@ -24,6 +16,14 @@ pub enum PlayStatusType {
     LoginFailedServerFull,
     LoginFailedEditorVanilla,
     LoginFailedVanillaEditor,
+}
+
+/// Sent by the server to update a player on the play status. This includes failed statuses due to a
+/// mismatched version, but also success statuses.
+#[derive(Debug, Clone)]
+pub struct PlayStatus {
+    /// The status of the packet.
+    pub status: PlayStatusType,
 }
 
 impl PacketType for PlayStatus {

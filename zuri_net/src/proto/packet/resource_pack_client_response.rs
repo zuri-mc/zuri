@@ -4,14 +4,14 @@ use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::resource_pack::ResourcePackResponse;
 
-/// Sent by the client in response to resource packets sent by the server. It is used to let the server know what action
-/// needs to be taken for the client to have all resource packs ready and set.
+/// Sent by the client in response to resource packets sent by the server. It is used to let the
+/// server know what action needs to be taken for the client to have all resource packs ready.
 #[derive(Debug, Clone)]
 pub struct ResourcePackClientResponse {
     /// The response type the client gave.
     pub response: ResourcePackResponse,
-    /// A list of resource pack UUIDs combined with their version that need to be downloaded, if the Response field is
-    /// PackResponseSendPacks.
+    /// A list of resource pack UUIDs combined with their version that need to be downloaded, if the
+    /// `response` field is `SendPacks`.
     pub packs_to_download: Vec<String>,
 }
 

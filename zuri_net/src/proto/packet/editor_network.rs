@@ -2,8 +2,11 @@ use zuri_nbt::{Value, encoding::NetworkLittleEndian};
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
+/// Sent from the server to the client and vise-versa to communicate editor-mode related
+/// information. It carries a single compound tag containing the relevant information.
 #[derive(Debug, Clone)]
 pub struct EditorNetwork {
+    /// A network little endian compound tag holding data relevant to the editor.
     pub payload: Value,
 }
 

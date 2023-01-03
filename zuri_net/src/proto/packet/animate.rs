@@ -14,14 +14,15 @@ pub enum AnimateAction {
     RowLeft = 129,
 }
 
-/// Sent by the server to send a player animation from one player to all viewers of that player. It is used for a couple
-/// of actions, such as arm swimming and critical hits.
+/// Sent by the server to send a player animation from one player to all viewers of that player. It
+/// is used for a couple of actions, such as arm swimming and critical hits.
 #[derive(Debug, Clone)]
 pub struct Animate {
     /// The action type to execute.
     pub action_type: AnimateAction,
-    /// The runtime ID of the player that the animation should be played upon. The runtime ID is unique for each world
-    /// session, and entities are generally identified in packets using this runtime ID.
+    /// The runtime ID of the player that the animation should be played upon. The runtime ID is
+    /// unique for each world session, and entities are generally identified in packets using this
+    /// runtime ID.
     pub entity_runtime_id: u64,
     /// It is unclear what this field does.
     pub boat_rowing_time: f32,

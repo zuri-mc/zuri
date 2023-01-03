@@ -1,5 +1,9 @@
-use std::collections::VecDeque;
 use uuid::Uuid;
+use std::collections::{HashMap, VecDeque};
+use zuri_nbt::encoding::NetworkLittleEndian;
+use num_traits::{FromPrimitive, ToPrimitive};
+use crate::proto::types::entity_data::{EntityDataEntry, EntityDataType};
+
 use glam::{
     IVec3,
     Vec2,
@@ -201,37 +205,86 @@ impl Writer {
         val.write(&mut self.buf, &mut writer).unwrap();
     }
 
-    pub fn optional(&mut self, x: &Option<impl Write>) {
+    pub fn optional(&mut self, x: &Option<impl Writable>) {
         self.bool(x.is_some());
         if let Some(x) = x {
             x.write(self);
         }
     }
+
+    pub fn entity_metadata(&mut self, x: &HashMap<u32, EntityDataEntry>) {
+        self.var_u32(x.len() as u32);
+
+        let mut keys: Vec<u32> = x.keys().map(|k| *k).collect();
+        keys.sort();
+
+        for key in keys {
+            self.var_u32(key);
+            match x.get(&key).unwrap() {
+                EntityDataEntry::U8(v) => {
+                    self.var_u32(EntityDataType::U8.to_u32().unwrap());
+                    self.u8(*v);
+                }
+                EntityDataEntry::I16(v) => {
+                    self.var_u32(EntityDataType::I16.to_u32().unwrap());
+                    self.i16(*v);
+                }
+                EntityDataEntry::I32(v) => {
+                    self.var_u32(EntityDataType::I32.to_u32().unwrap());
+                    self.var_i32(*v);
+                }
+                EntityDataEntry::F32(v) => {
+                    self.var_u32(EntityDataType::F32.to_u32().unwrap());
+                    self.f32(*v);
+                }
+                EntityDataEntry::String(v) => {
+                    self.var_u32(EntityDataType::String.to_u32().unwrap());
+                    self.string(v);
+                }
+                EntityDataEntry::NBT(v) => {
+                    self.var_u32(EntityDataType::NBT.to_u32().unwrap());
+                    self.nbt(v, NetworkLittleEndian);
+                }
+                EntityDataEntry::BlockPos(v) => {
+                    self.var_u32(EntityDataType::BlockPos.to_u32().unwrap());
+                    self.block_pos(*v);
+                }
+                EntityDataEntry::I64(v) => {
+                    self.var_u32(EntityDataType::I64.to_u32().unwrap());
+                    self.var_i64(*v);
+                }
+                EntityDataEntry::Vec3(v) => {
+                    self.var_u32(EntityDataType::Vec3.to_u32().unwrap());
+                    self.vec3(*v);
+                }
+            }
+        }
+    }
 }
 
-pub trait Write {
+pub trait Writable {
     fn write(&self, writer: &mut Writer);
 }
 
-impl Write for bool {
+impl Writable for bool {
     fn write(&self, writer: &mut Writer) {
         writer.u8(*self as u8);
     }
 }
 
-impl Write for u8 {
+impl Writable for u8 {
     fn write(&self, writer: &mut Writer) {
         writer.u8(*self);
     }
 }
 
-impl Write for Bytes {
+impl Writable for Bytes {
     fn write(&self, writer: &mut Writer) {
         writer.byte_slice(self);
     }
 }
 
-impl Write for String {
+impl Writable for String {
     fn write(&self, writer: &mut Writer) {
         writer.string(self);
     }
@@ -444,38 +497,75 @@ impl Reader {
         Value::read(&mut self.buf, &mut reader).unwrap()
     }
 
-    pub fn optional<T: Read<T>>(&mut self) -> Option<T> {
+    pub fn optional<T: Readable<T>>(&mut self) -> Option<T> {
         if self.bool() {
             Some(T::read(self))
         } else {
             None
         }
     }
+
+    pub fn entity_metadata(&mut self) -> HashMap<u32, EntityDataEntry> {
+        let mut metadata = HashMap::new();
+        for _ in 0..self.var_u32() {
+            let key = self.var_u32();
+            match EntityDataType::from_u32(self.var_u32()).unwrap() {
+                EntityDataType::U8 => {
+                    metadata.insert(key, EntityDataEntry::U8(self.u8()));
+                }
+                EntityDataType::I16 => {
+                    metadata.insert(key, EntityDataEntry::I16(self.i16()));
+                }
+                EntityDataType::I32 => {
+                    metadata.insert(key, EntityDataEntry::I32(self.var_i32()));
+                }
+                EntityDataType::F32 => {
+                    metadata.insert(key, EntityDataEntry::F32(self.f32()));
+                }
+                EntityDataType::String => {
+                    metadata.insert(key, EntityDataEntry::String(self.string()));
+                }
+                EntityDataType::NBT => {
+                    metadata.insert(key, EntityDataEntry::NBT(self.nbt(NetworkLittleEndian)));
+                }
+                EntityDataType::BlockPos => {
+                    metadata.insert(key, EntityDataEntry::BlockPos(self.block_pos()));
+                }
+                EntityDataType::I64 => {
+                    metadata.insert(key, EntityDataEntry::I64(self.var_i64()));
+                }
+                EntityDataType::Vec3 => {
+                    metadata.insert(key, EntityDataEntry::Vec3(self.vec3()));
+                }
+            }
+        }
+        metadata
+    }
 }
 
-pub trait Read<T> {
+pub trait Readable<T> {
     fn read(reader: &mut Reader) -> T;
 }
 
-impl Read<bool> for bool {
+impl Readable<bool> for bool {
     fn read(reader: &mut Reader) -> bool {
         reader.bool()
     }
 }
 
-impl Read<u8> for u8 {
+impl Readable<u8> for u8 {
     fn read(reader: &mut Reader) -> u8 {
         reader.u8()
     }
 }
 
-impl Read<String> for String {
+impl Readable<String> for String {
     fn read(reader: &mut Reader) -> String {
         reader.string()
     }
 }
 
-impl Read<Bytes> for Bytes {
+impl Readable<Bytes> for Bytes {
     fn read(reader: &mut Reader) -> Bytes {
         reader.bytes()
     }
