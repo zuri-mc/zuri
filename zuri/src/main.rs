@@ -12,7 +12,7 @@ use bevy::diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin, LogDiagnosticsPl
 use bevy::pbr::wireframe::Wireframe;
 use bevy::window::{CursorGrabMode, PresentMode};
 use zuri_model::geometry::{Geometry, GeometryList};
-use zuri_model::model::Model;
+use zuri_model::model::{Model, ModelOptions};
 
 use dotenvy::dotenv;
 use zuri_net::proto::packet::level_chunk::LevelChunk;
@@ -41,6 +41,7 @@ async fn main() {
             features: WgpuFeatures::POLYGON_MODE_LINE,
             ..default()
         })
+        .init_resource::<BlockHandles>()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             window: WindowDescriptor {
                 title: "Minecraft".into(),
@@ -59,7 +60,10 @@ async fn main() {
         .add_plugin(WorldPlugin)
 
         .insert_resource(BlockTextures::default())
-        .add_startup_system(setup)
+        .add_state(AppState::Setup)
+        .add_system_set(SystemSet::on_enter(AppState::Setup).with_system(load_textures))
+        .add_system_set(SystemSet::on_update(AppState::Setup).with_system(check_textures))
+        .add_system_set(SystemSet::on_enter(AppState::Finished).with_system(setup))
         .add_system(cursor_grab_system)
         //.add_system(chunk_load_system)
         .run();
@@ -119,24 +123,68 @@ fn chunk_load_system(
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+enum AppState {
+    Setup,
+    Finished,
+}
+
+#[derive(Resource, Default)]
+struct BlockHandles {
+    handles: Vec<HandleUntyped>,
+}
+
+fn load_textures(mut block_handles: ResMut<BlockHandles>, asset_server: Res<AssetServer>) {
+    block_handles.handles = asset_server.load_folder("textures/blocks").unwrap();
+}
+
+fn check_textures(
+    mut state: ResMut<State<AppState>>,
+    block_handles: ResMut<BlockHandles>,
+    asset_server: Res<AssetServer>,
+) {
+    if let LoadState::Loaded =
+        asset_server.get_group_load_state(block_handles.handles.iter().map(|handle| handle.id))
+    {
+        state.set(AppState::Finished).unwrap();
+    }
+}
+
 fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut block_tex: ResMut<BlockTextures>,
+    mut block_textures: ResMut<Assets<Image>>,
+    block_handles: Res<BlockHandles>,
     asset_server: Res<AssetServer>,
 ) {
-    let texture_handle = asset_server.load("dirt.png");
-    block_tex.dirt = Some(texture_handle);
+    let mut builder = TextureAtlasBuilder::default();
+    for handle in &block_handles.handles {
+        let handle = handle.typed_weak();
+        let Some(texture) = block_textures.get(&handle) else {
+            warn!("{:?} did not resolve to an `Image` asset.", asset_server.get_handle_path(handle));
+            continue;
+        };
 
-    let mut geometries = GeometryList::new(include_str!("./test.geo.json"));
+        builder.add_texture(handle, texture);
+    }
+    let texture_atlas = builder.finish(&mut block_textures).unwrap();
+    let texture_atlas_texture = texture_atlas.texture.clone();
+
+    let dirt_handle = asset_server.get_handle("textures/blocks/grass_side.tga");
+    let dirt_index = texture_atlas.get_texture_index(&dirt_handle).unwrap();
+
+    let mut geometries = GeometryList::new(include_str!("../assets/models/blocks/cube.geo.json"));
     geometries.into_iter().for_each(|geometry| {
-        let model = Model::new(geometry);
+        let model = Model::new(geometry, ModelOptions {
+            texture_size: Some(texture_atlas.size),
+            texture_offset: Some(texture_atlas.textures[dirt_index].clone().min / texture_atlas.size),
+        });
         commands.spawn((
             PbrBundle {
                 mesh: meshes.add(model.build_mesh()),
                 material: materials.add(StandardMaterial {
-                    base_color_texture: Some(block_tex.dirt.clone().unwrap()),
+                    base_color_texture: Some(texture_atlas_texture.clone()),
                     base_color: Color::WHITE,
                     alpha_mode: AlphaMode::Mask(1.),
                     perceptual_roughness: 0.94,

@@ -1,17 +1,24 @@
 use bevy::math::Affine3A;
-use bevy::prelude::{Component, Mesh, Vec2, Vec3};
+use bevy::prelude::{Component, Mesh, Rect, Vec2, Vec3};
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use zuri_math::facing::Face;
 use crate::geometry::{FaceUV, FaceUVList, Geometry, UV};
 
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct Model {
     geometry: Geometry,
+    options: ModelOptions,
+}
+
+#[derive(Debug, Default)]
+pub struct ModelOptions {
+    pub texture_size: Option<Vec2>,
+    pub texture_offset: Option<Vec2>,
 }
 
 impl Model {
-    pub fn new(geometry: Geometry) -> Self {
-        return Self { geometry };
+    pub fn new(geometry: Geometry, options: ModelOptions) -> Self {
+        return Self { geometry, options };
     }
 
     pub fn build_mesh(&self) -> Mesh {
@@ -202,7 +209,16 @@ impl Model {
     }
 
     fn project_uv(&self, uv: &mut Vec<[f32; 2]>, uv_list: FaceUVList, face: Face) {
-        let texture_size = Vec2::new(self.geometry.description.texture_width as f32, self.geometry.description.texture_height as f32);
+        let texture_size = if self.options.texture_size.is_some() {
+            self.options.texture_size.unwrap()
+        } else {
+            Vec2::new(self.geometry.description.texture_width as f32, self.geometry.description.texture_height as f32)
+        };
+        let texture_offset = if self.options.texture_offset.is_some() {
+            self.options.texture_offset.unwrap()
+        } else {
+            Vec2::default()
+        };
         let face_uv = match face {
             Face::Down => uv_list.down,
             Face::Up => uv_list.up,
@@ -211,8 +227,8 @@ impl Model {
             Face::East => uv_list.east,
             Face::West => uv_list.west,
         }.unwrap();
-        let min = face_uv.uv.min(face_uv.uv + face_uv.uv_size) / texture_size;
-        let max = face_uv.uv.max(face_uv.uv + face_uv.uv_size) / texture_size;
+        let min = face_uv.uv.min(face_uv.uv + face_uv.uv_size) / texture_size + texture_offset;
+        let max = face_uv.uv.max(face_uv.uv + face_uv.uv_size) / texture_size + texture_offset;
 
         match face {
             Face::South => {
