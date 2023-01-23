@@ -11,6 +11,8 @@ jobs:
       tag: ${{ steps.bump.outputs.version }}
     steps:
       - uses: actions/checkout@v3
+      - run: |
+          echo ${{ toJSON(github.event) }}
       - uses: jefflinse/pr-semver-bump@99d71e35cf07ca6e2e5f1200c5944c1dc74006ff
         name: Bump and Tag Version
         id: bump
