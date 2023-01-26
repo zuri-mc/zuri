@@ -12,10 +12,10 @@ pub struct BiomeDefinitionList {
 
 impl PacketType for BiomeDefinitionList {
     fn write(&self, writer: &mut Writer) {
-        writer.byte_slice(&self.serialised_biome_definitions);
+        writer.bytes(&self.serialised_biome_definitions);
     }
 
     fn read(reader: &mut Reader) -> Self {
-        Self { serialised_biome_definitions: reader.byte_slice() }
+        Self { serialised_biome_definitions: reader.bytes() }
     }
 }
