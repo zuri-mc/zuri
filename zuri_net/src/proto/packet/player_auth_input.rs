@@ -122,7 +122,7 @@ impl PacketType for PlayerAuthInput {
         writer.var_u64(self.input_data);
         writer.var_u32(self.input_mode.to_u32().unwrap());
         writer.var_u32(self.play_mode.to_u32().unwrap());
-        writer.i32(self.interaction_model.to_i32().unwrap());
+        writer.var_i32(self.interaction_model.to_i32().unwrap());
         if self.play_mode == PlayMode::Reality {
             writer.vec3(self.gaze_direction);
         }
@@ -151,7 +151,7 @@ impl PacketType for PlayerAuthInput {
             input_data: reader.var_u64(),
             input_mode: InputMode::from_u32(reader.var_u32()).unwrap(),
             play_mode: PlayMode::from_u32(reader.var_u32()).unwrap(),
-            interaction_model: InteractionModel::from_i32(reader.i32()).unwrap(),
+            interaction_model: InteractionModel::from_i32(reader.var_i32()).unwrap(),
             gaze_direction: Vec3::default(),
             tick: reader.var_u64(),
             delta: reader.vec3(),
