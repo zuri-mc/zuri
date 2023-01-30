@@ -1,6 +1,6 @@
-use crate::proto::io::{Reader, Writer};
+use crate::proto::io::{Readable, Reader, Writable, Writer};
 use crate::proto::packet::PacketType;
-use crate::proto::types::recipe::{MaterialReducer, PotionContainerChangeRecipe, PotionRecipe, RecipeType};
+use crate::proto::types::recipe::{MaterialReducer, PotionContainerChangeRecipe, PotionRecipe, Recipe};
 
 /// Sent by the server to let the client know all crafting data that the server maintains. This
 /// includes shapeless crafting, crafting table recipes, furnace recipes etc. Each crafting
@@ -9,7 +9,7 @@ use crate::proto::types::recipe::{MaterialReducer, PotionContainerChangeRecipe, 
 pub struct CraftingData {
     /// List of all recipes available on the server. It includes among others shapeless, shaped and
     /// furnace recipes. The client will only be able to craft these recipes.
-    pub recipes: Vec<RecipeType>,
+    pub recipes: Vec<Recipe>,
     // TODO: Recipe trait
     /// List of all potion mixing recipes which may be used in the brewing stand.
     pub potion_recipes: Vec<PotionRecipe>,
@@ -26,38 +26,30 @@ pub struct CraftingData {
 }
 
 impl PacketType for CraftingData {
-    fn write(&self, _writer: &mut Writer) {
-        todo!()
-        // writer.write_TODO(self.LEN);
-        // writer.write_Recipe(self.recipes);
-        // writer.write_TODO(self.LEN);
-        // writer.write_PotionRecipe(self.potion_recipes);
-        // writer.write_TODO(self.LEN);
-        // writer.write_PotionContainerChangeRecipe(self.potion_container_change_recipes);
-        // writer.write_TODO(self.LEN);
-        // writer.write_MaterialReducer(self.material_reducers);
-        // writer.bool(self.clear_recipes);
+    fn write(&self, writer: &mut Writer) {
+        writer.var_u32(self.recipes.len() as u32);
+        self.recipes.iter().for_each(|recipe| recipe.write(writer));
+        self.potion_recipes.iter().for_each(|recipe| recipe.write(writer));
+        self.potion_container_change_recipes.iter().for_each(|recipe| recipe.write(writer));
+        self.material_reducers.iter().for_each(|reducer| reducer.write(writer));
+        writer.bool(self.clear_recipes);
     }
 
-    fn read(_reader: &mut Reader) -> Self {
-        // TODO: IMPLEMENT THIS
+    fn read(reader: &mut Reader) -> Self {
         Self {
-            recipes: vec![],
-            potion_recipes: vec![],
-            potion_container_change_recipes: vec![],
-            material_reducers: vec![],
-            clear_recipes: false,
+            recipes: (0..reader.var_u32())
+                .map(|_| Recipe::read(reader))
+                .collect(),
+            potion_recipes: (0..reader.var_u32())
+                .map(|_| PotionRecipe::read(reader))
+                .collect(),
+            potion_container_change_recipes: (0..reader.var_u32())
+                .map(|_| PotionContainerChangeRecipe::read(reader))
+                .collect(),
+            material_reducers: (0..reader.var_u32())
+                .map(|_| MaterialReducer::read(reader))
+                .collect(),
+            clear_recipes: reader.bool(),
         }
-        // Self {
-        //     LEN: reader.read_TODO(),
-        //     recipes: reader.read_Recipe(),
-        //     LEN: reader.read_TODO(),
-        //     potion_recipes: reader.read_PotionRecipe(),
-        //     LEN: reader.read_TODO(),
-        //     potion_container_change_recipes: reader.read_PotionContainerChangeRecipe(),
-        //     LEN: reader.read_TODO(),
-        //     material_reducers: reader.read_MaterialReducer(),
-        //     clear_recipes: reader.bool(),
-        // };
     }
 }
