@@ -61,6 +61,7 @@ pub enum InputFlag {
     PerformItemInteraction,
     PerformBlockActions,
     PerformItemStackRequest,
+    HandledTeleport,
 }
 
 impl InputFlag {

@@ -5,7 +5,8 @@ use crate::proto::io::{Reader, Writer};
 
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum EmoteFlag {
-    ServerSide
+    ServerSide,
+    MuteEmoteChat
 }
 
 impl EmoteFlag {

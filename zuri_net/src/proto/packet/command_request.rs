@@ -16,6 +16,8 @@ pub struct CommandRequest {
     /// Specifies if the command request internal. Setting it to false seems to work and the usage
     /// of this field is not known.
     pub internal: bool,
+    /// The version of the command that is being executed. This field currently has no purpose or functionality.
+    pub version: i32,
 }
 
 impl PacketType for CommandRequest {
@@ -23,6 +25,7 @@ impl PacketType for CommandRequest {
         writer.string(self.command_line.as_str());
         self.command_origin.write(writer);
         writer.bool(self.internal);
+        writer.var_i32(self.version);
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -30,6 +33,7 @@ impl PacketType for CommandRequest {
             command_line: reader.string(),
             command_origin: CommandOrigin::read(reader),
             internal: reader.bool(),
+            version: reader.var_i32(),
         }
     }
 }

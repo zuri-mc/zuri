@@ -178,6 +178,8 @@ pub struct StartGame {
     pub persona_disabled: bool,
     /// Specifies if custom skins are disabled for the current game session.
     pub custom_skins_disabled: bool,
+    /// Specifies if players will be sent a chat message when using certain emotes.
+    pub emote_chat_muted: bool,
     /// The version of the game from which Vanilla features will be used. The exact function this
     /// field isn't clear.
     pub base_game_version: String,
@@ -313,6 +315,7 @@ impl PacketType for StartGame {
         writer.bool(self.only_spawn_v1_villagers);
         writer.bool(self.persona_disabled);
         writer.bool(self.custom_skins_disabled);
+        writer.bool(self.emote_chat_muted);
 
         writer.string(self.base_game_version.as_str());
 
@@ -423,6 +426,7 @@ impl PacketType for StartGame {
             only_spawn_v1_villagers: reader.bool(),
             persona_disabled: reader.bool(),
             custom_skins_disabled: reader.bool(),
+            emote_chat_muted: reader.bool(),
 
             base_game_version: reader.string(),
 

@@ -1,6 +1,8 @@
 use crate::proto::io::{Readable, Reader, Writable, Writer};
 use crate::proto::packet::PacketType;
-use crate::proto::types::recipe::{MaterialReducer, PotionContainerChangeRecipe, PotionRecipe, Recipe};
+use crate::proto::types::recipe::{
+    MaterialReducer, PotionContainerChangeRecipe, PotionRecipe, Recipe,
+};
 
 /// Sent by the server to let the client know all crafting data that the server maintains. This
 /// includes shapeless crafting, crafting table recipes, furnace recipes etc. Each crafting
@@ -29,9 +31,15 @@ impl PacketType for CraftingData {
     fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.recipes.len() as u32);
         self.recipes.iter().for_each(|recipe| recipe.write(writer));
-        self.potion_recipes.iter().for_each(|recipe| recipe.write(writer));
-        self.potion_container_change_recipes.iter().for_each(|recipe| recipe.write(writer));
-        self.material_reducers.iter().for_each(|reducer| reducer.write(writer));
+        self.potion_recipes
+            .iter()
+            .for_each(|recipe| recipe.write(writer));
+        self.potion_container_change_recipes
+            .iter()
+            .for_each(|recipe| recipe.write(writer));
+        self.material_reducers
+            .iter()
+            .for_each(|reducer| reducer.write(writer));
         writer.bool(self.clear_recipes);
     }
 

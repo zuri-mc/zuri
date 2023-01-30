@@ -573,6 +573,7 @@ encodable_enum!(
             GameTestRequest = 194,
             GameTestResults = 195,
             UpdateClientInputLocks = 196,
+            ClientCheatAbility = 197,
         }
 );
 
