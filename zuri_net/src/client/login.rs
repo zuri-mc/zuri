@@ -126,7 +126,7 @@ impl<'a> Sequence<Result<(), ConnError>> for LoginSequence<'a> {
 
         // Notify the server that we're initialized.
         conn.write_packet(&mut SetLocalPlayerAsInitialised {
-            entity_runtime_id: rid,
+            entity_runtime_id: rid.into(),
         }.into()).await;
         conn.flush().await?;
 
@@ -259,7 +259,7 @@ impl<'a> LoginSequence<'a> {
 
         // We need to request a sample radius of chunks around the player in order for the server
         // to allow us to spawn in. This is a bit of a hack, but it's necessary.
-        conn.write_packet(&mut RequestChunkRadius { chunk_radius: 16 }.into()).await;
+        conn.write_packet(&mut RequestChunkRadius { chunk_radius: 16.into() }.into()).await;
         conn.flush().await?;
 
         Ok(())

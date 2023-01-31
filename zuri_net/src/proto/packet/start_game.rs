@@ -5,7 +5,7 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use zuri_nbt::{Value, encoding::NetworkLittleEndian};
 
 use crate::proto::packet::PacketType;
-use crate::proto::io::{Reader, Writer};
+use crate::proto::io::{Reader, Readable, Writer, Writable};
 use crate::proto::types::game_rule::GameRule;
 use crate::proto::types::item_stack::ItemEntry;
 use crate::proto::types::player::PlayerMovementSettings;
