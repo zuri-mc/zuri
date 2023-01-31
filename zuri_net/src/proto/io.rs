@@ -267,66 +267,77 @@ pub trait Writable {
 }
 
 impl Writable for bool {
+    #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.u8(*self as u8);
     }
 }
 
 impl Writable for u8 {
+    #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.u8(*self);
     }
 }
 
 impl Writable for u16 {
+    #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.u16(*self);
     }
 }
 
 impl Writable for u32 {
+    #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.u32(*self);
     }
 }
 
 impl Writable for u64 {
+    #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.u64(*self);
     }
 }
 
 impl Writable for i8 {
+    #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.i8(*self);
     }
 }
 
 impl Writable for i16 {
+    #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.i16(*self);
     }
 }
 
 impl Writable for i32 {
+    #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.i32(*self);
     }
 }
 
 impl Writable for i64 {
+    #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.i64(*self);
     }
 }
 
 impl Writable for Bytes {
+    #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.byte_slice(self);
     }
 }
 
 impl Writable for String {
+    #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.string(self);
     }
@@ -590,66 +601,77 @@ pub trait Readable<T> {
 }
 
 impl Readable<bool> for bool {
+    #[inline]
     fn read(reader: &mut Reader) -> bool {
         reader.bool()
     }
 }
 
 impl Readable<u8> for u8 {
+    #[inline]
     fn read(reader: &mut Reader) -> u8 {
         reader.u8()
     }
 }
 
 impl Readable<u16> for u16 {
+    #[inline]
     fn read(reader: &mut Reader) -> u16 {
         reader.u16()
     }
 }
 
 impl Readable<u32> for u32 {
+    #[inline]
     fn read(reader: &mut Reader) -> u32 {
         reader.u32()
     }
 }
 
 impl Readable<u64> for u64 {
+    #[inline]
     fn read(reader: &mut Reader) -> u64 {
         reader.u64()
     }
 }
 
 impl Readable<i8> for i8 {
+    #[inline]
     fn read(reader: &mut Reader) -> i8 {
         reader.i8()
     }
 }
 
 impl Readable<i16> for i16 {
+    #[inline]
     fn read(reader: &mut Reader) -> i16 {
         reader.i16()
     }
 }
 
 impl Readable<i32> for i32 {
+    #[inline]
     fn read(reader: &mut Reader) -> i32 {
         reader.i32()
     }
 }
 
 impl Readable<i64> for i64 {
+    #[inline]
     fn read(reader: &mut Reader) -> i64 {
         reader.i64()
     }
 }
 
 impl Readable<String> for String {
+    #[inline]
     fn read(reader: &mut Reader) -> String {
         reader.string()
     }
 }
 
 impl Readable<Bytes> for Bytes {
+    #[inline]
     fn read(reader: &mut Reader) -> Bytes {
         reader.bytes()
     }
