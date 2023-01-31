@@ -1,5 +1,6 @@
 use zuri_net_derive::packet;
-use crate::proto::io::{Readable, Reader, Writable, Writer};
+
+use crate::proto::io::{Reader, Writer};
 
 #[packet]
 #[derive(Debug, Clone)]

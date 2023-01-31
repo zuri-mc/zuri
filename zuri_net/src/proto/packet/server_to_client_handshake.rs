@@ -1,4 +1,5 @@
 use bytes::Bytes;
+
 use zuri_net_derive::packet;
 
 /// Sent by the server to the client to complete the key exchange in order to initialise encryption

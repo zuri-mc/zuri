@@ -1,7 +1,7 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::world::GameType;
 
 /// Sent by the client when it toggles the default game type in the settings UI, and is sent by the

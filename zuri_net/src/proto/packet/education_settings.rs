@@ -1,5 +1,5 @@
 use zuri_net_derive::packet;
-use crate::proto::io::{Readable, Writable};
+
 use crate::proto::types::education::EducationExternalLinkSettings;
 
 /// Sent by the server to update Education Edition related settings. It is unused by vanilla.

@@ -1,5 +1,6 @@
-use bytes::Buf;
 use std::io::{Read, Write};
+
+use bytes::Buf;
 use num_derive::{FromPrimitive, ToPrimitive};
 
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]

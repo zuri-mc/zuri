@@ -1,5 +1,5 @@
-use uuid::Uuid;
 use num_derive::{FromPrimitive, ToPrimitive};
+use uuid::Uuid;
 
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::item::ItemStack;

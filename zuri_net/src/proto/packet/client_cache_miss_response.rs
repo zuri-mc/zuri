@@ -1,6 +1,6 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarU32;
-use crate::proto::io::{Readable, Writable};
 use crate::proto::types::world::CacheBlob;
 
 /// Part of the blob cache protocol. It is sent by the server in response to a ClientCacheBlobStatus

@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarU32;
 
 /// Sent by the client to the server to notify the server it purchased an item from the Marketplace

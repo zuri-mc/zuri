@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarU32;
 
 /// Sent by the server to render the different fogs in the Stack. The types of fog are controlled by

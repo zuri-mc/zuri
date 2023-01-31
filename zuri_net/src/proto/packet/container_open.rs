@@ -1,10 +1,10 @@
 use glam::IVec3;
-use num_traits::{ToPrimitive, FromPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
-use crate::proto::types::inventory::Window;
+use crate::proto::packet::PacketType;
 use crate::proto::types::container::ContainerType;
+use crate::proto::types::inventory::Window;
 
 /// Sent by the server to open a container client-side. This container must be physically present in
 /// the world, for the packet to have any effect. Unlike Java Edition, Bedrock Edition requires that

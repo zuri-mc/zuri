@@ -6,8 +6,8 @@ use oauth2::basic::BasicTokenResponse;
 use rust_raknet::RaknetSocket;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::Mutex;
-use crate::chan::{pk_chan, PkSender};
 
+use crate::chan::{pk_chan, PkSender};
 use crate::client::data::{ClientData, IdentityData};
 use crate::client::login::LoginSequence;
 use crate::connection::{Connection, ConnError, ExpectedPackets, Sequence};

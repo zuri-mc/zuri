@@ -1,6 +1,6 @@
 use glam::Vec3;
 use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{ToPrimitive, FromPrimitive};
+
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 

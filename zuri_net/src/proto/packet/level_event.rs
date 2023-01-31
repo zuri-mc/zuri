@@ -1,8 +1,8 @@
 use glam::Vec3;
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::level_event::LevelEventType;
 
 /// Sent by the server to make a certain event in the level occur. It ranges from particles, to

@@ -1,9 +1,9 @@
-use glam::Vec3;
 use bytes::Bytes;
+use glam::Vec3;
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::world::Dimension;
 
 /// Sent by the server to spawn a particle effect client-side. Unlike other packets that result in

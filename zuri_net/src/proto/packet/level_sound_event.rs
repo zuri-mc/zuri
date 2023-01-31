@@ -1,8 +1,8 @@
 use glam::Vec3;
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::sound_event::SoundEvent;
 
 /// Sent by the server to make any kind of built-in sound heard to a player. It is sent to, for

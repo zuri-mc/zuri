@@ -1,5 +1,5 @@
-use num_traits::ToPrimitive;
 use num_derive::{FromPrimitive, ToPrimitive};
+use num_traits::ToPrimitive;
 
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum Container {

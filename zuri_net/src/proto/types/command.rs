@@ -1,8 +1,9 @@
-use uuid::Uuid;
-use bytes::Bytes;
 use std::collections::BTreeMap;
+
+use bytes::Bytes;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
+use uuid::Uuid;
 
 use crate::proto::io::{Reader, Writer};
 

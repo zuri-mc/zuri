@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::types::world::EntityLink;
 
 /// Sent by the server to initiate an entity link client-side, meaning one entity will start riding

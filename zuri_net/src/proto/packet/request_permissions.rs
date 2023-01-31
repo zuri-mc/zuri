@@ -1,7 +1,7 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::world::PermissionLevel;
 
 /// Sent from the client to the server to request permissions that the client does not currently

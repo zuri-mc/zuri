@@ -1,7 +1,7 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::scoreboard::{ScoreboardAction, ScoreboardEntry};
 
 /// Sent by the server to send the contents of a scoreboard to the player. It may be used to either

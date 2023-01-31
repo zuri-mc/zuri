@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarU32;
 
 /// Sent from the server to the client expected to be sent when a player dies. It contains messages

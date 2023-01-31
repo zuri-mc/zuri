@@ -1,7 +1,8 @@
 use uuid::Uuid;
+
 use zuri_net_derive::packet;
-use crate::proto::ints::{VarU64, VarU32};
-use crate::proto::io::{Readable, Writable};
+
+use crate::proto::ints::{VarU32, VarU64};
 
 /// Sent by the client every time it joins the server and when it equips new emotes. It may be used
 /// by the server to find out which emotes the client has available. If the player has no emotes

@@ -1,8 +1,9 @@
 use num_traits::{FromPrimitive, ToPrimitive};
-use zuri_nbt::{Value, encoding::NetworkLittleEndian};
 
-use crate::proto::packet::PacketType;
+use zuri_nbt::{encoding::NetworkLittleEndian, Value};
+
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::structure::StructureTemplateDataRequestType;
 
 /// Sent by the server to send data of a structure to the client in response to a

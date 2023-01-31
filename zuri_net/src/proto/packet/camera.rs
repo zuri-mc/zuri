@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarI64;
 
 /// Sent by the server to use an Education Edition camera on a player. It produces an image

@@ -1,14 +1,15 @@
 use std::collections::HashMap;
-use glam::Vec3;
-use uuid::Uuid;
-use num_traits::{ToPrimitive, FromPrimitive};
 
-use crate::proto::packet::PacketType;
+use glam::Vec3;
+use num_traits::{FromPrimitive, ToPrimitive};
+use uuid::Uuid;
+
 use crate::proto::io::{Reader, Writer};
-use crate::proto::types::item::ItemInstance;
+use crate::proto::packet::PacketType;
 use crate::proto::types::ability::AbilityData;
 use crate::proto::types::device::Device;
 use crate::proto::types::entity_data::{EntityDataEntry, EntityProperties};
+use crate::proto::types::item::ItemInstance;
 use crate::proto::types::world::{EntityLink, GameType};
 
 /// Sent by the server to the client to make a player entity show up client-side. It is one of the

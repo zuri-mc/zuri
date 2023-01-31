@@ -1,5 +1,6 @@
 use zuri_net_derive::packet;
-use crate::proto::ints::{VarU64, VarU32};
+
+use crate::proto::ints::{VarU32, VarU64};
 use crate::proto::types::attribute::Attribute;
 
 /// Sent by the server to update an amount of attributes of any entity in the world. These

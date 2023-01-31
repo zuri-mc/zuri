@@ -1,7 +1,7 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::inventory::Window;
 
 /// Sent by the server to the client. It used to be used to link hot bar slots of the player to

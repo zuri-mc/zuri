@@ -1,11 +1,11 @@
+use num_traits::{FromPrimitive, ToPrimitive};
 use uuid::Uuid;
-use num_traits::{ToPrimitive, FromPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
+use crate::proto::types::container::ContainerType;
 use crate::proto::types::inventory::Window;
 use crate::proto::types::item::ItemInstance;
-use crate::proto::types::container::ContainerType;
 
 /// Sent by the client when it crafts a particular item. Note that this packet may be fully ignored,
 /// as the transaction systems provide all the information necessary.

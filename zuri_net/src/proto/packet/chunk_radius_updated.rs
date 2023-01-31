@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarI32;
 
 /// Sent by the server in response to a RequestChunkRadius packet. It defines the chunk radius that

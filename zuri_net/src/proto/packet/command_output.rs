@@ -1,7 +1,7 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::command::{CommandOrigin, CommandOutputMessage, CommandOutputType};
 
 /// Sent by the server to the client to send text as output of a command. Most servers do not use

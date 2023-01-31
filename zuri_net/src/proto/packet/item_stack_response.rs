@@ -1,5 +1,5 @@
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::item_stack::ItemStackResponseEntry;
 
 /// Sent by the server in response to an ItemStackRequest packet from the client. This packet is

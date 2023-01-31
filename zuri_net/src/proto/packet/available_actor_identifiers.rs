@@ -1,4 +1,5 @@
 use bytes::Bytes;
+
 use zuri_net_derive::packet;
 
 /// Sent by the server at the start of the game to let the client know all entities that are

@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarI32;
 
 /// Sent by the client to the server to initiate a cooldown on an item. The purpose of this packet

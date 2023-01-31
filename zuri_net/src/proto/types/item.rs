@@ -1,7 +1,9 @@
 use bytes::BytesMut;
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::proto::io::{Writer, Reader};
-use zuri_nbt::{Value, encoding::LittleEndian};
+
+use zuri_nbt::{encoding::LittleEndian, Value};
+
+use crate::proto::io::{Reader, Writer};
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum UseItemAction {

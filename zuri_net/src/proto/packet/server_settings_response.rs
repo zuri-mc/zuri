@@ -1,5 +1,7 @@
 use bytes::Bytes;
+
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarU32;
 
 /// Optionally sent by the server in response to a ServerSettingsRequest from the client. It is

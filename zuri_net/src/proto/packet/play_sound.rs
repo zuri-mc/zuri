@@ -1,5 +1,6 @@
-use glam::Vec3;
 use std::ops::{Div, Mul};
+
+use glam::Vec3;
 
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;

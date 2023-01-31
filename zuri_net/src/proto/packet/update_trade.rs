@@ -1,8 +1,8 @@
 use bytes::Bytes;
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::inventory::Window;
 
 /// Sent by the server to update the trades offered by a villager to a player. It is sent at the

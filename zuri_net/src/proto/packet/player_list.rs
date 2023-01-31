@@ -1,12 +1,11 @@
-use bevy::ecs::schedule::IntoRunCriteria;
-use uuid::Uuid;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
+use uuid::Uuid;
 
-use crate::proto::packet::PacketType;
-use crate::proto::types::skin::Skin;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::device::Device;
+use crate::proto::types::skin::Skin;
 
 #[derive(Clone, Copy, Debug, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum PlayerListAction {

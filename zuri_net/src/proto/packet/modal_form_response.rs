@@ -1,9 +1,9 @@
 use bytes::Bytes;
 use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{ToPrimitive, FromPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Readable, Reader, Writable, Writer};
+use crate::proto::packet::PacketType;
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum ModalFormCancelReason {

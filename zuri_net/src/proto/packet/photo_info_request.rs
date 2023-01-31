@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarI64;
 
 /// Sent by the client to request photo information from the server.

@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarI32;
 
 /// Sent from the server to the client to change one of the properties of a mob client-side.

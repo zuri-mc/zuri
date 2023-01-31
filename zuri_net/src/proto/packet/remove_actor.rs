@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarI64;
 
 /// Sent by the server to remove an entity that currently exists in the world from the client-side.

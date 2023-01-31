@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::types::ability::AbilityData;
 
 /// Sent from the server to update the abilities of the player. It, along with the

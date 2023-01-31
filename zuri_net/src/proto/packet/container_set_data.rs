@@ -1,9 +1,9 @@
-use num_traits::{ToPrimitive, FromPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
-use crate::proto::types::inventory::Window;
+use crate::proto::packet::PacketType;
 use crate::proto::types::container::ContainerDataKey;
+use crate::proto::types::inventory::Window;
 
 /// Sent by the server to update specific data of a single container, meaning a block such as a
 /// furnace or a brewing stand. This data is usually used by the client to display certain features

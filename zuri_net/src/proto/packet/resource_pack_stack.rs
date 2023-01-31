@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarU32;
 use crate::proto::types::world::ExperimentData;
 

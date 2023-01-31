@@ -1,7 +1,7 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::resource_pack::ResourcePackResponse;
 
 /// Sent by the client in response to resource packets sent by the server. It is used to let the

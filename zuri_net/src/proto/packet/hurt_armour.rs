@@ -1,6 +1,6 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::{VarI32, VarI64};
-use crate::proto::io::{Readable, Writable};
 
 /// Sent by the server to damage the player's armour after being hit. The packet should never be
 /// used by servers as it hands the responsibility over to the player completely, while the server

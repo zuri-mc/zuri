@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarI32;
 
 /// Sent by the server to display an object as a scoreboard to the player. Once sent, it should be

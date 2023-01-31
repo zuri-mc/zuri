@@ -1,7 +1,9 @@
-use zuri_nbt::Value;
 use glam::{IVec3, Vec3};
-use crate::proto::io::{Reader, Writer};
 use num_derive::{FromPrimitive, ToPrimitive};
+
+use zuri_nbt::Value;
+
+use crate::proto::io::{Reader, Writer};
 
 #[derive(Debug, Clone)]
 pub struct EntityProperties {

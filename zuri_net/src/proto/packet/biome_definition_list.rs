@@ -1,4 +1,5 @@
 use bytes::Bytes;
+
 use zuri_net_derive::packet;
 
 /// Sent by the server to let the client know all biomes that are available and implemented on the

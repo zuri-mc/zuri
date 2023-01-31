@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::{VarU32, VarU64};
 
 /// Sent by the server to animate an entity client-side. It may be used to play a single animation,

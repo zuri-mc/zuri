@@ -1,7 +1,7 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::{VarI64, VarU32};
 use crate::proto::types::colour::RGBA;
-use crate::proto::io::{Readable, Writable};
 
 /// Sent by the client to request the server to deliver information of a certain map in the
 /// inventory of the player. The server should respond with a ClientBoundMapItemData packet.

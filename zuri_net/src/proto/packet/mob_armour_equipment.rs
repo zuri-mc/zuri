@@ -1,5 +1,5 @@
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::item::ItemInstance;
 
 /// Sent by the server to the client to update the armour an entity is wearing. It is sent for both

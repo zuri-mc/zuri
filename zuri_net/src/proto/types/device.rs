@@ -1,5 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use serde_repr::{Serialize_repr, Deserialize_repr};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 
 #[repr(i32)]
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive, Serialize_repr, Deserialize_repr)]

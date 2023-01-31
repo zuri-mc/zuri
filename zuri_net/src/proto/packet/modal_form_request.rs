@@ -1,5 +1,7 @@
 use bytes::Bytes;
+
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarU32;
 
 /// Sent by the server to make the client open a form. This form may be either a modal form which

@@ -2,11 +2,11 @@ use glam::{Vec2, Vec3};
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::inventory::UseItemTransactionData;
-use crate::proto::types::player::{InputMode, InteractionModel, PlayerBlockAction};
 use crate::proto::types::item_stack::ItemStackRequestEntry;
+use crate::proto::types::player::{InputMode, InteractionModel, PlayerBlockAction};
 
 #[derive(Debug, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum PlayMode {

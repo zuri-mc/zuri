@@ -1,5 +1,7 @@
 use glam::Vec3;
+
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarU64;
 
 /// Sent by the server to change the client-side velocity of an entity. It is usually used in

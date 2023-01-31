@@ -1,4 +1,5 @@
 use bytes::Bytes;
+
 use zuri_net_derive::packet;
 
 /// Used to communicate custom messages from the client to the server, or from the server to the

@@ -1,6 +1,6 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarU32;
-use crate::proto::io::{Readable, Writable};
 use crate::proto::types::world::DimensionDefinition;
 
 /// A packet sent from the server to the client containing information about data-driven dimensions

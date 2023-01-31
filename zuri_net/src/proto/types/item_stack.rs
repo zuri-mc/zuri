@@ -1,7 +1,9 @@
 use std::fmt::Debug;
+
 use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{ToPrimitive, FromPrimitive};
-use zuri_nbt::{Value, encoding::NetworkLittleEndian};
+use num_traits::{FromPrimitive, ToPrimitive};
+
+use zuri_nbt::{encoding::NetworkLittleEndian, Value};
 
 use crate::encodable_enum;
 use crate::proto::io::{Reader, Writer};

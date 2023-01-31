@@ -1,7 +1,7 @@
 use aes::Aes256;
-use sha2::Digest;
 use bytes::BufMut;
 use cipher::{KeyIvInit, StreamCipher};
+use sha2::Digest;
 
 type Aes256Ctr = ctr::Ctr32BE<Aes256>;
 

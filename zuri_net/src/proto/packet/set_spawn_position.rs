@@ -1,8 +1,8 @@
 use glam::IVec3;
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::world::{Dimension, SpawnType};
 
 /// Sent by the server to update the spawn position of a player, for example when sleeping in a bed.

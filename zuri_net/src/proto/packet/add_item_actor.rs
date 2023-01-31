@@ -1,10 +1,11 @@
-use glam::Vec3;
 use std::collections::HashMap;
 
-use crate::proto::packet::PacketType;
+use glam::Vec3;
+
 use crate::proto::io::{Reader, Writer};
-use crate::proto::types::item::ItemInstance;
+use crate::proto::packet::PacketType;
 use crate::proto::types::entity_data::EntityDataEntry;
+use crate::proto::types::item::ItemInstance;
 
 /// Sent by the server to the client to make an item entity show up. It is one of the few entities
 /// that cannot be sent using the AddActor packet

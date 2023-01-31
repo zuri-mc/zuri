@@ -2,8 +2,8 @@ use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::types::colour::RGBA;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::types::colour::RGBA;
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum MapObjectType {

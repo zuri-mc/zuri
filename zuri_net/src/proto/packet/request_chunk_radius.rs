@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarI32;
 
 /// Sent by the client to the server to update the server on the chunk view radius that it has set

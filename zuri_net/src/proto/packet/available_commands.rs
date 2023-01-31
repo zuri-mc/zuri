@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 use crate::proto::types::command::{Command, CommandEnum, CommandEnumConstraint};
@@ -11,6 +12,8 @@ pub struct AvailableCommands {
 }
 
 impl AvailableCommands {
+    #![allow(dead_code)] // todo: this should be removed when AvailableCommands is fully implemented
+
     fn enum_values(&self) -> (Vec<String>, BTreeMap<String, usize>) {
         let mut values = Vec::new();
         let mut indices = BTreeMap::new();

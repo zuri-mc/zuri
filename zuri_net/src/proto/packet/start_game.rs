@@ -1,15 +1,16 @@
-use uuid::Uuid;
 use glam::{IVec3, Vec3};
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
-use zuri_nbt::{Value, encoding::NetworkLittleEndian};
+use uuid::Uuid;
 
+use zuri_nbt::{encoding::NetworkLittleEndian, Value};
+
+use crate::proto::io::{Readable, Reader, Writable, Writer};
 use crate::proto::packet::PacketType;
-use crate::proto::io::{Reader, Readable, Writer, Writable};
+use crate::proto::types::education::EducationSharedResourceURI;
 use crate::proto::types::game_rule::GameRule;
 use crate::proto::types::item_stack::ItemEntry;
 use crate::proto::types::player::PlayerMovementSettings;
-use crate::proto::types::education::EducationSharedResourceURI;
 use crate::proto::types::world::{
     BlockEntry,
     Difficulty,

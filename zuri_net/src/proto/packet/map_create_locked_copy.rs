@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarI64;
 
 /// Sent by the server to create a locked copy of one map into another map. In vanilla, it is used

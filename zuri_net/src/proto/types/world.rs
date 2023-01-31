@@ -1,11 +1,12 @@
 use bytes::Bytes;
-use zuri_nbt::Value;
-use zuri_nbt::encoding::NetworkLittleEndian;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
-use zuri_net_derive::packet;
-use crate::proto::ints::VarI32;
 
+use zuri_nbt::encoding::NetworkLittleEndian;
+use zuri_nbt::Value;
+use zuri_net_derive::packet;
+
+use crate::proto::ints::VarI32;
 use crate::proto::io::{Reader, Writer};
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]

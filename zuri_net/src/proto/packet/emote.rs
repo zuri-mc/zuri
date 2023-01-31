@@ -1,9 +1,8 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use zuri_net_derive::packet;
-use crate::proto::ints::VarU64;
 
-use crate::proto::packet::PacketType;
-use crate::proto::io::{Reader, Writer};
+use zuri_net_derive::packet;
+
+use crate::proto::ints::VarU64;
 
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum EmoteFlag {

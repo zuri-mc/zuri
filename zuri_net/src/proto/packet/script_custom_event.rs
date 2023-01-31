@@ -1,4 +1,5 @@
 use bytes::Bytes;
+
 use zuri_net_derive::packet;
 
 /// Sent by both the client and the server. It is a way to let scripts communicate with the server,

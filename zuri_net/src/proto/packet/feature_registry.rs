@@ -1,6 +1,6 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarU32;
-use crate::proto::io::{Readable, Writable};
 use crate::proto::types::world::GenerationFeature;
 
 /// Notifies the client about the world generation features the server is currently using. This is

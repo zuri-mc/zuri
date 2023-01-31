@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarU64;
 
 /// Sent by the server when a player picks up an item entity. It makes the item entity disappear to

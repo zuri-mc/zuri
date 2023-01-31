@@ -1,9 +1,8 @@
-use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
 use crate::compression::Compression;
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 
 /// Sent by the server to update a variety of network settings. These settings modify the way
 /// packets are sent over the network stack.

@@ -1,4 +1,5 @@
-use zuri_nbt::{Value, encoding::NetworkLittleEndian};
+use zuri_nbt::{encoding::NetworkLittleEndian, Value};
+
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 

@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarU64;
 
 /// Sent by the server to the client. Its function is not entirely clear: It does not add an entity

@@ -1,7 +1,7 @@
 use glam::IVec3;
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 
 /// Sent by the client to update the server on which page was opened in a book on a lectern, or if
 /// the book should be removed from it.

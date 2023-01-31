@@ -1,4 +1,5 @@
 use glam::Vec2;
+
 use zuri_net_derive::packet;
 
 /// Sent by the client to the server when the player is moving but the server does not allow it to

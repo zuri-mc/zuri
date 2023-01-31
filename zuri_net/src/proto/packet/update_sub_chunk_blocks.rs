@@ -1,8 +1,8 @@
 use glam::IVec3;
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::world::UpdateBlockTransition;
 
 /// Essentially just the UpdateBlock packet, however for a set of blocks in a sub-chunk.

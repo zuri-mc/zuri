@@ -1,4 +1,5 @@
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarU64;
 
 /// Sent by the client in response to a PlayStatus packet with the status set to PlayerSpawn. The

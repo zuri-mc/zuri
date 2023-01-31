@@ -1,5 +1,7 @@
 use glam::Vec3;
+
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarI32;
 
 /// Sent by the server to spawn an experience orb entity client-side. Much like the AddPainting

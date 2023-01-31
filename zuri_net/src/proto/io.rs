@@ -1,26 +1,27 @@
-use uuid::Uuid;
 use std::collections::{HashMap, VecDeque};
-use std::fmt::Debug;
-use zuri_nbt::encoding::NetworkLittleEndian;
-use num_traits::{FromPrimitive, ToPrimitive};
-use crate::proto::types::entity_data::{EntityDataEntry, EntityDataType};
 
-use glam::{
-    IVec3,
-    Vec2,
-    Vec3,
-};
-use zuri_nbt::{
-    Value,
-    decode,
-    encode,
-};
 use bytes::{
     Buf,
     BufMut,
     Bytes,
     BytesMut,
 };
+use glam::{
+    IVec3,
+    Vec2,
+    Vec3,
+};
+use num_traits::{FromPrimitive, ToPrimitive};
+use uuid::Uuid;
+
+use zuri_nbt::{
+    decode,
+    encode,
+    Value,
+};
+use zuri_nbt::encoding::NetworkLittleEndian;
+
+use crate::proto::types::entity_data::{EntityDataEntry, EntityDataType};
 
 #[derive(Default)]
 pub struct Writer {
@@ -772,8 +773,6 @@ impl Readable<Bytes> for Bytes {
 
 #[cfg(test)]
 mod tests {
-    use bytes::BytesMut;
-
     use crate::proto::io::{Reader, Writer};
 
     #[test]

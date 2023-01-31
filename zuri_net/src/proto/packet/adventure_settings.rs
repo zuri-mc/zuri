@@ -1,10 +1,10 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{ToPrimitive, FromPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
-use crate::proto::types::world::PermissionLevel;
+use crate::proto::packet::PacketType;
 use crate::proto::types::command::CommandPermissionLevel;
+use crate::proto::types::world::PermissionLevel;
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum AdventureFlag {

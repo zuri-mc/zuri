@@ -1,6 +1,7 @@
 use bytes::Bytes;
 use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{ToPrimitive, FromPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 

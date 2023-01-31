@@ -1,7 +1,8 @@
 use bytes::Bytes;
+
 use zuri_net_derive::packet;
+
 use crate::proto::ints::VarI32;
-use crate::proto::io::{Readable, Writable};
 
 /// Sent by the server to send a 'generic' level event to the client. This packet sends an NBT
 /// serialised object and may for that reason be used for any event holding additional data.

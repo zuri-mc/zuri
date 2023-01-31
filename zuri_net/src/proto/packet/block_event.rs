@@ -1,9 +1,9 @@
 use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{ToPrimitive, FromPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 
 /// Sent by the server to initiate a certain event that has to do with blocks in specific, for
 /// example opening chests.
