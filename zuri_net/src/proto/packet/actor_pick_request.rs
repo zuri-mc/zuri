@@ -1,8 +1,8 @@
-use crate::proto::io::{Reader, Writer};
-use crate::proto::packet::PacketType;
+use zuri_net_derive::packet;
 
 /// Sent by the client when it tries to pick an entity, so that it gets a spawn egg which can spawn
 /// that entity.
+#[packet]
 #[derive(Debug, Clone)]
 pub struct ActorPickRequest {
     /// The unique ID of the entity that was attempted to be picked. The server must find the type
@@ -13,20 +13,4 @@ pub struct ActorPickRequest {
     pub hotbar_slot: u8,
     /// True if the pick request requests the entity metadata.
     pub with_data: bool,
-}
-
-impl PacketType for ActorPickRequest {
-    fn write(&self, writer: &mut Writer) {
-        writer.i64(self.entity_unique_id);
-        writer.u8(self.hotbar_slot);
-        writer.bool(self.with_data);
-    }
-
-    fn read(reader: &mut Reader) -> Self {
-        Self {
-            entity_unique_id: reader.i64(),
-            hotbar_slot: reader.u8(),
-            with_data: reader.bool(),
-        }
-    }
 }

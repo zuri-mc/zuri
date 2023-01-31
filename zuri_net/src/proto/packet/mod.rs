@@ -1,5 +1,5 @@
 use crate::encodable_enum;
-use crate::proto::io::{Reader, Writer};
+use crate::proto::io::{Reader, Readable, Writer, Writable};
 
 use actor_event::*;
 use actor_pick_request::*;

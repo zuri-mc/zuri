@@ -1,10 +1,10 @@
 use glam::Vec2;
-use crate::proto::io::{Reader, Writer};
-use crate::proto::packet::PacketType;
+use zuri_net_derive::packet;
 
 /// Sent by the client to the server when the player is moving but the server does not allow it to
 /// update its movement using the MovePlayer packet. It includes situations where the player is
 /// riding an entity like a boat. If this is the case, the packet is sent roughly every tick.
+#[packet]
 #[derive(Debug, Clone)]
 pub struct PlayerInput {
     /// The movement vector of the input. It should be thought of in Pocket Edition controls, where
@@ -18,20 +18,4 @@ pub struct PlayerInput {
     /// Indicates if the player was sneaking during the input. Note that this may also be checked by
     /// keeping the sneaking state updated using the PlayerAction packet.
     pub sneaking: bool,
-}
-
-impl PacketType for PlayerInput {
-    fn write(&self, writer: &mut Writer) {
-        writer.vec2(self.movement);
-        writer.bool(self.jumping);
-        writer.bool(self.sneaking);
-    }
-
-    fn read(reader: &mut Reader) -> Self {
-        Self {
-            movement: reader.vec2(),
-            jumping: reader.bool(),
-            sneaking: reader.bool(),
-        }
-    }
 }

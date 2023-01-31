@@ -1,9 +1,13 @@
 use crate::proto::io::{Readable, Reader, Writable, Writer};
 
+#[derive(Debug, Clone, Copy, Default)]
 pub struct VarU32(u32);
+#[derive(Debug, Clone, Copy, Default)]
 pub struct VarU64(u64);
 
+#[derive(Debug, Clone, Copy, Default)]
 pub struct VarI32(i32);
+#[derive(Debug, Clone, Copy, Default)]
 pub struct VarI64(i64);
 
 impl From<usize> for VarU32 {

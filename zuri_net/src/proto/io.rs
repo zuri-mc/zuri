@@ -1,5 +1,6 @@
 use uuid::Uuid;
 use std::collections::{HashMap, VecDeque};
+use std::fmt::Debug;
 use zuri_nbt::encoding::NetworkLittleEndian;
 use num_traits::{FromPrimitive, ToPrimitive};
 use crate::proto::types::entity_data::{EntityDataEntry, EntityDataType};
@@ -266,6 +267,43 @@ pub trait Writable {
     fn write(&self, writer: &mut Writer);
 }
 
+impl<T: Writable, const N: usize> Writable for [T; N] {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        for i in 0..N {
+            self[i].write(writer);
+        }
+    }
+}
+
+impl<T: Writable> Writable for Option<T> {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.optional(self);
+    }
+}
+
+impl Writable for Vec3 {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.vec3(*self);
+    }
+}
+
+impl Writable for Vec2 {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.vec2(*self);
+    }
+}
+
+impl Writable for Uuid {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.uuid(self.clone());
+    }
+}
+
 impl Writable for bool {
     #[inline]
     fn write(&self, writer: &mut Writer) {
@@ -326,6 +364,13 @@ impl Writable for i64 {
     #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.i64(*self);
+    }
+}
+
+impl Writable for f32 {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.f32(*self);
     }
 }
 
@@ -600,6 +645,47 @@ pub trait Readable<T> {
     fn read(reader: &mut Reader) -> T;
 }
 
+impl Readable<Vec3> for Vec3 {
+    #[inline]
+    fn read(reader: &mut Reader) -> Vec3 {
+        reader.vec3()
+    }
+}
+
+impl Readable<Vec2> for Vec2 {
+    #[inline]
+    fn read(reader: &mut Reader) -> Vec2 {
+        reader.vec2()
+    }
+}
+
+impl Readable<Uuid> for Uuid {
+    #[inline]
+    fn read(reader: &mut Reader) -> Uuid {
+        reader.uuid()
+    }
+}
+
+impl<T: Readable<T>, const N: usize> Readable<[T; N]> for [T; N] {
+    #[inline]
+    fn read(reader: &mut Reader) -> [T; N] {
+        match (0..N).into_iter().map(|_| T::read(reader)).collect::<Vec<T>>().try_into() {
+            Ok(r) => r,
+            _ => unreachable!(),
+        }
+    }
+}
+
+impl<T: Readable<T>> Readable<Option<T>> for Option<T> {
+    #[inline]
+    fn read(reader: &mut Reader) -> Option<T> {
+        match reader.bool() {
+            true => Some(T::read(reader)),
+            false => None,
+        }
+    }
+}
+
 impl Readable<bool> for bool {
     #[inline]
     fn read(reader: &mut Reader) -> bool {
@@ -660,6 +746,13 @@ impl Readable<i64> for i64 {
     #[inline]
     fn read(reader: &mut Reader) -> i64 {
         reader.i64()
+    }
+}
+
+impl Readable<f32> for f32 {
+    #[inline]
+    fn read(reader: &mut Reader) -> f32 {
+        reader.f32()
     }
 }
 

@@ -3,6 +3,8 @@ use zuri_nbt::Value;
 use zuri_nbt::encoding::NetworkLittleEndian;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
+use zuri_net_derive::packet;
+use crate::proto::ints::VarI32;
 
 use crate::proto::io::{Reader, Writer};
 
@@ -120,48 +122,19 @@ impl BlockEntry {
     }
 }
 
+#[packet]
 #[derive(Debug, Clone)]
 pub struct GenerationFeature {
     name: String,
     json: Bytes,
 }
 
-impl GenerationFeature {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.string(self.name.as_str());
-        writer.byte_slice(&self.json);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            name: reader.string(),
-            json: reader.byte_slice(),
-        }
-    }
-}
-
+#[packet]
 #[derive(Debug, Clone)]
 pub struct DimensionDefinition {
     name: String,
-    range: [i32; 2],
-    generator: i32,
-}
-
-impl DimensionDefinition {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.string(self.name.as_str());
-        writer.var_i32(self.range[0]);
-        writer.var_i32(self.range[1]);
-        writer.var_i32(self.generator);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            name: reader.string(),
-            range: [reader.var_i32(), reader.var_i32()],
-            generator: reader.var_i32(),
-        }
-    }
+    range: [VarI32; 2],
+    generator: VarI32,
 }
 
 #[derive(Debug, Clone)]
@@ -270,42 +243,16 @@ impl SubChunkOffset {
     }
 }
 
+#[packet]
 #[derive(Debug, Clone)]
 pub struct CacheBlob {
     pub hash: u64,
     pub payload: Bytes,
 }
 
-impl CacheBlob {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.u64(self.hash);
-        writer.byte_slice(&self.payload);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            hash: reader.u64(),
-            payload: reader.byte_slice(),
-        }
-    }
-}
-
+#[packet]
 #[derive(Debug, Clone)]
 pub struct ExperimentData {
     pub name: String,
     pub enabled: bool,
-}
-
-impl ExperimentData {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.string(self.name.as_str());
-        writer.bool(self.enabled);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            name: reader.string(),
-            enabled: reader.bool(),
-        }
-    }
 }
