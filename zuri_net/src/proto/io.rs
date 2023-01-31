@@ -278,6 +278,48 @@ impl Writable for u8 {
     }
 }
 
+impl Writable for u16 {
+    fn write(&self, writer: &mut Writer) {
+        writer.u16(*self);
+    }
+}
+
+impl Writable for u32 {
+    fn write(&self, writer: &mut Writer) {
+        writer.u32(*self);
+    }
+}
+
+impl Writable for u64 {
+    fn write(&self, writer: &mut Writer) {
+        writer.u64(*self);
+    }
+}
+
+impl Writable for i8 {
+    fn write(&self, writer: &mut Writer) {
+        writer.i8(*self);
+    }
+}
+
+impl Writable for i16 {
+    fn write(&self, writer: &mut Writer) {
+        writer.i16(*self);
+    }
+}
+
+impl Writable for i32 {
+    fn write(&self, writer: &mut Writer) {
+        writer.i32(*self);
+    }
+}
+
+impl Writable for i64 {
+    fn write(&self, writer: &mut Writer) {
+        writer.i64(*self);
+    }
+}
+
 impl Writable for Bytes {
     fn write(&self, writer: &mut Writer) {
         writer.byte_slice(self);
@@ -556,6 +598,48 @@ impl Readable<bool> for bool {
 impl Readable<u8> for u8 {
     fn read(reader: &mut Reader) -> u8 {
         reader.u8()
+    }
+}
+
+impl Readable<u16> for u16 {
+    fn read(reader: &mut Reader) -> u16 {
+        reader.u16()
+    }
+}
+
+impl Readable<u32> for u32 {
+    fn read(reader: &mut Reader) -> u32 {
+        reader.u32()
+    }
+}
+
+impl Readable<u64> for u64 {
+    fn read(reader: &mut Reader) -> u64 {
+        reader.u64()
+    }
+}
+
+impl Readable<i8> for i8 {
+    fn read(reader: &mut Reader) -> i8 {
+        reader.i8()
+    }
+}
+
+impl Readable<i16> for i16 {
+    fn read(reader: &mut Reader) -> i16 {
+        reader.i16()
+    }
+}
+
+impl Readable<i32> for i32 {
+    fn read(reader: &mut Reader) -> i32 {
+        reader.i32()
+    }
+}
+
+impl Readable<i64> for i64 {
+    fn read(reader: &mut Reader) -> i64 {
+        reader.i64()
     }
 }
 

@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "zuri",
     "zuri_net",
+    "zuri_net_derive",
     "zuri_math",
     "zuri_nbt",
     "zuri_world",

@@ -1,6 +1,7 @@
 pub mod io;
 pub mod packet;
 pub mod types;
+pub mod ints;
 mod r#macro;
 
 pub const CURRENT_PROTOCOL: i32 = 560;
