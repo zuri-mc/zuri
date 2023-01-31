@@ -44,7 +44,7 @@ pub struct LoginSequence<'a> {
 }
 
 #[async_trait]
-impl<'a> Sequence<Result<LoginData, ConnError>> for LoginSequence<'a> {
+impl<'a> Sequence<Result<(), ConnError>> for LoginSequence<'a> {
     async fn execute(self, mut reader: PkReceiver, conn: Arc<Connection>, expectancies: Arc<ExpectedPackets>) -> Result<(), ConnError> {
         // The first bit of the login sequence requires us to request the network settings the
         // server is using from the server. These dictate options for mostly compression, but also

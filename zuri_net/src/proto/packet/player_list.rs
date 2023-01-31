@@ -1,3 +1,4 @@
+use bevy::ecs::schedule::IntoRunCriteria;
 use uuid::Uuid;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
@@ -47,7 +48,7 @@ impl PacketType for PlayerList {
 
 /// An entry found in the PlayerList packet. It represents a single player using the UUID found in
 /// the entry, and contains several properties such as the skin.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub struct PlayerListEntry {
     /// The UUID of the player as sent in the Login packet when the client joined the server. It
     /// must match this UUID exactly for the correct XBOX Live icon to show up in the list.
@@ -95,7 +96,14 @@ impl PlayerListEntry {
     pub fn read(reader: &mut Reader, action: PlayerListAction) -> Self {
         let mut entry = Self {
             uuid: reader.uuid(),
-            ..Default::default()
+            entity_unique_id: 0,
+            username: "".to_string(),
+            xuid: "".to_string(),
+            platform_chat_id: "".to_string(),
+            build_platform: Device::None,
+            skin: Skin::default(),
+            teacher: false,
+            host: false,
         };
         if action == PlayerListAction::Add {
             entry.entity_unique_id = reader.var_i64();

@@ -9,7 +9,7 @@ use crate::proto::types::ability::Ability;
 pub struct RequestAbility {
     /// The ability that the client is requesting.
     pub ability: Ability,
-    /// The value of the ability.
+    // /// The value of the ability.
     //pub value: dyn Any, // TODO
 }
 
