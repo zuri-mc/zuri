@@ -2,8 +2,10 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use std::collections::HashSet;
-use syn::{Data, DeriveInput, Fields, FieldsNamed, parse_macro_input, PathArguments, Type};
+use lazy_static::lazy_static;
+use syn::{Data, DeriveInput, Expr, Fields, FieldsNamed, Lit, parse_macro_input, PathArguments, Type};
 use quote::{format_ident, quote, quote_spanned, TokenStreamExt, ToTokens};
+use regex::Regex;
 use syn::spanned::Spanned;
 
 #[proc_macro_attribute]
@@ -18,10 +20,14 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
 
     let mut write_stream = proc_macro2::TokenStream::new();
     let mut read_stream = proc_macro2::TokenStream::new();
-    let mut read_inner_stream = proc_macro2::TokenStream::new();
+
+    let mut extra_stream = proc_macro2::TokenStream::new();
 
     match &mut input.data {
         Data::Struct(struct_data) => {
+            let mut read_body_stream = proc_macro2::TokenStream::new();
+            let mut read_inner_stream = proc_macro2::TokenStream::new();
+
             let named_fields: &mut FieldsNamed = match &mut struct_data.fields {
                 // In the 'normal' case, a struct will have named fields inside curly brackets `{}`.
                 // This is the main path of execution for this function.
@@ -29,7 +35,7 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                 Fields::Unnamed(f) => return quote_spanned!(f.span()=> compile_error!("Tuple structs are not supported");).into(),
                 // Unit structs do not have fields, so the read and write methods do not have to do
                 // anything.
-                Fields::Unit => return quote!{
+                Fields::Unit => return quote! {
                     #input
 
                     impl crate::proto::io::Writable for #ident {
@@ -61,6 +67,7 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                 // provided in the attribute. The first value is a span of the entire attribute,
                 // which is used to show an error at a certain location.
                 let mut vec_type = None;
+                let mut enum_type = None;
                 let mut attr_remove_queue = Vec::new();
                 for (attr_i, attr) in field.attrs.iter().enumerate() {
                     let path = attr.path.to_token_stream().to_string();
@@ -77,7 +84,7 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                         }
 
                         write_stream.append_all(quote!(<#field_type>::try_from(self.#vec_name.len()).unwrap().write(writer);));
-                        read_stream.append_all(quote!(let #len_var_name = usize::try_from(<#field_type>::read(reader)).unwrap();));
+                        read_body_stream.append_all(quote!(let #len_var_name = usize::try_from(<#field_type>::read(reader)).unwrap();));
                         vector_size_map.insert(vec_name.to_string());
 
                         removal_queue.push(field_i);
@@ -98,6 +105,14 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                         let type_name = syn::parse2::<proc_macro2::Ident>(group.stream()).unwrap();
 
                         vec_type = Some((attr.span(), type_name));
+                        attr_remove_queue.push(attr_i);
+                    }
+                    if path == "enum_header" {
+                        // todo: error handling
+                        let group = syn::parse2::<proc_macro2::Group>(attr.tokens.clone()).unwrap();
+                        let type_name = syn::parse2::<proc_macro2::Ident>(group.stream()).unwrap();
+
+                        enum_type = Some((attr.span(), type_name));
                         attr_remove_queue.push(attr_i);
                     }
                 }
@@ -126,8 +141,11 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                                 continue 'field_loop;
                             }
                             let t = vec_type.unwrap().1;
-                            write_stream.append_all(quote!((#t::try_from(self.#field_ident.len()).unwrap()).write(writer);));
-                            read_stream.append_all(quote!(let #len_var_name = usize::try_from(#t::read(reader)).unwrap();));
+                            write_stream.append_all(quote!((#t::try_from(self.#field_ident.len()).expect("vector exceeds maximum allowed size")).write(writer);));
+                            // Unwrapping when converting from our int type to usize is ok here: if
+                            // the conversion fails, the vector cannot be represented in memory
+                            // anyway.
+                            read_body_stream.append_all(quote!(let #len_var_name = usize::try_from(#t::read(reader)).unwrap();));
                         }
 
                         // This part adds the actual writing/reading of the content of the vector.
@@ -140,8 +158,8 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                             });
 
                             let inner_type = generic_type.args.first().unwrap();
-                            read_stream.append_all(quote! {
-                                let #field_ident = (0..#len_var_name).into_iter().map(|_| #inner_type::read(reader)).collect();
+                            read_body_stream.append_all(quote! {
+                                let #field_ident = (0..#len_var_name).map(|_| #inner_type::read(reader)).collect();
                             });
                             read_inner_stream.append_all(quote!(#field_ident,));
                         } else {
@@ -157,8 +175,14 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                     error_stream.append_all(quote_spanned!(vec_type.unwrap().0=> compile_error!("the `size_type` attribute is only allowed on vectors");));
                 }
 
-                write_stream.append_all(quote!(self.#field_ident.write(writer);));
-                read_stream.append_all(quote!(let #field_ident = <#field_type>::read(reader);));
+                if enum_type.is_some() {
+                    let et = enum_type.unwrap().1;
+                    write_stream.append_all(quote!(<#field_type as crate::proto::io::EnumWritable<#et>>::write(&self.#field_ident, writer);));
+                    read_body_stream.append_all(quote!(let #field_ident = <#field_type as crate::proto::io::EnumReadable<#field_type, #et>>::read(reader);));
+                } else {
+                    write_stream.append_all(quote!(<#field_type as crate::proto::io::Writable>::write(&self.#field_ident, writer);));
+                    read_body_stream.append_all(quote!(let #field_ident = <#field_type as crate::proto::io::Readable<#field_type>>::read(reader);));
+                }
                 read_inner_stream.append_all(quote!(#field_ident,));
             }
             // We can only remove the fields that need to be removed after iterating over them, so
@@ -169,9 +193,86 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                 xi += 1;
                 remove
             }).collect();
+
+            read_stream.append_all(quote! {
+               #read_body_stream
+                Self {
+                    #read_inner_stream
+                }
+            });
         }
         Data::Enum(e) => {
-            error_stream.append_all(quote_spanned!(e.enum_token.span()=> compile_error!("Enunms are not yet supported");))
+            let type_name = syn::parse2::<proc_macro2::Ident>(_attr.clone().into()).unwrap();
+
+            lazy_static! {
+                static ref PRIM_RE: Regex = Regex::new("^(u|i)(8|(16)|(32)|(64)|(128))$").unwrap();
+            };
+            let is_primitive = PRIM_RE.is_match(type_name.to_string().as_str());
+
+            let mut write_match_stream = proc_macro2::TokenStream::new();
+            let mut read_match_stream = proc_macro2::TokenStream::new();
+
+            let mut variant_number = 0i128;
+            for variant in &mut e.variants {
+                let variant_name = &variant.ident;
+                if let Some(discriminant) = variant.discriminant.as_ref() {
+                    if let Expr::Lit(lit) = &discriminant.1 {
+                        if let Lit::Int(int_lit) = &lit.lit {
+                            let val = int_lit.base10_digits().parse().unwrap();
+                            variant_number = val;
+                        }
+                    }
+                }
+
+                let variant_number_token = proc_macro2::Literal::i128_unsuffixed(variant_number);
+                match is_primitive {
+                    false => {
+                        write_match_stream.append_all(quote! {
+                            #ident::#variant_name => D::try_from(#type_name(#variant_number_token)).unwrap().write(writer),
+                        });
+                        read_match_stream.append_all(quote! {
+                            #type_name(#variant_number_token) => #ident::#variant_name,
+                        });
+                    }
+                    true => {
+                        write_match_stream.append_all(quote! {
+                            #ident::#variant_name => D::try_from(#variant_number_token as #type_name).unwrap().write(writer),
+                        });
+                        read_match_stream.append_all(quote! {
+                            #variant_number_token => #ident::#variant_name,
+                        });
+                    }
+                };
+                variant_number += 1;
+            }
+
+            write_stream.append_all(quote! {
+                <#ident as crate::proto::io::EnumWritable<#type_name>>::write(self, writer)
+            });
+            read_stream.append_all(quote! {
+                <#ident as crate::proto::io::EnumReadable<#ident, #type_name>>::read(reader)
+            });
+
+            extra_stream.append_all(quote! {
+                impl<D: crate::proto::io::Writable + TryFrom<#type_name>> crate::proto::io::EnumWritable<D> for #ident
+                where <D as TryFrom<u32>>::Error: std::fmt::Debug {
+                    fn write(&self, writer: &mut crate::proto::io::Writer) {
+                        match self {
+                            #write_match_stream
+                        };
+                    }
+                }
+
+                impl<D: crate::proto::io::Readable<D> + TryInto<#type_name>> crate::proto::io::EnumReadable<#ident, D> for #ident
+                where <D as TryInto<u32>>::Error: std::fmt::Debug {
+                    fn read(reader: &mut crate::proto::io::Reader) -> #ident {
+                        match D::read(reader).try_into().unwrap() {
+                            #read_match_stream
+                            _ => panic!("Unknown enum variant"),
+                        }
+                    }
+                }
+            });
         }
         Data::Union(u) => {
             error_stream.append_all(quote_spanned!(u.union_token.span()=> compile_error!("Unions are not supported");))
@@ -194,9 +295,10 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
         impl crate::proto::io::Readable<#ident> for #ident {
             fn read(reader: &mut crate::proto::io::Reader) -> #ident {
                 #read_stream
-                Self {#read_inner_stream}
             }
         }
+
+        #extra_stream
     };
     tok.into()
 }
