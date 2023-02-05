@@ -1,7 +1,7 @@
 use crate::proto::io::{Readable, Reader, Writable, Writer};
 
 #[derive(Debug, Clone, Copy, Default)]
-pub struct VarU32(u32);
+pub struct VarU32(pub u32);
 
 impl From<usize> for VarU32 {
     fn from(value: usize) -> Self {
@@ -42,7 +42,7 @@ impl Readable<VarU32> for VarU32 {
 }
 
 #[derive(Debug, Clone, Copy, Default)]
-pub struct VarU64(u64);
+pub struct VarU64(pub u64);
 
 impl From<usize> for VarU64 {
     fn from(value: usize) -> Self {
@@ -84,7 +84,7 @@ impl Readable<VarU64> for VarU64 {
 
 
 #[derive(Debug, Clone, Copy, Default)]
-pub struct VarI32(i32);
+pub struct VarI32(pub i32);
 
 impl From<usize> for VarI32 {
     fn from(value: usize) -> Self {
@@ -125,7 +125,7 @@ impl Readable<VarI32> for VarI32 {
 }
 
 #[derive(Debug, Clone, Copy, Default)]
-pub struct VarI64(i64);
+pub struct VarI64(pub i64);
 
 impl From<usize> for VarI64 {
     fn from(value: usize) -> Self {

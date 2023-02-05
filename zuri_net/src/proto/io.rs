@@ -670,7 +670,7 @@ impl Readable<Uuid> for Uuid {
 impl<T: Readable<T>, const N: usize> Readable<[T; N]> for [T; N] {
     #[inline]
     fn read(reader: &mut Reader) -> [T; N] {
-        match (0..N).into_iter().map(|_| T::read(reader)).collect::<Vec<T>>().try_into() {
+        match (0..N).map(|_| T::read(reader)).collect::<Vec<T>>().try_into() {
             Ok(r) => r,
             _ => unreachable!(),
         }
@@ -768,6 +768,59 @@ impl Readable<Bytes> for Bytes {
     #[inline]
     fn read(reader: &mut Reader) -> Bytes {
         reader.bytes()
+    }
+}
+
+// todo
+pub trait EnumWritable<D> {
+    fn write(&self, writer: &mut Writer);
+}
+
+pub trait EnumReadable<T, D> {
+    fn read(reader: &mut Reader) -> T;
+}
+
+#[derive(Clone, Debug)]
+pub struct NBT<E: decode::Reader + encode::Writer> {
+    val: Value,
+    encoding: E,
+}
+
+impl<E: decode::Reader + encode::Writer + Default> NBT<E> {
+    fn new(val: Value) -> Self {
+        Self {val, encoding: E::default()}
+    }
+}
+
+impl<E: decode::Reader + encode::Writer> NBT<E> {
+    fn new_with_encoder(val: Value, encoder: E) -> Self {
+        Self {val, encoding: encoder }
+    }
+}
+
+impl<E: decode::Reader + encode::Writer> Into<Value> for NBT<E> {
+    fn into(self) -> Value {
+        self.val
+    }
+}
+
+impl<E: decode::Reader + encode::Writer + Default> From<Value> for NBT<E> {
+    fn from(value: Value) -> Self {
+        NBT::new(value)
+    }
+}
+
+impl<E: decode::Reader + encode::Writer + Clone> Writable for NBT<E> {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.nbt(&self.val, self.encoding.clone())
+    }
+}
+
+impl<E: decode::Reader + encode::Writer + Default> Readable<NBT<E>> for NBT<E> {
+    #[inline]
+    fn read(reader: &mut Reader) -> NBT<E> {
+        NBT::new(reader.nbt(E::default()))
     }
 }
 
