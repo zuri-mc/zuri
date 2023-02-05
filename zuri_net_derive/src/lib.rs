@@ -3,6 +3,7 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 use std::collections::HashSet;
 use lazy_static::lazy_static;
+use proc_macro2::Ident;
 use syn::{Data, DeriveInput, Expr, Fields, FieldsNamed, Lit, parse_macro_input, PathArguments, Type};
 use quote::{format_ident, quote, quote_spanned, TokenStreamExt, ToTokens};
 use regex::Regex;
@@ -70,25 +71,48 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                 let mut enum_type = None;
                 let mut attr_remove_queue = Vec::new();
                 for (attr_i, attr) in field.attrs.iter().enumerate() {
+                    // Helper function to parse attribute data of the form `(ident)`, and return the
+                    // contained ident, or an error (to write to the error token stream) if parsing
+                    // was unsuccessful.
+                    fn parse_attribute_ident(tokens: proc_macro2::TokenStream) -> Result<proc_macro2::Ident, proc_macro2::TokenStream> {
+                        let group = match syn::parse2::<proc_macro2::Group>(tokens) {
+                            Ok(g) => g,
+                            Err(err) => {
+                                let err_msg = err.to_compile_error();
+                                return Err(quote_spanned!(err.span()=> #err_msg))
+                            },
+                        };
+                        let ident = match syn::parse2::<proc_macro2::Ident>(group.stream()) {
+                            Ok(i) => i,
+                            Err(err) => {
+                                let err_msg = err.to_compile_error();
+                                return Err(quote_spanned!(group.span()=> #err_msg))
+                            },
+                        };
+
+                        Ok(ident)
+                    }
+
                     let path = attr.path.to_token_stream().to_string();
                     if path == "size_for" {
-                        // The vec name with delimiters `(` and `)`
-                        // todo: error handling
-                        let group = syn::parse2::<proc_macro2::Group>(attr.tokens.clone()).unwrap();
-                        let vec_name = syn::parse2::<proc_macro2::Ident>(group.stream()).unwrap();
+                        // Get the vec name with delimiters `(` and `)`
+                        match parse_attribute_ident(attr.tokens.clone()) {
+                            Err(t) => error_stream.append_all(t),
+                            Ok(vec_name) => {
+                                let len_var_name = format_ident!("_{}_len", vec_name);
+                                if vector_size_map.contains(vec_name.to_string().as_str()) {
+                                    let err = format!("duplicate `size_for` for vector `{}`", vec_name);
+                                    error_stream.append_all(quote_spanned!(vec_name.span()=> compile_error!(#err);));
+                                }
 
-                        let len_var_name = format_ident!("_{}_len", vec_name);
-                        if vector_size_map.contains(vec_name.to_string().as_str()) {
-                            let err = format!("duplicate `size_for` for vector `{}`", vec_name);
-                            error_stream.append_all(quote_spanned!(vec_name.span()=> compile_error!(#err);));
-                        }
+                                write_stream.append_all(quote!(<#field_type>::try_from(self.#vec_name.len()).unwrap().write(writer);));
+                                read_body_stream.append_all(quote!(let #len_var_name = usize::try_from(<#field_type>::read(reader)).unwrap();));
+                                vector_size_map.insert(vec_name.to_string());
 
-                        write_stream.append_all(quote!(<#field_type>::try_from(self.#vec_name.len()).unwrap().write(writer);));
-                        read_body_stream.append_all(quote!(let #len_var_name = usize::try_from(<#field_type>::read(reader)).unwrap();));
-                        vector_size_map.insert(vec_name.to_string());
-
-                        removal_queue.push(field_i);
-                        continue 'field_loop;
+                                removal_queue.push(field_i);
+                                continue 'field_loop;
+                            }
+                        };
                     }
                     if path == "size_type" {
                         if vector_size_map.contains(field_ident.to_string().as_str()) {
@@ -100,20 +124,23 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                             let err = format!("Found more than one `size_type` specifier for vector `{}`", field_ident.to_string());
                             error_stream.append_all(quote_spanned!(attr.span()=> compile_error!(#err);));
                         }
-                        // todo: error handling
-                        let group = syn::parse2::<proc_macro2::Group>(attr.tokens.clone()).unwrap();
-                        let type_name = syn::parse2::<proc_macro2::Ident>(group.stream()).unwrap();
 
-                        vec_type = Some((attr.span(), type_name));
-                        attr_remove_queue.push(attr_i);
+                        match parse_attribute_ident(attr.tokens.clone()) {
+                            Err(t) => error_stream.append_all(t),
+                            Ok(type_name) => {
+                                vec_type = Some((attr.span(), type_name));
+                                attr_remove_queue.push(attr_i);
+                            }
+                        }
                     }
                     if path == "enum_header" {
-                        // todo: error handling
-                        let group = syn::parse2::<proc_macro2::Group>(attr.tokens.clone()).unwrap();
-                        let type_name = syn::parse2::<proc_macro2::Ident>(group.stream()).unwrap();
-
-                        enum_type = Some((attr.span(), type_name));
-                        attr_remove_queue.push(attr_i);
+                        match parse_attribute_ident(attr.tokens.clone()) {
+                            Err(t) => error_stream.append_all(t),
+                            Ok(type_name) => {
+                                enum_type = Some((attr.span(), type_name));
+                                attr_remove_queue.push(attr_i);
+                            }
+                        }
                     }
                 }
                 // Remove all the attributes that should be removed. First we make sure that all
@@ -202,25 +229,51 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
             });
         }
         Data::Enum(e) => {
-            let type_name = syn::parse2::<proc_macro2::Ident>(_attr.clone().into()).unwrap();
+            // Get the type name provided in `#[packet(TYPE_NAME)]`.
+            let type_name = match syn::parse2::<proc_macro2::Ident>(_attr.clone().into()) {
+                Ok(t) => t,
+                Err(err) => {
+                    let err_msg = if _attr.is_empty() {
+                        format!("expected default variant type for enum `{}`", ident.to_string())
+                    } else {
+                        format!("unexpected token in default variant type for enum `{}`", ident.to_string())
+                    };
+                    error_stream.append_all(quote_spanned!(err.span()=> compile_error!(#err_msg);));
+                    format_ident!("_")
+                },
+            };
 
+            // Regex used to detect if the default variant type of an enum is a primitive integer
+            // type. This is used to determine how the read and write function should be implemented
+            // for this enum, as the implementation is different when using a builtin type compared
+            // to a user-defined integer type.
             lazy_static! {
                 static ref PRIM_RE: Regex = Regex::new("^(u|i)(8|(16)|(32)|(64)|(128))$").unwrap();
             };
             let is_primitive = PRIM_RE.is_match(type_name.to_string().as_str());
 
+            // Token streams for all the match cases in the read/write implementation.
             let mut write_match_stream = proc_macro2::TokenStream::new();
             let mut read_match_stream = proc_macro2::TokenStream::new();
 
+            // Use an i128 to store the variant number to ensure both i64 and u64 discriminants
+            // work.
             let mut variant_number = 0i128;
             for variant in &mut e.variants {
                 let variant_name = &variant.ident;
+
+                // Check if the variant has an explicit integer discriminant such as the `1` in
+                // `Variant = 1`.
                 if let Some(discriminant) = variant.discriminant.as_ref() {
                     if let Expr::Lit(lit) = &discriminant.1 {
                         if let Lit::Int(int_lit) = &lit.lit {
                             let val = int_lit.base10_digits().parse().unwrap();
                             variant_number = val;
+                        } else {
+                            error_stream.append_all(quote_spanned!(discriminant.1.span()=> compile_error!("explicit enum discriminant must be an int literal");));
                         }
+                    } else {
+                        error_stream.append_all(quote_spanned!(discriminant.1.span()=> compile_error!("explicit enum discriminant must be an int literal");));
                     }
                 }
 
@@ -228,16 +281,25 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                 let mut enum_content = proc_macro2::TokenStream::new();
                 let mut enum_content_read = proc_macro2::TokenStream::new();
                 let mut enum_content_write = proc_macro2::TokenStream::new();
-                for field in &variant.fields {
-                    if !enum_content.is_empty() {
-                        error_stream.append_all(quote_spanned!(variant.fields.span()=> compile_error!("enum variant exceeds the maximum allowed field count of 1");));
-                        break;
-                    }
-                    let field_name = format_ident!("e");
+
+                // Go over all the 'fields' of the variant. For a tuple variant, this would be the
+                // Type1, Type2, etc in `MyVariant(Type1, Type2)`. First checks if the fields are
+                // named (in the form of {}), as this is not supported.
+                if let Fields::Named(_) = &variant.fields {
+                    error_stream.append_all(quote_spanned!(variant.fields.span()=> compile_error!("enum variant cannot have named fields");));
+                }
+                for (field_num, field) in variant.fields.iter().enumerate() {
+                    let field_name = format_ident!("e_{}", field_num);
                     let field_type = &field.ty;
-                    enum_content.append_all(quote!((#field_name)));
-                    enum_content_write.append_all(quote!(e.write(writer);));
-                    enum_content_read.append_all(quote!((#field_type::read(reader))));
+                    enum_content.append_all(quote!(#field_name,));
+                    enum_content_write.append_all(quote!(#field_name.write(writer);));
+                    enum_content_read.append_all(quote!(#field_type::read(reader),));
+                }
+                if !enum_content.is_empty() {
+                    enum_content = quote!((#enum_content));
+                }
+                if !enum_content_read.is_empty() {
+                    enum_content_read = quote!((#enum_content_read));
                 }
                 match is_primitive {
                     false => {
@@ -266,6 +328,7 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                 variant_number += 1;
             }
 
+            // Write the default Writable and Readable function bodies.
             write_stream.append_all(quote! {
                 <#ident as crate::proto::io::EnumWritable<#type_name>>::write(self, writer)
             });

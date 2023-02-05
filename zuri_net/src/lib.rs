@@ -55,6 +55,7 @@ mod tests {
         Variant1(Data1),
         Variant2(Data2),
         Variant3,
+        Variant4(Data1, Data2),
     }
 
     #[packet]
