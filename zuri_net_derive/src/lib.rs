@@ -275,7 +275,7 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
 
             extra_stream.append_all(quote! {
                 impl<D: crate::proto::io::Writable + TryFrom<#type_name>> crate::proto::io::EnumWritable<D> for #ident
-                where <D as TryFrom<u32>>::Error: std::fmt::Debug {
+                where <D as TryFrom<#type_name>>::Error: std::fmt::Debug {
                     fn write(&self, writer: &mut crate::proto::io::Writer) {
                         match self {
                             #write_match_stream
@@ -284,7 +284,7 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                 }
 
                 impl<D: crate::proto::io::Readable<D> + TryInto<#type_name>> crate::proto::io::EnumReadable<#ident, D> for #ident
-                where <D as TryInto<u32>>::Error: std::fmt::Debug {
+                where <D as TryInto<#type_name>>::Error: std::fmt::Debug {
                     fn read(reader: &mut crate::proto::io::Reader) -> #ident {
                         match D::read(reader).try_into().unwrap() {
                             #read_match_stream

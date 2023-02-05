@@ -1,11 +1,9 @@
 use glam::Vec3;
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use zuri_net_derive::packet;
+use crate::proto::ints::VarU64;
 
-use crate::proto::io::{Reader, Writer};
-use crate::proto::packet::PacketType;
-
-#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
+#[packet(u8)]
+#[derive(Debug, Clone)]
 pub enum RespawnState {
     SearchingForSpawn,
     ReadyToSpawn,
@@ -16,6 +14,7 @@ pub enum RespawnState {
 /// PlayerAction packet with the action type Respawn. As of 1.13, the server sends two of these
 /// packets with different states, and the client sends one of these back in order to complete the
 /// respawn.
+#[packet]
 #[derive(Debug, Clone)]
 pub struct Respawn {
     /// The position on which the player should be respawned. The position might be in a different
@@ -26,21 +25,5 @@ pub struct Respawn {
     pub state: RespawnState,
     /// The entity runtime ID of the player that the respawn packet concerns. This is apparently for
     /// the server to recognise which player sends this packet.
-    pub entity_runtime_id: u64,
-}
-
-impl PacketType for Respawn {
-    fn write(&self, writer: &mut Writer) {
-        writer.vec3(self.position);
-        writer.u8(self.state.to_u8().unwrap());
-        writer.var_u64(self.entity_runtime_id);
-    }
-
-    fn read(reader: &mut Reader) -> Self {
-        Self {
-            position: reader.vec3(),
-            state: RespawnState::from_u8(reader.u8()).unwrap(),
-            entity_runtime_id: reader.var_u64(),
-        }
-    }
+    pub entity_runtime_id: VarU64,
 }
