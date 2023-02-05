@@ -49,4 +49,17 @@ mod tests {
         let mut w = Writer::new(0);
         <EnumPacket as EnumWritable<VarU32>>::write(&pk, &mut w);
     }
+
+    #[packet(u32)]
+    enum DataEnumPacket {
+        Variant1(Data1),
+        Variant2(Data2),
+        Variant3,
+    }
+
+    #[packet]
+    struct Data1;
+    #[packet]
+    struct Data2;
+
 }

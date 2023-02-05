@@ -225,21 +225,41 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                 }
 
                 let variant_number_token = proc_macro2::Literal::i128_unsuffixed(variant_number);
+                let mut enum_content = proc_macro2::TokenStream::new();
+                let mut enum_content_read = proc_macro2::TokenStream::new();
+                let mut enum_content_write = proc_macro2::TokenStream::new();
+                for field in &variant.fields {
+                    if !enum_content.is_empty() {
+                        error_stream.append_all(quote_spanned!(variant.fields.span()=> compile_error!("enum variant exceeds the maximum allowed field count of 1");));
+                        break;
+                    }
+                    let field_name = format_ident!("e");
+                    let field_type = &field.ty;
+                    enum_content.append_all(quote!((#field_name)));
+                    enum_content_write.append_all(quote!(e.write(writer);));
+                    enum_content_read.append_all(quote!((#field_type::read(reader))));
+                }
                 match is_primitive {
                     false => {
                         write_match_stream.append_all(quote! {
-                            #ident::#variant_name => D::try_from(#type_name(#variant_number_token)).unwrap().write(writer),
+                            #ident::#variant_name #enum_content => {
+                                D::try_from(#type_name(#variant_number_token)).unwrap().write(writer);
+                                #enum_content_write
+                            },
                         });
                         read_match_stream.append_all(quote! {
-                            #type_name(#variant_number_token) => #ident::#variant_name,
+                            #type_name(#variant_number_token) => #ident::#variant_name #enum_content_read,
                         });
                     }
                     true => {
                         write_match_stream.append_all(quote! {
-                            #ident::#variant_name => D::try_from(#variant_number_token as #type_name).unwrap().write(writer),
+                            #ident::#variant_name #enum_content => {
+                                D::try_from(#variant_number_token as #type_name).unwrap().write(writer);
+                                #enum_content_write
+                            },
                         });
                         read_match_stream.append_all(quote! {
-                            #variant_number_token => #ident::#variant_name,
+                            #variant_number_token => #ident::#variant_name #enum_content_read,
                         });
                     }
                 };
