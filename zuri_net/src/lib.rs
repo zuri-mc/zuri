@@ -1,5 +1,3 @@
-#![feature(associated_type_bounds)]
-
 extern crate core;
 
 pub mod client;
