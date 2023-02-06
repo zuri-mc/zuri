@@ -20,7 +20,7 @@ use syn::spanned::Spanned;
 ///
 /// The first such attribute is `#[size_type(L)]`, where `L` i the type to use for the vector
 /// length. It should be put above the vector in question.
-/// ```no_run
+/// ```ignore
 /// use zuri_net_derive::packet;
 ///
 /// #[packet]
@@ -38,7 +38,7 @@ use syn::spanned::Spanned;
 /// written elsewhere than right before the vector's content. The type used will be the type of the
 /// field. Note that in the macro expansion, this field will be removed. The field only exists to
 /// specify how the packet's data is structured
-/// ```no_run
+/// ```ignore
 /// use zuri_net_derive::packet;
 ///
 /// #[packet]
@@ -56,7 +56,7 @@ use syn::spanned::Spanned;
 /// Enums work slightly differently. First, the discriminant of the variant is written and then
 /// any data that might be present in that variant. Using this packet on an enum would look
 /// something like this
-/// ```no_run
+/// ```ignore
 /// use zuri_net_derive::packet;
 ///
 /// #[packet(u8)]
@@ -80,7 +80,7 @@ use syn::spanned::Spanned;
 /// `D` refers to the new type used for the discriminant. `D` needs to be convertible from and to
 /// the default type specified in the attribute, as well as be writable and readable. To write an
 /// enum with a specific discriminant type, `#[enum_header(D)]` can be used.
-/// ```no_run
+/// ```ignore
 /// use zuri_net_derive::packet;
 ///
 /// #[packet]

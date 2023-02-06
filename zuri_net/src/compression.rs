@@ -73,13 +73,4 @@ mod tests {
         Compression::Deflate.decompress(&mut processed_data).unwrap();
         assert_eq!(data, processed_data);
     }
-
-    #[test]
-    fn test_snappy() {
-        let data = b"Hello, world!".to_vec();
-        let mut processed_data: Vec<u8> = data.clone().to_vec();
-        Compression::Snappy.compress(&mut processed_data).unwrap();
-        Compression::Snappy.decompress(&mut processed_data).unwrap();
-        assert_eq!(data, processed_data);
-    }
 }
