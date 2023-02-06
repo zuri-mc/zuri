@@ -176,6 +176,10 @@ pub struct StartGame {
     /// Specifies if experimental gameplay should be force enabled. For servers, this should always
     /// be set to false.
     pub force_experimental_gameplay: Option<bool>,
+    /// Specifies the level of restriction on in-game chat.
+    pub chat_restriction_level: ChatRestrictionLevel,
+    /// Specifies if the client should ignore other players when interacting with the world.
+    pub disable_player_interactions: bool,
     /// Base64 encoded world ID that is used to identify the world.
     pub level_id: String,
     /// The name of the world that the player is joining. Note that this field shows up above the
@@ -219,16 +223,12 @@ pub struct StartGame {
     /// Checksum to ensure block states between the server and client match. This can simply be left
     /// empty, and the client will avoid trying to verify it.
     pub server_block_state_checksum: u64,
-    /// Specifies if the client should use the features registered in the FeatureRegistry packet to
-    /// generate terrain client-side to save on bandwidth.
-    pub client_side_generation: bool,
     /// UUID that identifies the template that was used to generate the world. Servers that do not
     /// use a world based off of a template can set this to an empty UUID.
     pub world_template_id: Uuid,
-    /// Specifies the level of restriction on in-game chat.
-    pub chat_restriction_level: ChatRestrictionLevel,
-    /// Specifies if the client should ignore other players when interacting with the world.
-    pub disable_player_interactions: bool,
+    /// Specifies if the client should use the features registered in the FeatureRegistry packet to
+    /// generate terrain client-side to save on bandwidth.
+    pub client_side_generation: bool,
 }
 
 #[packet(i16)]
