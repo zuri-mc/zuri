@@ -5,7 +5,7 @@ use crate::proto::ints::{VarU32, VarU64};
 /// Sent by the server to animate an entity client-side. It may be used to play a single animation,
 /// or to activate a controller which can start a sequence of animations based on different
 /// conditions specified in an animation controller.
-/// https://minecraft.gamepedia.com/Bedrock_Edition_beta_animation_documentation
+/// <https://minecraft.gamepedia.com/Bedrock_Edition_beta_animation_documentation>
 #[packet]
 #[derive(Debug, Clone)]
 pub struct AnimateEntity {

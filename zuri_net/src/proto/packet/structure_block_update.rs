@@ -16,7 +16,7 @@ pub struct StructureBlockUpdate {
     /// export the structure to a file.
     pub structure_name: String,
     /// The name of a function to run, usually used during natural generation. A description can be
-    /// found here: https://minecraft.gamepedia.com/Structure_Block#Data.
+    /// found here: <https://minecraft.gamepedia.com/Structure_Block#Data>.
     pub data_field: String,
     /// Specifies if the 'Include Players' toggle has been enabled, meaning players are also
     /// exported by the structure block.

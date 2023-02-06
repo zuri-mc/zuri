@@ -12,7 +12,7 @@ pub struct NPCDialogue {
     /// The dialogue text that the client should see.
     pub dialogue: String,
     /// The identifier of the scene. If this is left empty, the client will use the last scene sent
-    /// to it. (https://docs.microsoft.com/en-us/minecraft/creator/documents/npcdialogue)
+    /// to it. (<https://docs.microsoft.com/en-us/minecraft/creator/documents/npcdialogue>)
     pub scene_name: String,
     /// The name of the NPC to be displayed to the client.
     pub npc_name: String,

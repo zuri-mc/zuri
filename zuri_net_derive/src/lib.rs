@@ -8,9 +8,11 @@ use quote::{format_ident, quote, quote_spanned, TokenStreamExt, ToTokens};
 use regex::Regex;
 use syn::spanned::Spanned;
 
-/// Implements `Readable<T>` and `Writable` for a type named `T`. For a struct, it does so by
-/// looking at its fields and writing/reading them in the order they are defined. All of these
-/// fields must also implement `Readable<S>` and `Writable` for a field with type `S`.
+/// Implements `Readable<T>` and `Writable` for a type named `T`.
+///
+/// For a struct, it does so by looking at its fields and writing/reading them in the order they are
+/// defined. All of these fields must also implement `Readable<S>` and `Writable` for a field with
+/// type `S`.
 ///
 /// Vectors are a special case. They do not implement Readable or Writable by themselves, but can
 /// still be written of its content does. These vectors do require an attribute to specify what type
