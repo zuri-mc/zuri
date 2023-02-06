@@ -8,6 +8,92 @@ use quote::{format_ident, quote, quote_spanned, TokenStreamExt, ToTokens};
 use regex::Regex;
 use syn::spanned::Spanned;
 
+/// Implements `Readable<T>` and `Writable` for a type named `T`. For a struct, it does so by
+/// looking at its fields and writing/reading them in the order they are defined. All of these
+/// fields must also implement `Readable<S>` and `Writable` for a field with type `S`.
+///
+/// Vectors are a special case. They do not implement Readable or Writable by themselves, but can
+/// still be written of its content does. These vectors do require an attribute to specify what type
+/// to use to write the length of the vector. This type needs to be convertable from and to usize.
+///
+/// The first such attribute is `#[size_type(L)]`, where `L` i the type to use for the vector
+/// length. It should be put above the vector in question.
+/// ```no_run
+/// use zuri_net_derive::packet;
+///
+/// #[packet]
+/// pub struct PacketWithVec {
+///     #[size_type(u8)]
+///     pub vec: Vec<String>
+/// }
+/// ```
+/// This vector will use a u8 to write / read its length. Does not affect how String is read or
+/// written.
+///
+/// The other attribute that can be used is `#[size_for(V)]`, which, unlike the previous attribute,
+/// should be used on a field before the actual field with the vector (named `V`). It will make
+/// previous field in a packet act like it is the size of that vector, allowing the size to be
+/// written elsewhere than right before the vector's content. The type used will be the type of the
+/// field. Note that in the macro expansion, this field will be removed. The field only exists to
+/// specify how the packet's data is structured
+/// ```no_run
+/// use zuri_net_derive::packet;
+///
+/// #[packet]
+/// pub struct PacketWithVec {
+///     #[size_for(vec)]
+///     __: u16,
+///     pub some_field: f32,
+///     pub vec: Vec<String>
+/// }
+/// ```
+/// Note that the vector length is written with a u16 here. The field is named `__`, but it can have
+/// any name (as it will be removed anyway). This also means that multiple size_for fields can be
+/// named the same.
+///
+/// Enums work slightly differently. First, the discriminant of the variant is written and then
+/// any data that might be present in that variant. Using this packet on an enum would look
+/// something like this
+/// ```no_run
+/// use zuri_net_derive::packet;
+///
+/// #[packet(u8)]
+/// #[repr(u8)]
+/// pub enum EnumPacket {
+///     Variant1,
+///     Variant2(Data),
+///     Variant3(Data, Data, f32) = 7,
+/// }
+///
+/// #[packet]
+/// pub struct Data;
+/// ```
+/// Here is can be seen that the macro has an extra parameters for enums: the size to use to write
+/// and read the discriminant. Variants can also contain any amount of unnamed fields or have an
+/// explicit discriminant.
+///
+/// Sometimes, enum discriminants are written with a different type for the same enum in the
+/// minecraft protocol (for some reason). This is also supported. When using this macro on an enum
+/// `T`, it automatically implements `EnumReadable<T, D>` and `EnumWritable<D>` for that enum, where
+/// `D` refers to the new type used for the discriminant. `D` needs to be convertible from and to
+/// the default type specified in the attribute, as well as be writable and readable. To write an
+/// enum with a specific discriminant type, `#[enum_header(D)]` can be used.
+/// ```no_run
+/// use zuri_net_derive::packet;
+///
+/// #[packet]
+/// pub struct PacketWithEnum {
+///     #[enum_header(u16)]
+///     pub my_enum: MyEnum,
+/// }
+///
+/// #[packet(u8)]
+/// pub enum MyEnum {
+///     V1, V2
+/// }
+/// ```
+/// In this example `MyEnum`, which is usually written with `u8` when no `enum_header` is specified,
+/// will be written using a `u16`.
 #[proc_macro_attribute]
 pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
     let mut input = parse_macro_input!(_item as DeriveInput);
