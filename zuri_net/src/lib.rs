@@ -14,8 +14,6 @@ pub mod chan;
 mod tests {
     use zuri_net_derive::packet;
     use crate::proto::ints::VarU32;
-    use crate::proto::io::{EnumReadable, EnumWritable, Writable, Writer};
-    use crate::proto::io::Readable;
 
     #[packet]
     struct TestPacket {
@@ -42,12 +40,6 @@ mod tests {
         Variant3,
         Variant4 = 83,
         Variant5,
-    }
-
-    fn temp_test_enums() {
-        let pk = EnumPacket::Variant1;
-        let mut w = Writer::new(0);
-        <EnumPacket as EnumWritable<VarU32>>::write(&pk, &mut w);
     }
 
     #[packet(u32)]

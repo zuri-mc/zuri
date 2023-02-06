@@ -1,19 +1,17 @@
-use std::collections::HashMap;
-
 use glam::Vec3;
-use num_traits::{FromPrimitive, ToPrimitive};
 use uuid::Uuid;
+use zuri_net_derive::packet;
+use crate::proto::ints::{VarU64, VarU32};
 
-use crate::proto::io::{Reader, Writer};
-use crate::proto::packet::PacketType;
 use crate::proto::types::ability::AbilityData;
 use crate::proto::types::device::Device;
-use crate::proto::types::entity_data::{EntityDataEntry, EntityProperties};
+use crate::proto::types::entity_data::{EntityMetadata, EntityProperties};
 use crate::proto::types::item::ItemInstance;
 use crate::proto::types::world::{EntityLink, GameType};
 
 /// Sent by the server to the client to make a player entity show up client-side. It is one of the
 /// few entities that cannot be sent using the AddActor packet.
+#[packet]
 #[derive(Debug, Clone)]
 pub struct AddPlayer {
     /// The UUID of the player. It is the same UUID that the client sent in the Login packet at the
@@ -25,7 +23,7 @@ pub struct AddPlayer {
     pub username: String,
     /// The runtime ID of the player. The runtime ID is unique for each world session, and entities
     /// are generally identified in packets using this runtime ID.
-    pub entity_runtime_id: u64,
+    pub entity_runtime_id: VarU64,
     /// An identifier only set for particular platforms when chatting (presumably only for Nintendo
     /// Switch). It is otherwise an empty string, and is used to decide which players are able to
     /// chat with each other.
@@ -53,7 +51,7 @@ pub struct AddPlayer {
     /// A map of entity metadata, which includes flags and data properties that alter in particular
     /// the way the player looks. Flags include ones such as 'on fire' and 'sprinting'. The meta
     /// values are indexed by their property key.
-    pub entity_metadata: HashMap<u32, EntityDataEntry>,
+    pub entity_metadata: EntityMetadata,
     /// A list of properties that the entity inhibits. These properties define specific attributes
     /// of the entity.
     pub entity_properties: EntityProperties,
@@ -63,6 +61,7 @@ pub struct AddPlayer {
     /// A list of entity links that are currently active on the player. These links alter the way
     /// the player shows up when first spawned in terms of it shown as riding an entity. Setting
     /// these links is important for new viewers to see the player is riding another entity.
+    #[size_type(VarU32)]
     pub entity_links: Vec<EntityLink>,
     /// The device ID set in one of the files found in the storage of the device of the player. It
     /// may be changed freely, so it should not be relied on for anything.
@@ -70,63 +69,4 @@ pub struct AddPlayer {
     /// The build platform/device OS of the player that is about to be added, as sent in the Login
     /// packet.
     pub build_platform: Device,
-}
-
-impl PacketType for AddPlayer {
-    fn write(&self, writer: &mut Writer) {
-        writer.uuid(self.uuid);
-        writer.string(self.username.as_str());
-        writer.var_u64(self.entity_runtime_id);
-        writer.string(self.platform_chat_id.as_str());
-
-        writer.vec3(self.position);
-        writer.vec3(self.velocity);
-
-        writer.f32(self.pitch);
-        writer.f32(self.yaw);
-        writer.f32(self.head_yaw);
-
-        self.held_item.write(writer);
-
-        writer.var_i32(self.game_type.to_i32().unwrap());
-        writer.entity_metadata(&self.entity_metadata);
-        self.entity_properties.write(writer);
-        self.ability_data.write(writer);
-
-        writer.var_u32(self.entity_links.len() as u32);
-        self.entity_links.iter().for_each(|link| link.write(writer));
-
-        writer.string(self.device_id.as_str());
-        writer.i32(self.build_platform.to_i32().unwrap());
-    }
-
-    fn read(reader: &mut Reader) -> Self {
-        Self {
-            uuid: reader.uuid(),
-            username: reader.string(),
-            entity_runtime_id: reader.var_u64(),
-            platform_chat_id: reader.string(),
-
-            position: reader.vec3(),
-            velocity: reader.vec3(),
-
-            pitch: reader.f32(),
-            yaw: reader.f32(),
-            head_yaw: reader.f32(),
-
-            held_item: ItemInstance::read(reader),
-
-            game_type: GameType::from_i32(reader.var_i32()).unwrap(),
-
-            entity_metadata: reader.entity_metadata(),
-            entity_properties: EntityProperties::read(reader),
-
-            ability_data: AbilityData::read(reader),
-
-            entity_links: (0..reader.var_u32()).map(|_| EntityLink::read(reader)).collect(),
-
-            device_id: reader.string(),
-            build_platform: Device::from_i32(reader.i32()).unwrap(),
-        }
-    }
 }

@@ -1,6 +1,6 @@
 use crate::proto::io::{Readable, Reader, Writable, Writer};
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Ord, PartialOrd)]
 pub struct VarU32(pub u32);
 
 impl From<usize> for VarU32 {
@@ -27,6 +27,30 @@ impl From<VarU32> for u32 {
     }
 }
 
+impl From<u8> for VarU32 {
+    fn from(value: u8) -> Self {
+        Self(value as u32)
+    }
+}
+
+impl From<VarU32> for u8 {
+    fn from(value: VarU32) -> Self {
+        value.0 as u8
+    }
+}
+
+impl From<VarI32> for VarU32 {
+    fn from(value: VarI32) -> Self {
+        Self(value.0 as u32)
+    }
+}
+
+impl From<VarU64> for VarU32 {
+    fn from(value: VarU64) -> Self {
+        Self(value.0 as u32)
+    }
+}
+
 impl Writable for VarU32 {
     #[inline]
     fn write(&self, writer: &mut Writer) {
@@ -41,7 +65,7 @@ impl Readable<VarU32> for VarU32 {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Ord, PartialOrd)]
 pub struct VarU64(pub u64);
 
 impl From<usize> for VarU64 {
@@ -68,6 +92,12 @@ impl From<VarU64> for u64 {
     }
 }
 
+impl From<VarU32> for VarU64 {
+    fn from(value: VarU32) -> Self {
+        Self(value.0 as u64)
+    }
+}
+
 impl Writable for VarU64 {
     #[inline]
     fn write(&self, writer: &mut Writer) {
@@ -83,7 +113,7 @@ impl Readable<VarU64> for VarU64 {
 }
 
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Ord, PartialOrd)]
 pub struct VarI32(pub i32);
 
 impl From<usize> for VarI32 {
@@ -110,6 +140,12 @@ impl From<VarI32> for i32 {
     }
 }
 
+impl From<VarU32> for VarI32 {
+    fn from(value: VarU32) -> Self {
+        Self(value.0 as i32)
+    }
+}
+
 impl Writable for VarI32 {
     #[inline]
     fn write(&self, writer: &mut Writer) {
@@ -124,7 +160,7 @@ impl Readable<VarI32> for VarI32 {
     }
 }
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Ord, PartialOrd)]
 pub struct VarI64(pub i64);
 
 impl From<usize> for VarI64 {
@@ -162,5 +198,34 @@ impl Readable<VarI64> for VarI64 {
     #[inline]
     fn read(reader: &mut Reader) -> VarI64 {
         Self(reader.var_i64())
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Ord, PartialOrd)]
+pub struct I32BE(pub i32);
+
+impl From<i32> for I32BE {
+    fn from(value: i32) -> Self {
+        Self(value)
+    }
+}
+
+impl Into<i32> for I32BE {
+    fn into(self) -> i32 {
+        self.0
+    }
+}
+
+impl Writable for I32BE {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.i32_be(self.0);
+    }
+}
+
+impl Readable<I32BE> for I32BE {
+    #[inline]
+    fn read(reader: &mut Reader) -> I32BE {
+        Self(reader.i32_be())
     }
 }

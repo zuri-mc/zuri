@@ -1,9 +1,10 @@
 use std::io::{Read, Write};
 
 use bytes::Buf;
-use num_derive::{FromPrimitive, ToPrimitive};
+use zuri_net_derive::packet;
 
-#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
+#[packet(u16)]
+#[derive(Debug, Copy, Clone)]
 pub enum Compression {
     Deflate,
     Snappy,

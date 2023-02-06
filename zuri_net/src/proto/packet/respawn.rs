@@ -2,14 +2,6 @@ use glam::Vec3;
 use zuri_net_derive::packet;
 use crate::proto::ints::VarU64;
 
-#[packet(u8)]
-#[derive(Debug, Clone)]
-pub enum RespawnState {
-    SearchingForSpawn,
-    ReadyToSpawn,
-    ClientReadyToSpawn,
-}
-
 /// Sent by the server to make a player respawn client-side. It is sent in response to a
 /// PlayerAction packet with the action type Respawn. As of 1.13, the server sends two of these
 /// packets with different states, and the client sends one of these back in order to complete the
@@ -26,4 +18,12 @@ pub struct Respawn {
     /// The entity runtime ID of the player that the respawn packet concerns. This is apparently for
     /// the server to recognise which player sends this packet.
     pub entity_runtime_id: VarU64,
+}
+
+#[packet(u8)]
+#[derive(Debug, Clone)]
+pub enum RespawnState {
+    SearchingForSpawn,
+    ReadyToSpawn,
+    ClientReadyToSpawn,
 }

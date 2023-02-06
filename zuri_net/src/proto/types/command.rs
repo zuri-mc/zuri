@@ -2,8 +2,9 @@ use std::collections::BTreeMap;
 
 use bytes::Bytes;
 use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
 use uuid::Uuid;
+use zuri_net_derive::packet;
+use crate::proto::ints::VarU32;
 
 use crate::proto::io::{Reader, Writer};
 
@@ -42,6 +43,7 @@ pub enum CommandConstraint {
     HostPermissions,
 }
 
+#[packet(VarU32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum CommandOriginType {
     Player,
@@ -62,6 +64,7 @@ pub enum CommandOriginType {
     Executor,
 }
 
+#[packet(u8)]
 #[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum CommandOutputType {
     None,
@@ -71,6 +74,7 @@ pub enum CommandOutputType {
     DataSet,
 }
 
+#[packet(VarU32)]
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum CommandPermissionLevel {
     Normal,
@@ -81,7 +85,8 @@ pub enum CommandPermissionLevel {
     Internal,
 }
 
-#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
+#[packet(u8)]
+#[derive(Debug, Clone)]
 pub enum SoftEnumAction {
     Add,
     Remove,
@@ -194,30 +199,13 @@ impl CommandEnumConstraint {
     }
 }
 
+#[packet]
 #[derive(Debug, Clone)]
 pub struct CommandOrigin {
     pub origin: CommandOriginType,
     pub uuid: Uuid,
     pub request_id: String,
     pub player_unique_id: i64,
-}
-
-impl CommandOrigin {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_u32(self.origin.to_u32().unwrap());
-        writer.uuid(self.uuid);
-        writer.string(self.request_id.as_str());
-        writer.i64(self.player_unique_id);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            origin: CommandOriginType::from_u32(reader.var_u32()).unwrap(),
-            uuid: reader.uuid(),
-            request_id: reader.string(),
-            player_unique_id: reader.i64(),
-        }
-    }
 }
 
 #[derive(Debug, Clone)]

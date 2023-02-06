@@ -1,6 +1,6 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::io::{Reader, Writer};
+use crate::proto::io::{Reader, Readable, Writer, Writable};
 use crate::proto::packet::PacketType;
 use crate::proto::types::command::{CommandOrigin, CommandOutputMessage, CommandOutputType};
 

@@ -147,7 +147,7 @@ impl<'a> LoginSequence<'a> {
 
     async fn adapt_network_settings(&self, reader: &mut PkReceiver, conn: &Connection) -> Result<(), ConnError> {
         conn.write_packet(&mut RequestNetworkSettings {
-            client_protocol: CURRENT_PROTOCOL,
+            client_protocol: CURRENT_PROTOCOL.into(),
         }.into()).await;
         conn.flush().await?;
 
@@ -215,7 +215,7 @@ impl<'a> LoginSequence<'a> {
         };
 
         conn.write_packet(&mut Login {
-            client_protocol: CURRENT_PROTOCOL,
+            client_protocol: CURRENT_PROTOCOL.into(),
             connection_request: request.encode().into(),
         }.into()).await;
         conn.flush().await?;
@@ -255,7 +255,7 @@ impl<'a> LoginSequence<'a> {
         ).unwrap();
 
         // TODO: Store rest of game data and update shield ID.
-        *rid = start_game.entity_runtime_id;
+        *rid = start_game.entity_runtime_id.into();
 
         // We need to request a sample radius of chunks around the player in order for the server
         // to allow us to spawn in. This is a bit of a hack, but it's necessary.

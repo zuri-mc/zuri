@@ -1,5 +1,6 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
+use zuri_net_derive::packet;
 
 use crate::proto::io::{Reader, Writer};
 
@@ -84,28 +85,11 @@ impl AttributeModifier {
     }
 }
 
+#[packet]
 #[derive(Debug, Clone, Default)]
 pub struct AttributeValue {
     pub name: String,
     pub min: f32,
     pub value: f32,
     pub max: f32,
-}
-
-impl AttributeValue {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.string(self.name.as_str());
-        writer.f32(self.min);
-        writer.f32(self.value);
-        writer.f32(self.max);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            name: reader.string(),
-            min: reader.f32(),
-            value: reader.f32(),
-            max: reader.f32(),
-        }
-    }
 }

@@ -6,11 +6,7 @@ use bytes::{
     Bytes,
     BytesMut,
 };
-use glam::{
-    IVec3,
-    Vec2,
-    Vec3,
-};
+use glam::{IVec2, IVec3, Vec2, Vec3};
 use num_traits::{FromPrimitive, ToPrimitive};
 use uuid::Uuid;
 
@@ -295,6 +291,14 @@ impl Writable for Vec2 {
     #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.vec2(*self);
+    }
+}
+
+impl Writable for IVec2 {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.var_i32(self.x);
+        writer.var_i32(self.y);
     }
 }
 
@@ -660,6 +664,13 @@ impl Readable<Vec2> for Vec2 {
     }
 }
 
+impl Readable<IVec2> for IVec2 {
+    #[inline]
+    fn read(reader: &mut Reader) -> IVec2 {
+        IVec2::new(reader.var_i32(), reader.var_i32())
+    }
+}
+
 impl Readable<Uuid> for Uuid {
     #[inline]
     fn read(reader: &mut Reader) -> Uuid {
@@ -793,6 +804,7 @@ impl<E: decode::Reader + encode::Writer + Default> NBT<E> {
 }
 
 impl<E: decode::Reader + encode::Writer> NBT<E> {
+    #![allow(unused)]
     fn new_with_encoder(val: Value, encoder: E) -> Self {
         Self {val, encoding: encoder }
     }
@@ -821,6 +833,78 @@ impl<E: decode::Reader + encode::Writer + Default> Readable<NBT<E>> for NBT<E> {
     #[inline]
     fn read(reader: &mut Reader) -> NBT<E> {
         NBT::new(reader.nbt(E::default()))
+    }
+}
+
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+pub struct UBlockPos {
+    pub x: i32,
+    pub y: u32,
+    pub z: i32,
+}
+
+impl Writable for UBlockPos {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.var_i32(self.x);
+        writer.var_u32(self.y);
+        writer.var_i32(self.z);
+    }
+}
+
+impl Readable<UBlockPos> for UBlockPos {
+    #[inline]
+    fn read(reader: &mut Reader) -> UBlockPos {
+        Self {
+            x: reader.var_i32(),
+            y: reader.var_u32(),
+            z: reader.var_i32(),
+        }
+    }
+}
+
+impl Into<IVec3> for UBlockPos {
+    fn into(self) -> IVec3 {
+        IVec3::new(self.x, self.y as i32, self.z)
+    }
+}
+
+impl From<IVec3> for UBlockPos {
+    fn from(value: IVec3) -> Self {
+        Self {
+            x: value.x,
+            y: value.y as u32,
+            z: value.z,
+        }
+    }
+}
+
+#[derive(Default, Copy, Clone, Debug, PartialEq, Eq)]
+pub struct BlockPos(pub IVec3);
+
+impl Writable for BlockPos {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.block_pos(self.0)
+    }
+}
+
+impl Readable<BlockPos> for BlockPos {
+    #[inline]
+    fn read(reader: &mut Reader) -> BlockPos {
+        Self(reader.block_pos())
+    }
+}
+
+impl Into<IVec3> for BlockPos {
+    fn into(self) -> IVec3 {
+        self.0
+    }
+}
+
+impl From<IVec3> for BlockPos {
+    fn from(value: IVec3) -> Self {
+        Self(value)
     }
 }
 

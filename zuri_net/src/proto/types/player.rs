@@ -1,9 +1,12 @@
 use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
+use zuri_net_derive::packet;
+use crate::proto::ints::VarI32;
 
 use crate::proto::io::{Reader, Writer};
 
+#[packet(VarI32)]
 #[derive(Debug, Clone, Copy, FromPrimitive, ToPrimitive)]
 pub enum PlayerActionType {
     StartBreak,
@@ -78,27 +81,12 @@ pub enum TeleportCause {
     Behaviour,
 }
 
+#[packet]
 #[derive(Debug, Clone)]
 pub struct PlayerMovementSettings {
-    pub movement_type: i32,
-    pub rewind_history_size: i32,
+    pub movement_type: VarI32,
+    pub rewind_history_size: VarI32,
     pub server_authoritative_block_breaking: bool,
-}
-
-impl PlayerMovementSettings {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.movement_type);
-        writer.var_i32(self.rewind_history_size);
-        writer.bool(self.server_authoritative_block_breaking);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            movement_type: reader.var_i32(),
-            rewind_history_size: reader.var_i32(),
-            server_authoritative_block_breaking: reader.bool(),
-        }
-    }
 }
 
 #[derive(Debug, Clone)]

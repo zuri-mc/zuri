@@ -6,16 +6,11 @@ use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_nbt::Value;
 use zuri_net_derive::packet;
 
-use crate::proto::ints::VarI32;
+use crate::proto::ints::{VarI32, VarI64, VarU32, VarU64};
 use crate::proto::io::{Reader, Writer};
 
-#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
-pub enum SpawnBiomeType {
-    Default,
-    USerDefined,
-}
-
-#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
+#[packet(VarI32)]
+#[derive(Debug, Clone)]
 pub enum SpawnType {
     Player,
     World,
@@ -38,6 +33,7 @@ pub enum SubChunkResult {
     SuccessAllAir,
 }
 
+#[packet(VarU32)]
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum Difficulty {
     Peaceful,
@@ -46,6 +42,7 @@ pub enum Difficulty {
     Hard,
 }
 
+#[packet(VarU32)]
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum Dimension {
     Overworld,
@@ -61,6 +58,7 @@ pub enum HeightMapType {
     TooLow,
 }
 
+#[packet(VarI32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum GameType {
     Survival,
@@ -72,6 +70,7 @@ pub enum GameType {
     Spectator,
 }
 
+#[packet(VarI32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum Generator {
     Legacy,
@@ -82,6 +81,7 @@ pub enum Generator {
     Void,
 }
 
+#[packet(VarU32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum PermissionLevel {
     Visitor,
@@ -90,13 +90,15 @@ pub enum PermissionLevel {
     Custom,
 }
 
-#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
+#[packet(u8)]
+#[derive(Debug, Clone)]
 pub enum EntityLinkType {
     Remove,
     Rider,
     Passenger,
 }
 
+#[packet(VarU64)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum UpdateBlockTransition {
     BlockToEntity,
@@ -138,33 +140,14 @@ pub struct DimensionDefinition {
     generator: VarI32,
 }
 
+#[packet]
 #[derive(Debug, Clone)]
 pub struct EntityLink {
-    pub ridden_entity_unique_id: i64,
-    pub rider_entity_unique_id: i64,
+    pub ridden_entity_unique_id: VarI64,
+    pub rider_entity_unique_id: VarI64,
     pub link_type: EntityLinkType,
     pub immediate: bool,
     pub rider_initiated: bool,
-}
-
-impl EntityLink {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_i64(self.ridden_entity_unique_id);
-        writer.var_i64(self.rider_entity_unique_id);
-        writer.u8(self.link_type.to_u8().unwrap());
-        writer.bool(self.immediate);
-        writer.bool(self.rider_initiated);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            ridden_entity_unique_id: reader.var_i64(),
-            rider_entity_unique_id: reader.var_i64(),
-            link_type: EntityLinkType::from_u8(reader.u8()).unwrap(),
-            immediate: reader.bool(),
-            rider_initiated: reader.bool(),
-        }
-    }
 }
 
 #[derive(Debug, Clone)]

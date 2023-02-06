@@ -1,7 +1,6 @@
 use zuri_net_derive::packet;
 
 use crate::proto::ints::VarU32;
-use crate::proto::packet::PacketType;
 use crate::proto::types::item_stack::ItemComponentEntry;
 
 /// Sent by the server to attach client-side components to a custom item.

@@ -1,5 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use zuri_net_derive::packet;
 
+#[packet(u8)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum ResourcePackResponse {
     None,
@@ -9,6 +11,7 @@ pub enum ResourcePackResponse {
     Completed,
 }
 
+#[packet(u8)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum ResourcePackType {
     Addon,

@@ -1,6 +1,8 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use zuri_net_derive::packet;
 
+#[packet(i32)]
 #[repr(i32)]
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive, Serialize_repr, Deserialize_repr)]
 pub enum Device {

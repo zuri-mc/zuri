@@ -1,6 +1,7 @@
-use num_derive::{FromPrimitive, ToPrimitive};
+use zuri_net_derive::packet;
 
-#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
+#[packet(u8)]
+#[derive(Debug, Clone)]
 pub enum ActorEventType {
     Jump = 1,
     Hurt = 2,

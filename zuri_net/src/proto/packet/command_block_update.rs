@@ -1,48 +1,16 @@
-use glam::IVec3;
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use zuri_net_derive::packet;
 
-use crate::proto::io::{Reader, Writer};
-use crate::proto::packet::PacketType;
-
-#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
-pub enum CommandBlockMode {
-    None = -1,
-    Impulse,
-    Repeating,
-    Chain,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum CommandBlockVariant {
-    Block,
-    Minecart,
-}
+use crate::proto::io::UBlockPos;
+use crate::proto::ints::VarU32;
 
 /// Sent by the client to update a command block at a specific position. The command block may be
 /// either a physical block or an entity.
+#[packet]
 #[derive(Debug, Clone)]
 pub struct CommandBlockUpdate {
     /// Specifies the variant of the command block, as command blocks can be blocks, minecarts, and
     /// potentially other objects in the future.
     pub variant: CommandBlockVariant,
-    /// The position of the command block updated. It is only set for block variants. Nothing
-    /// happens if no command block is set at this position.
-    pub position: IVec3,
-    /// The mode of the command block. It is either impulse, chain or repeat. It is only set for
-    /// block variants.
-    pub mode: CommandBlockMode,
-    /// Specifies if the command block needs to be powered by redstone to be activated. If false,
-    /// the command block is always active. It is only set for block variants.
-    pub needs_redstone: bool,
-    /// Specifies the behaviour of the command block if the command block before it (the opposite
-    /// side of the direction the arrow if facing) fails to execute. If set to false, it will
-    /// activate at all times, whereas if set to true, it will activate only if the previous command
-    /// block executed successfully. It is only set for block variants.
-    pub conditional: bool,
-    /// The runtime ID of the minecart entity carrying the command block that is updated. It is only
-    /// set for minecart variants.
-    pub minecart_entity_runtime_id: u64,
     /// The command currently entered in the command block. This is the command that is executed
     /// when the command block is activated.
     pub command: String,
@@ -63,62 +31,42 @@ pub struct CommandBlockUpdate {
     pub execute_on_first_tick: bool,
 }
 
-impl PacketType for CommandBlockUpdate {
-    fn write(&self, writer: &mut Writer) {
-        match self.variant {
-            CommandBlockVariant::Block => {
-                writer.bool(true);
-                writer.u_block_pos(self.position);
-                writer.var_u32(self.mode.to_u32().unwrap()); // todo
-                writer.bool(self.needs_redstone);
-                writer.bool(self.conditional);
-            }
-            CommandBlockVariant::Minecart => {
-                writer.bool(false);
-                writer.u64(self.minecart_entity_runtime_id);
-            }
-        }
-        writer.string(self.command.as_str());
-        writer.string(self.last_output.as_str());
-        writer.string(self.name.as_str());
-        writer.bool(self.should_track_output);
-        writer.i32(self.tick_delay);
-        writer.bool(self.execute_on_first_tick);
-    }
+#[packet(VarU32)]
+#[derive(Debug, Clone, PartialEq)]
+pub enum CommandBlockMode {
+    Impulse,
+    Repeating,
+    Chain,
+}
 
-    fn read(reader: &mut Reader) -> Self {
-        let variant = if reader.bool() {
-            CommandBlockVariant::Block
-        } else {
-            CommandBlockVariant::Minecart
-        };
-        Self {
-            variant: variant.clone(),
-            position: if variant == CommandBlockVariant::Block {
-                reader.u_block_pos()
-            } else {
-                IVec3::default()
-            },
-            mode: if variant == CommandBlockVariant::Block {
-                CommandBlockMode::from_u32(reader.var_u32()).unwrap()
-            } else {
-                CommandBlockMode::None
-            },
-            needs_redstone: if variant == CommandBlockVariant::Block {
-                reader.bool()
-            } else { false },
-            conditional: if variant == CommandBlockVariant::Block {
-                reader.bool()
-            } else { false },
-            minecart_entity_runtime_id: if variant == CommandBlockVariant::Minecart {
-                reader.u64()
-            } else { 0 },
-            command: reader.string(),
-            last_output: reader.string(),
-            name: reader.string(),
-            should_track_output: reader.bool(),
-            tick_delay: reader.i32(),
-            execute_on_first_tick: reader.bool(),
-        }
-    }
+#[packet(u8)]
+#[derive(Debug, Clone, PartialEq)]
+pub enum CommandBlockVariant {
+    Minecart(CommandBlockVariantMinecart),
+    Block(CommandBlockVariantBlock),
+}
+
+#[packet]
+#[derive(Debug, Clone, PartialEq)]
+pub struct CommandBlockVariantBlock {
+    /// The position of the command block updated. Nothing happens if no command block is set at
+    /// this position.
+    pub position: UBlockPos,
+    /// The mode of the command block. It is either impulse, chain or repeat.
+    pub mode: CommandBlockMode,
+    /// Specifies if the command block needs to be powered by redstone to be activated. If false,
+    /// the command block is always active.
+    pub needs_redstone: bool,
+    /// Specifies the behaviour of the command block if the command block before it (the opposite
+    /// side of the direction the arrow if facing) fails to execute. If set to false, it will
+    /// activate at all times, whereas if set to true, it will activate only if the previous command
+    /// block executed successfully.
+    pub conditional: bool,
+}
+
+#[packet]
+#[derive(Debug, Clone, PartialEq)]
+pub struct CommandBlockVariantMinecart {
+    /// The runtime ID of the minecart entity carrying the command block that is updated.
+    pub minecart_entity_runtime_id: u64,
 }

@@ -1,74 +1,51 @@
+use std::collections::HashMap;
 use glam::{IVec3, Vec3};
 use num_derive::{FromPrimitive, ToPrimitive};
 
 use zuri_nbt::Value;
+use zuri_net_derive::packet;
+use crate::proto::ints::{VarI32, VarU32};
 
-use crate::proto::io::{Reader, Writer};
+use crate::proto::io::{Readable, Reader, Writable, Writer};
 
+#[derive(Clone, Default, Debug)]
+pub struct EntityMetadata(pub HashMap<u32, EntityDataEntry>);
+
+impl Writable for EntityMetadata {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.entity_metadata(&self.0)
+    }
+}
+
+impl Readable<EntityMetadata> for EntityMetadata {
+    #[inline]
+    fn read(reader: &mut Reader) -> EntityMetadata {
+        Self(reader.entity_metadata())
+    }
+}
+
+#[packet]
 #[derive(Debug, Clone)]
 pub struct EntityProperties {
+    #[size_type(VarU32)]
     pub integer_properties: Vec<IntegerEntityProperty>,
+    #[size_type(VarU32)]
     pub float_properties: Vec<FloatEntityProperty>,
 }
 
-impl EntityProperties {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_u32(self.integer_properties.len() as u32);
-        self.integer_properties.iter().for_each(|p| p.write(writer));
-        writer.var_u32(self.float_properties.len() as u32);
-        self.float_properties.iter().for_each(|p| p.write(writer));
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            integer_properties: (0..reader.var_u32())
-                .map(|_| IntegerEntityProperty::read(reader))
-                .collect(),
-            float_properties: (0..reader.var_u32())
-                .map(|_| FloatEntityProperty::read(reader))
-                .collect(),
-        }
-    }
-}
-
+#[packet]
 #[derive(Debug, Clone)]
 pub struct IntegerEntityProperty {
-    pub index: u32,
-    pub value: i32,
+    pub index: VarU32,
+    pub value: VarI32,
 }
 
-impl IntegerEntityProperty {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_u32(self.index);
-        writer.var_i32(self.value);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            index: reader.var_u32(),
-            value: reader.var_i32(),
-        }
-    }
-}
-
+#[packet]
 #[derive(Debug, Clone)]
 pub struct FloatEntityProperty {
-    pub index: u32,
+    pub index: VarU32,
     pub value: f32,
-}
-
-impl FloatEntityProperty {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_u32(self.index);
-        writer.f32(self.value);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            index: reader.var_u32(),
-            value: reader.f32(),
-        }
-    }
 }
 
 #[derive(Debug, Clone)]

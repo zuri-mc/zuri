@@ -1,7 +1,7 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use uuid::Uuid;
 
-use crate::proto::io::{Reader, Writer};
+use crate::proto::io::{Reader, Readable, Writer, Writable};
 use crate::proto::types::item::ItemStack;
 use crate::proto::types::item_descriptor::ItemDescriptorCount;
 

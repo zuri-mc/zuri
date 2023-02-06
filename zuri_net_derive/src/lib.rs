@@ -3,8 +3,7 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 use std::collections::HashSet;
 use lazy_static::lazy_static;
-use proc_macro2::Ident;
-use syn::{Data, DeriveInput, Expr, Fields, FieldsNamed, Lit, parse_macro_input, PathArguments, Type};
+use syn::{Data, DeriveInput, Fields, FieldsNamed, parse_macro_input, PathArguments, Type};
 use quote::{format_ident, quote, quote_spanned, TokenStreamExt, ToTokens};
 use regex::Regex;
 use syn::spanned::Spanned;
@@ -79,15 +78,15 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                             Ok(g) => g,
                             Err(err) => {
                                 let err_msg = err.to_compile_error();
-                                return Err(quote_spanned!(err.span()=> #err_msg))
-                            },
+                                return Err(quote_spanned!(err.span()=> #err_msg));
+                            }
                         };
                         let ident = match syn::parse2::<proc_macro2::Ident>(group.stream()) {
                             Ok(i) => i,
                             Err(err) => {
                                 let err_msg = err.to_compile_error();
-                                return Err(quote_spanned!(group.span()=> #err_msg))
-                            },
+                                return Err(quote_spanned!(group.span()=> #err_msg));
+                            }
                         };
 
                         Ok(ident)
@@ -240,7 +239,7 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                     };
                     error_stream.append_all(quote_spanned!(err.span()=> compile_error!(#err_msg);));
                     format_ident!("_")
-                },
+                }
             };
 
             // Regex used to detect if the default variant type of an enum is a primitive integer
@@ -249,7 +248,8 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
             // to a user-defined integer type.
             lazy_static! {
                 static ref PRIM_RE: Regex = Regex::new("^(u|i)(8|(16)|(32)|(64)|(128))$").unwrap();
-            };
+            }
+            ;
             let is_primitive = PRIM_RE.is_match(type_name.to_string().as_str());
 
             // Token streams for all the match cases in the read/write implementation.
@@ -265,15 +265,12 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                 // Check if the variant has an explicit integer discriminant such as the `1` in
                 // `Variant = 1`.
                 if let Some(discriminant) = variant.discriminant.as_ref() {
-                    if let Expr::Lit(lit) = &discriminant.1 {
-                        if let Lit::Int(int_lit) = &lit.lit {
-                            let val = int_lit.base10_digits().parse().unwrap();
-                            variant_number = val;
-                        } else {
-                            error_stream.append_all(quote_spanned!(discriminant.1.span()=> compile_error!("explicit enum discriminant must be an int literal");));
+                    match discriminant.1.to_token_stream().to_string().chars().filter(|c| !c.is_ascii_whitespace()).collect::<String>().parse::<i128>() {
+                        Err(err) => {
+                            let err_msg = format!("could not parse enum variant into integer: {}", err);
+                            error_stream.append_all(quote_spanned!(discriminant.1.span()=> compile_error!(#err_msg);));
                         }
-                    } else {
-                        error_stream.append_all(quote_spanned!(discriminant.1.span()=> compile_error!("explicit enum discriminant must be an int literal");));
+                        Ok(val) => variant_number = val,
                     }
                 }
 
@@ -292,8 +289,8 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                     let field_name = format_ident!("e_{}", field_num);
                     let field_type = &field.ty;
                     enum_content.append_all(quote!(#field_name,));
-                    enum_content_write.append_all(quote!(#field_name.write(writer);));
-                    enum_content_read.append_all(quote!(#field_type::read(reader),));
+                    enum_content_write.append_all(quote!(<#field_type as crate::proto::io::Writable>::write(#field_name, writer);));
+                    enum_content_read.append_all(quote!(<#field_type as crate::proto::io::Readable<#field_type>>::read(reader),));
                 }
                 if !enum_content.is_empty() {
                     enum_content = quote!((#enum_content));
