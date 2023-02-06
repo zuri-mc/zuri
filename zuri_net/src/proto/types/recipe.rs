@@ -1,112 +1,55 @@
-use num_derive::{FromPrimitive, ToPrimitive};
 use uuid::Uuid;
+use zuri_net_derive::packet;
 
-use crate::proto::io::{Reader, Readable, Writer, Writable};
+use crate::proto::ints::{VarI32, VarU32};
+use crate::proto::io::{Readable, Reader, Writable, Writer};
 use crate::proto::types::item::ItemStack;
 use crate::proto::types::item_descriptor::ItemDescriptorCount;
 
-#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
-pub enum RecipeType {
-    Shapeless,
-    Shaped,
-    Furnace,
-    FurnaceData,
-    Multi,
-    ShulkerBox,
-    ShapelessChemistry,
-    ShapedChemistry,
+#[packet(VarU32)]
+#[repr(u32)]
+#[derive(Debug, Clone)]
+pub enum Recipe {
+    ShapelessRecipe(ShapelessRecipe),
+    ShapedRecipe(ShapedRecipe),
+    FurnaceRecipe(FurnaceRecipe),
+    FurnaceDataRecipe(FurnaceRecipe),
+    MultiRecipe(MultiRecipe),
+    ShulkerBoxRecipe(ShulkerBoxRecipe),
+    ShapelessChemistryRecipe(ShapelessChemistryRecipe),
+    ShapedChemistryRecipe(ShapedChemistryRecipe),
 }
 
+#[packet]
 #[derive(Debug, Clone)]
 pub struct MultiRecipe {
     pub uuid: Uuid,
-    pub recipe_network_id: u32,
+    pub recipe_network_id: VarU32,
 }
 
-impl MultiRecipe {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.uuid(self.uuid);
-        writer.var_u32(self.recipe_network_id);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            uuid: reader.uuid(),
-            recipe_network_id: reader.var_u32(),
-        }
-    }
-}
-
+#[packet]
 #[derive(Debug, Clone)]
 pub struct FurnaceDataRecipe {
     pub furnace_recipe: FurnaceRecipe,
 }
 
-impl FurnaceDataRecipe {
-    pub fn write(&self, writer: &mut Writer) {
-        self.furnace_recipe.write(writer);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            furnace_recipe: FurnaceRecipe::read(reader),
-        }
-    }
-}
-
+#[packet]
 #[derive(Debug, Clone)]
 pub struct FurnaceRecipe {
-    pub network_id: i32,
+    pub network_id: VarI32,
     pub output: ItemStack,
     pub block: String,
 }
 
-impl FurnaceRecipe {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.network_id);
-        self.output.write(writer);
-        writer.string(self.block.as_str());
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            network_id: reader.var_i32(),
-            output: ItemStack::read(reader),
-            block: reader.string(),
-        }
-    }
-}
-
+#[packet]
 #[derive(Debug, Clone)]
 pub struct PotionRecipe {
-    pub input_potion_id: i32,
-    pub input_potion_metadata: i32,
-    pub reagent_item_id: i32,
-    pub reagent_item_metadata: i32,
-    pub output_potion_id: i32,
-    pub output_potion_metadata: i32,
-}
-
-impl PotionRecipe {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.input_potion_id);
-        writer.var_i32(self.input_potion_metadata);
-        writer.var_i32(self.reagent_item_id);
-        writer.var_i32(self.reagent_item_metadata);
-        writer.var_i32(self.output_potion_id);
-        writer.var_i32(self.output_potion_metadata);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            input_potion_id: reader.var_i32(),
-            input_potion_metadata: reader.var_i32(),
-            reagent_item_id: reader.var_i32(),
-            reagent_item_metadata: reader.var_i32(),
-            output_potion_id: reader.var_i32(),
-            output_potion_metadata: reader.var_i32(),
-        }
-    }
+    pub input_potion_id: VarI32,
+    pub input_potion_metadata: VarI32,
+    pub reagent_item_id: VarI32,
+    pub reagent_item_metadata: VarI32,
+    pub output_potion_id: VarI32,
+    pub output_potion_metadata: VarI32,
 }
 
 pub type ShapedChemistryRecipe = ShapedRecipe;
@@ -124,8 +67,8 @@ pub struct ShapedRecipe {
     pub recipe_network_id: u32,
 }
 
-impl ShapedRecipe {
-    pub fn write(&self, writer: &mut Writer) {
+impl Writable for ShapedRecipe {
+    fn write(&self, writer: &mut Writer) {
         writer.string(self.recipe_id.as_str());
         writer.i32(self.width);
         writer.i32(self.height);
@@ -143,8 +86,10 @@ impl ShapedRecipe {
         writer.var_i32(self.priority);
         writer.var_u32(self.recipe_network_id);
     }
+}
 
-    pub fn read(reader: &mut Reader) -> Self {
+impl Readable<ShapedRecipe> for ShapedRecipe {
+    fn read(reader: &mut Reader) -> Self {
         let recipe_id = reader.string();
         let width = reader.i32();
         let height = reader.i32();
@@ -152,8 +97,12 @@ impl ShapedRecipe {
             recipe_id,
             width,
             height,
-            input: (0..width * height).map(|_| ItemDescriptorCount::read(reader)).collect(),
-            output: (0..reader.var_u32()).map(|_| ItemStack::read(reader)).collect(),
+            input: (0..width * height)
+                .map(|_| ItemDescriptorCount::read(reader))
+                .collect(),
+            output: (0..reader.var_u32())
+                .map(|_| ItemStack::read(reader))
+                .collect(),
             uuid: reader.uuid(),
             block: reader.string(),
             priority: reader.var_i32(),
@@ -164,41 +113,18 @@ impl ShapedRecipe {
 
 pub type ShapelessChemistryRecipe = ShapelessRecipe;
 
+#[packet]
 #[derive(Debug, Clone)]
 pub struct ShapelessRecipe {
     pub recipe_id: String,
+    #[size_type(VarU32)]
     pub input: Vec<ItemDescriptorCount>,
+    #[size_type(VarU32)]
     pub output: Vec<ItemStack>,
     pub uuid: Uuid,
     pub block: String,
-    pub priority: i32,
-    pub recipe_network_id: u32,
-}
-
-impl ShapelessRecipe {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.string(self.recipe_id.as_str());
-        writer.var_u32(self.input.len() as u32);
-        self.input.iter().for_each(|input| input.write(writer));
-        writer.var_u32(self.output.len() as u32);
-        self.output.iter().for_each(|stack| stack.write(writer));
-        writer.uuid(self.uuid);
-        writer.string(self.block.as_str());
-        writer.var_i32(self.priority);
-        writer.var_u32(self.recipe_network_id);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            recipe_id: reader.string(),
-            input: (0..reader.var_u32()).map(|_| ItemDescriptorCount::read(reader)).collect(),
-            output: (0..reader.var_u32()).map(|_| ItemStack::read(reader)).collect(),
-            uuid: reader.uuid(),
-            block: reader.string(),
-            priority: reader.var_i32(),
-            recipe_network_id: reader.var_u32(),
-        }
-    }
+    pub priority: VarI32,
+    pub recipe_network_id: VarU32,
 }
 
 #[derive(Debug, Clone)]
@@ -208,63 +134,39 @@ pub struct MaterialReducer {
     pub outputs: Vec<MaterialReducerOutput>,
 }
 
-impl MaterialReducer {
-    pub fn write(&self, writer: &mut Writer) {
+impl Writable for MaterialReducer {
+    fn write(&self, writer: &mut Writer) {
         writer.var_i32((self.network_id << 16) | (self.metadata_value as i32));
         writer.var_u32(self.outputs.len() as u32);
         self.outputs.iter().for_each(|output| output.write(writer));
     }
+}
 
-    pub fn read(reader: &mut Reader) -> Self {
+impl Readable<MaterialReducer> for MaterialReducer {
+    fn read(reader: &mut Reader) -> Self {
         Self {
             network_id: reader.var_i32() >> 16,
             metadata_value: (reader.var_i32() & 0xFFFF) as u32,
-            outputs: (0..reader.var_u32()).map(|_| MaterialReducerOutput::read(reader)).collect(),
+            outputs: (0..reader.var_u32())
+                .map(|_| MaterialReducerOutput::read(reader))
+                .collect(),
         }
     }
 }
 
+#[packet]
 #[derive(Debug, Clone)]
 pub struct MaterialReducerOutput {
-    pub network_id: i32,
-    pub count: i32,
+    pub network_id: VarI32,
+    pub count: VarI32,
 }
 
-impl MaterialReducerOutput {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.network_id);
-        writer.var_i32(self.count);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            network_id: reader.var_i32(),
-            count: reader.var_i32(),
-        }
-    }
-}
-
+#[packet]
 #[derive(Debug, Clone)]
 pub struct PotionContainerChangeRecipe {
-    pub input_item_id: i32,
-    pub reagent_item_id: i32,
-    pub output_item_id: i32,
-}
-
-impl PotionContainerChangeRecipe {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.input_item_id);
-        writer.var_i32(self.reagent_item_id);
-        writer.var_i32(self.output_item_id);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            input_item_id: reader.var_i32(),
-            reagent_item_id: reader.var_i32(),
-            output_item_id: reader.var_i32(),
-        }
-    }
+    pub input_item_id: VarI32,
+    pub reagent_item_id: VarI32,
+    pub output_item_id: VarI32,
 }
 
 pub type ShulkerBoxRecipe = ShapelessRecipe;
