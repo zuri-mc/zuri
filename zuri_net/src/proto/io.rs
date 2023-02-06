@@ -778,7 +778,7 @@ impl Readable<String> for String {
 impl Readable<Bytes> for Bytes {
     #[inline]
     fn read(reader: &mut Reader) -> Bytes {
-        reader.bytes()
+        reader.byte_slice()
     }
 }
 
