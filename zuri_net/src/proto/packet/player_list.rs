@@ -70,6 +70,8 @@ pub struct PlayerListEntry {
     pub teacher: bool,
     /// Specifies if the player that is added to the player list is the host of the game.
     pub host: bool,
-    /// Specified whether the user's skin is trusted.
-    pub trusted: bool, // todo: deduce this from the skin field
+    /// Specifies whether the skin is trusted. Note that this is just a duplicate of the value read
+    /// in `Skin` itself. This field does not actually exist in the packet struct.
+    #[overwrite(skin.trusted)]
+    trusted: bool,
 }

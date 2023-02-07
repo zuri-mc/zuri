@@ -2,6 +2,7 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use std::collections::HashSet;
+use std::marker::PhantomData;
 use lazy_static::lazy_static;
 use syn::{Data, DeriveInput, Fields, FieldsNamed, parse_macro_input, PathArguments, Type};
 use quote::{format_ident, quote, quote_spanned, TokenStreamExt, ToTokens};
@@ -96,6 +97,26 @@ use syn::spanned::Spanned;
 /// ```
 /// In this example `MyEnum`, which is usually written with `u8` when no `enum_header` is specified,
 /// will be written using a `u16`.
+///
+/// 'Fake' fields can also be added that are just copies of values of other fields. These fields
+/// will be removed when the macro is expanded. Any expression can be used in the field, as long
+/// as it produces a writable value. To ensure symmetry in reading and writing, the type of the
+/// field should be the same as the one being written
+/// ```
+/// use zuri_net_derive::packet;
+///
+/// #[packet]
+/// pub struct PacketWithVec {
+///     pub some_field: f32,
+///     #[value(self.some_field)]
+///     some_field_again: f32,
+/// }
+/// ```
+/// Here we write the value of `some_field` again. If we instead wanted to write to a field of
+/// `some_field` (if it had any), this can be done with the `.` operator like in normal rust code.
+/// When reading, the value of `some_field` will not be overwritten when reading the duplicate. If
+/// this is desired, use `#[overwrite(some_field)]` instead. Note that the `self` is not needed when
+/// using overwrite.
 #[proc_macro_attribute]
 pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
     let mut input = parse_macro_input!(_item as DeriveInput);
@@ -229,6 +250,31 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                             }
                         }
                     }
+                    if path == "value" || path == "overwrite" {
+                        if attr.tokens.is_empty() {
+                            error_stream.append_all(quote_spanned!(attr.span()=> compile_error!("expression expected");));
+                        }
+                        removal_queue.push(field_i);
+
+                        let tokens = match syn::parse2::<proc_macro2::Group>(attr.tokens.clone()) {
+                            Ok(g) => g,
+                            Err(err) => {
+                                let err_msg = err.to_compile_error();
+                                error_stream.append_all(quote_spanned!(err.span()=> #err_msg));
+                                continue 'field_loop;
+                            }
+                        }.stream();
+                        if path == "overwrite" {
+                            write_stream.append_all(quote!(eq::<#field_type>(self.#tokens);));
+                            write_stream.append_all(quote!(self.#tokens.write(writer);));
+                            read_body_stream.append_all(quote!(#tokens = <#field_type>::read(reader);));
+                        } else {
+                            write_stream.append_all(quote!(eq::<#field_type>(#tokens);));
+                            write_stream.append_all(quote!(#tokens.write(writer);));
+                            read_body_stream.append_all(quote!(<#field_type>::read(reader);));
+                        }
+                        continue 'field_loop;
+                    }
                 }
                 // Remove all the attributes that should be removed. First we make sure that all
                 // the indices are sorted, so we can remove them all in reverse without changing the
@@ -292,10 +338,10 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                 if enum_type.is_some() {
                     let et = enum_type.unwrap().1;
                     write_stream.append_all(quote!(<#field_type as crate::proto::io::EnumWritable<#et>>::write(&self.#field_ident, writer);));
-                    read_body_stream.append_all(quote!(let #field_ident = <#field_type as crate::proto::io::EnumReadable<#field_type, #et>>::read(reader);));
+                    read_body_stream.append_all(quote!(let mut #field_ident = <#field_type as crate::proto::io::EnumReadable<#field_type, #et>>::read(reader);));
                 } else {
                     write_stream.append_all(quote!(<#field_type as crate::proto::io::Writable>::write(&self.#field_ident, writer);));
-                    read_body_stream.append_all(quote!(let #field_ident = <#field_type as crate::proto::io::Readable<#field_type>>::read(reader);));
+                    read_body_stream.append_all(quote!(let mut #field_ident = <#field_type as crate::proto::io::Readable<#field_type>>::read(reader);));
                 }
                 read_inner_stream.append_all(quote!(#field_ident,));
             }
@@ -456,6 +502,9 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
 
         impl crate::proto::io::Writable for #ident {
             fn write(&self, writer: &mut crate::proto::io::Writer) {
+                // hack to be able to see if an expression is of a certain type on compile time
+                #[inline]
+                fn eq<T>(_: T) {}
                 #write_stream
             }
         }
