@@ -2,6 +2,7 @@ use uuid::Uuid;
 use zuri_net_derive::packet;
 
 use crate::proto::ints::{VarI64, VarU32};
+use crate::proto::types::device::Device;
 use crate::proto::types::skin::Skin;
 
 #[packet(u8)]
@@ -61,7 +62,7 @@ pub struct PlayerListEntry {
     /// chat with each other.
     pub platform_chat_id: String,
     /// The platform of the player as sent by that player in the Login packet.
-    pub build_platform: i32, // todo: allow for an unknown `Device` to be specified
+    pub build_platform: Device,
     /// The skin of the player that should be added to the player list. Once sent here, it will not
     /// have to be sent again.
     pub skin: Skin,

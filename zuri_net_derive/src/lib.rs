@@ -2,7 +2,6 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use std::collections::HashSet;
-use std::marker::PhantomData;
 use lazy_static::lazy_static;
 use syn::{Data, DeriveInput, Fields, FieldsNamed, parse_macro_input, PathArguments, Type};
 use quote::{format_ident, quote, quote_spanned, TokenStreamExt, ToTokens};
@@ -102,7 +101,7 @@ use syn::spanned::Spanned;
 /// will be removed when the macro is expanded. Any expression can be used in the field, as long
 /// as it produces a writable value. To ensure symmetry in reading and writing, the type of the
 /// field should be the same as the one being written
-/// ```
+/// ```ignore
 /// use zuri_net_derive::packet;
 ///
 /// #[packet]
@@ -389,12 +388,37 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
             // Token streams for all the match cases in the read/write implementation.
             let mut write_match_stream = proc_macro2::TokenStream::new();
             let mut read_match_stream = proc_macro2::TokenStream::new();
+            // Token streams for the fallback (_) case.
+            let mut write_fallback_stream = proc_macro2::TokenStream::new();
+            let mut read_fallback_stream = proc_macro2::TokenStream::new();
 
             // Use an i128 to store the variant number to ensure both i64 and u64 discriminants
             // work.
             let mut variant_number = 0i128;
-            for variant in &mut e.variants {
+            'variant_loop: for variant in &mut e.variants {
                 let variant_name = &variant.ident;
+
+                let mut attr_remove_queue = vec![];
+                for (attr_i, attr) in variant.attrs.iter().enumerate() {
+                    if attr.path.to_token_stream().to_string() != "fallback" {
+                        continue;
+                    }
+                    attr_remove_queue.push(attr_i);
+
+                    if !read_fallback_stream.is_empty() || !write_fallback_stream.is_empty() {
+                        error_stream.append_all(quote_spanned!(attr.span()=> compile_error!("cannot have more than one fallback variant");));
+                    }
+                    let err_msg = format!("trying to write fallback variant for enum {}", ident);
+                    write_fallback_stream.append_all(quote!(_ => panic!(#err_msg)));
+                    read_fallback_stream.append_all(quote!(_ => #ident::#variant_name));
+                }
+                attr_remove_queue.sort();
+                for attr_i in attr_remove_queue.iter().rev() {
+                    variant.attrs.remove(*attr_i);
+                }
+                if !attr_remove_queue.is_empty() {
+                    continue 'variant_loop;
+                }
 
                 // Check if the variant has an explicit integer discriminant such as the `1` in
                 // `Variant = 1`.
@@ -467,12 +491,17 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                 <#ident as crate::proto::io::EnumReadable<#ident, #type_name>>::read(reader)
             });
 
+            if read_fallback_stream.is_empty() {
+                read_fallback_stream = quote!(_ => panic!("Unknown enum variant"));
+            }
+
             extra_stream.append_all(quote! {
                 impl<D: crate::proto::io::Writable + TryFrom<#type_name>> crate::proto::io::EnumWritable<D> for #ident
                 where <D as TryFrom<#type_name>>::Error: std::fmt::Debug {
                     fn write(&self, writer: &mut crate::proto::io::Writer) {
                         match self {
                             #write_match_stream
+                            #write_fallback_stream
                         };
                     }
                 }
@@ -482,7 +511,7 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                     fn read(reader: &mut crate::proto::io::Reader) -> #ident {
                         match D::read(reader).try_into().unwrap() {
                             #read_match_stream
-                            _ => panic!("Unknown enum variant"),
+                            #read_fallback_stream
                         }
                     }
                 }
