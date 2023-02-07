@@ -1,11 +1,11 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU64;
 
 use crate::proto::types::entity_data::{EntityMetadata, EntityProperties};
 
 /// Sent by the server to update the entity metadata of an entity. It includes flags such as if the
 /// entity is on fire, but also properties such as the air it has left until it starts drowning.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct SetActorData {
     /// The runtime ID of the entity. The runtime ID is unique for each world session, and entities

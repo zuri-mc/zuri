@@ -1,8 +1,8 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Sent by the server to make the client 'select' a hot bar slot. It currently appears to be broken
 /// however, and does not actually set the selected slot to the hot bar slot set in the packet.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct GUIDataPickItem {
     /// The name of the item that shows up in the top part of the popup that shows up when selecting

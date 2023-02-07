@@ -1,4 +1,4 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::io::UBlockPos;
 use crate::proto::types::structure::{StructureBlockType, StructureRedstoneSaveMode, StructureSettings};
@@ -7,7 +7,7 @@ use crate::proto::types::structure::{StructureBlockType, StructureRedstoneSaveMo
 /// depends on the type of structure block that it is. In Minecraft Bedrock Edition v1.11, there is
 /// only the `Export `structure block type, but in v1.13 the ones present in Java Edition will,
 /// according to the wiki, be added too.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct StructureBlockUpdate {
     /// The position of the structure block that is updated.

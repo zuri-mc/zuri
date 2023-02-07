@@ -1,4 +1,4 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
 
 use crate::proto::types::inventory::Window;
@@ -7,7 +7,7 @@ use crate::proto::types::inventory::Window;
 /// actual slots in the inventory, but as of 1.2, this was changed and hot bar slots are no longer a
 /// free floating part of the inventory. Since 1.2, the packet has been re-purposed, but its new
 /// functionality is not clear.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PlayerHotBar {
     /// Before 1.2, this was the hot bar slot that is being linked to the inventory slot.

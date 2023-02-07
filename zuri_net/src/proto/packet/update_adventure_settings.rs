@@ -1,8 +1,8 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Sent from the server to update the adventure settings of the player. It, along with the
 /// UpdateAbilities packet, are replacements of the AdventureSettings packet since v1.19.10.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct UpdateAdventureSettings {
     /// If the player is allowed to fight mobs.

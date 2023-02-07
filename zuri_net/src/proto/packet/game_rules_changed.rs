@@ -1,10 +1,10 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
 use crate::proto::types::game_rule::GameRule;
 
 /// Sent by the server to the client to update client-side game rules, such as game rules like the
 /// 'showCoordinates' game rule.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct GameRulesChanged {
     /// Defines game rules changed with their respective values. The value of these game rules may

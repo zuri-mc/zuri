@@ -1,4 +1,4 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
 
 use crate::proto::types::command::SoftEnumAction;
@@ -7,7 +7,7 @@ use crate::proto::types::command::SoftEnumAction;
 /// AvailableCommands packet. It is sent whenever the enum should get new options or when some of
 /// its options should be removed. The UpdateSoftEnum packet will apply for enums that have been set
 /// in the AvailableCommands packet with the `Dynamic` field of the CommandEnum set to true.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct UpdateSoftEnum {
     /// The type of the enum. This type must be identical to the one set in the AvailableCommands

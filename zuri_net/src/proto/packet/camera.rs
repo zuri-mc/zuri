@@ -1,10 +1,10 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::VarI64;
 
 /// Sent by the server to use an Education Edition camera on a player. It produces an image
 /// client-side.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct Camera {
     /// The unique ID of the camera entity from which the picture was taken.

@@ -1,9 +1,9 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::types::education::EducationExternalLinkSettings;
 
 /// Sent by the server to update Education Edition related settings. It is unused by vanilla.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct EducationSettings {
     /// The default URI that the code builder is ran on. Using this, a Code Builder program can

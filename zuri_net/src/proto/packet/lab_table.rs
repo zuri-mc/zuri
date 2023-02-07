@@ -1,11 +1,11 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::io::BlockPos;
 
 /// Sent by the client to let the server know it started a chemical reaction in Education Edition,
 /// and is sent by the server to other clients to show the effects. The packet is only functional if
 /// Education features are enabled.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct LabTable {
     /// The type of the action that was executed. Typically, only combine is sent by the client,
@@ -19,7 +19,7 @@ pub struct LabTable {
     pub reaction_type: u8,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum LabTableAction {
     Combine,

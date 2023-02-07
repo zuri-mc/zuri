@@ -1,10 +1,10 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Sent by the server (and the client, on development builds) to measure the latency over the
 /// entire Minecraft stack, rather than the RakNet latency. It has other usages too, such as the
 /// ability to be used as some kind of acknowledgement packet, to know when the client has received
 /// a certain other packet.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct NetworkStackLatency {
     /// The timestamp of the network stack latency packet. The client will, if `needs_response` is

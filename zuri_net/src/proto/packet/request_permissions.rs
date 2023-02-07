@@ -1,10 +1,10 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::types::world::PermissionLevel;
 
 /// Sent from the client to the server to request permissions that the client does not currently
 /// have. It can only be sent by operators and host in vanilla Minecraft.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct RequestPermissions {
     /// The unique ID of the player. The unique ID is unique for the entire world and is often used

@@ -1,9 +1,9 @@
 use std::io::{Read, Write};
 
 use bytes::Buf;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
-#[packet(u16)]
+#[proto(u16)]
 #[derive(Debug, Copy, Clone)]
 pub enum Compression {
     Deflate,

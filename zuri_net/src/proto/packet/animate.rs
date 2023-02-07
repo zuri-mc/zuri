@@ -1,7 +1,7 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::{VarU64, VarI32};
 
-#[packet(VarI32)]
+#[proto(VarI32)]
 #[repr(u32)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 /// Each variant contains the runtime ID of the player that the animation should be played upon. The
@@ -20,7 +20,7 @@ pub enum AnimateAction {
 
 /// Sent by the server to send a player animation from one player to all viewers of that player. It
 /// is used for a couple of actions, such as arm swimming and critical hits.\
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct Animate {
     /// The action type to execute.

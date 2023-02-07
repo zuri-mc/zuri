@@ -1,5 +1,5 @@
 use uuid::Uuid;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
 
 use crate::proto::types::container::ContainerType;
@@ -8,7 +8,7 @@ use crate::proto::types::item::ItemInstance;
 
 /// Sent by the client when it crafts a particular item. Note that this packet may be fully ignored,
 /// as the transaction systems provide all the information necessary.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct CraftingEvent {
     /// The window that the player crafted in.

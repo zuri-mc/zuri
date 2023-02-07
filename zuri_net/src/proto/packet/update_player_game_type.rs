@@ -1,11 +1,11 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI64;
 
 use crate::proto::types::world::GameType;
 
 /// Sent by the server to change the game mode of a player. It is functionally identical to the
 /// SetPlayerGameType packet.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct UpdatePlayerGameType {
     /// The new game type of the player. Some of these game types require additional flags to be set

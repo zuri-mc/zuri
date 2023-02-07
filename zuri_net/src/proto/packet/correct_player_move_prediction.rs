@@ -1,12 +1,12 @@
 use glam::Vec3;
 
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::VarU64;
 
 /// Sent by the server if and only if server authoritative movement with rewind is enabled. The
 /// packet is used to correct movement at a specific point in time.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct CorrectPlayerMovePrediction {
     /// The position that the player is supposed to be at the tick written in the field below. The

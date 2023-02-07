@@ -1,5 +1,5 @@
 use glam::IVec2;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
 
 use crate::proto::io::BlockPos;
@@ -11,7 +11,7 @@ use crate::proto::io::BlockPos;
 /// extraordinarily useful, and most servers just send it constantly at the position of the player.
 /// If the packet is not sent at all, no chunks will be shown to the player, regardless of where
 /// they are sent.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct NetworkChunkPublisherUpdate {
     /// The block position around which chunks loaded will remain shown to the client. Most servers

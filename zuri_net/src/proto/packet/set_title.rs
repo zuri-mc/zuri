@@ -1,9 +1,9 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
 /// Sent by the server to make a title, subtitle or action bar shown to a player. It has several
 /// fields that allow setting the duration of the titles.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct SetTitle {
     /// The type of the action that should be executed upon the title of a player. It specifies the
@@ -29,7 +29,7 @@ pub struct SetTitle {
     pub platform_online_id: String,
 }
 
-#[packet(VarI32)]
+#[proto(VarI32)]
 #[derive(Debug, Clone)]
 pub enum TitleAction {
     Clear,

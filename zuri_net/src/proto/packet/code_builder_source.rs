@@ -1,8 +1,8 @@
 use bytes::Bytes;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Education Edition packet sent by the client to run an operation with a code builder.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct CodeBuilderSource {
     /// The operation to be performed.
@@ -13,7 +13,7 @@ pub struct CodeBuilderSource {
     pub value: Bytes,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum CodeBuilderCategory {
     None,
@@ -21,7 +21,7 @@ pub enum CodeBuilderCategory {
     Instantiation,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum CodeBuilderOperation {
     None,

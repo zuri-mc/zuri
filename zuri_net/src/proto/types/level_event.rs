@@ -1,8 +1,8 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
-#[packet(VarI32)]
+#[proto(VarI32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum LevelEventType {
     Undefined,

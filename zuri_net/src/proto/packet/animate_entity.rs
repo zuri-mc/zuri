@@ -1,4 +1,4 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::{VarU32, VarU64};
 
@@ -6,7 +6,7 @@ use crate::proto::ints::{VarU32, VarU64};
 /// or to activate a controller which can start a sequence of animations based on different
 /// conditions specified in an animation controller.
 /// <https://minecraft.gamepedia.com/Bedrock_Edition_beta_animation_documentation>
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct AnimateEntity {
     /// The name of a single animation to start playing.

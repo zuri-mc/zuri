@@ -1,9 +1,9 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
 /// Sent by the server to show the Minecraft credits screen to the client. It is typically sent when
 /// the player beats the ender dragon and leaves the End.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ShowCredits {
     /// The entity runtime ID of the player to show the credits to. It's not clear why this field is
@@ -13,7 +13,7 @@ pub struct ShowCredits {
     pub status_type: ShowCreditsStatus,
 }
 
-#[packet(VarI32)]
+#[proto(VarI32)]
 #[derive(Debug, Clone)]
 pub enum ShowCreditsStatus {
     Start,

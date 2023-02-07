@@ -1,12 +1,12 @@
 use uuid::Uuid;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::{VarI32, VarU32};
 use crate::proto::io::{Readable, Reader, Writable, Writer};
 use crate::proto::types::item::ItemStack;
 use crate::proto::types::item_descriptor::ItemDescriptorCount;
 
-#[packet(VarU32)]
+#[proto(VarU32)]
 #[repr(u32)]
 #[derive(Debug, Clone)]
 pub enum Recipe {
@@ -20,20 +20,20 @@ pub enum Recipe {
     ShapedChemistryRecipe(ShapedChemistryRecipe),
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct MultiRecipe {
     pub uuid: Uuid,
     pub recipe_network_id: VarU32,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct FurnaceDataRecipe {
     pub furnace_recipe: FurnaceRecipe,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct FurnaceRecipe {
     pub network_id: VarI32,
@@ -41,7 +41,7 @@ pub struct FurnaceRecipe {
     pub block: String,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PotionRecipe {
     pub input_potion_id: VarI32,
@@ -113,7 +113,7 @@ impl Readable<ShapedRecipe> for ShapedRecipe {
 
 pub type ShapelessChemistryRecipe = ShapelessRecipe;
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ShapelessRecipe {
     pub recipe_id: String,
@@ -154,14 +154,14 @@ impl Readable<MaterialReducer> for MaterialReducer {
     }
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct MaterialReducerOutput {
     pub network_id: VarI32,
     pub count: VarI32,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PotionContainerChangeRecipe {
     pub input_item_id: VarI32,

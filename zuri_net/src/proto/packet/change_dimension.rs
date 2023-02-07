@@ -1,5 +1,5 @@
 use glam::Vec3;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
 use crate::proto::types::world::Dimension;
@@ -7,7 +7,7 @@ use crate::proto::types::world::Dimension;
 /// Sent by the server to the client to send a dimension change screen client-side. Once the screen
 /// is cleared client-side, the client will send a PlayerAction packet with the dimension change
 /// done action attached.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ChangeDimension {
     /// The dimension that the client should be changed to. The dimension must be different from the

@@ -1,12 +1,12 @@
 use bytes::Bytes;
 
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::VarU32;
 
 /// Sent by the server to make the client open a form. This form may be either a modal form which
 /// has two options, a menu form for a selection of options and a custom form for properties.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ModalFormRequest {
     /// An ID used to identify the form. The ID is saved by the client and sent back when the player

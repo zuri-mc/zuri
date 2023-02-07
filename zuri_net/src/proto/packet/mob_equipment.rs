@@ -1,4 +1,4 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU64;
 
 use crate::proto::types::inventory::Window;
@@ -7,7 +7,7 @@ use crate::proto::types::item::ItemInstance;
 /// Sent by the client to the server and the server to the client to make the other side aware of
 /// the new item that an entity is holding. It is used to show the item in the hand of entities such
 /// as zombies too.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct MobEquipment {
     /// The runtime ID of the entity. The runtime ID is unique for each world session, and entities

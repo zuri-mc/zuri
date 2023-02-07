@@ -1,8 +1,8 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::I32BE;
 
 /// Sent by the client to request network settings, such as compression, from the server.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct RequestNetworkSettings {
     /// The protocol version of the player. The player is disconnected if the protocol is

@@ -1,4 +1,4 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::{VarI64, VarU32};
 
 use crate::proto::io::UBlockPos;
@@ -7,7 +7,7 @@ use crate::proto::types::world::UpdateBlockTransition;
 /// Sent by the server to synchronise the falling of a falling block entity with the transitioning
 /// back and forth from and to a solid block. It is used to prevent the entity from flickering, and
 /// is used in places such as the pushing of blocks with pistons.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct UpdateBlockSynced {
     /// The block position at which a block is updated.

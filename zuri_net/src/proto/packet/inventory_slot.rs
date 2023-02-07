@@ -1,4 +1,4 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
 
 use crate::proto::types::inventory::Window;
@@ -7,7 +7,7 @@ use crate::proto::types::item::ItemInstance;
 /// Sent by the server to update a single slot in one of the inventory windows that the client
 /// currently has opened. Usually this is the main inventory, but it may also be the off hand or,
 /// for example, a chest inventory.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct InventorySlot {
     /// The window that the packet modifies. It must point to one of the windows that the client

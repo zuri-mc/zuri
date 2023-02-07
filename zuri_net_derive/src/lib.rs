@@ -21,9 +21,9 @@ use syn::spanned::Spanned;
 /// The first such attribute is `#[len_type(L)]`, where `L` i the type to use for the vector
 /// length. It should be put above the vector in question.
 /// ```ignore
-/// use zuri_net_derive::packet;
+/// use zuri_net_derive::proto;
 ///
-/// #[packet]
+/// #[proto]
 /// pub struct PacketWithVec {
 ///     #[len_type(u8)]
 ///     pub vec: Vec<String>
@@ -39,9 +39,9 @@ use syn::spanned::Spanned;
 /// field. Note that in the macro expansion, this field will be removed. The field only exists to
 /// specify how the packet's data is structured
 /// ```ignore
-/// use zuri_net_derive::packet;
+/// use zuri_net_derive::proto;
 ///
-/// #[packet]
+/// #[proto]
 /// pub struct PacketWithVec {
 ///     #[len_for(vec)]
 ///     __: u16,
@@ -57,9 +57,9 @@ use syn::spanned::Spanned;
 /// any data that might be present in that variant. Using this packet on an enum would look
 /// something like this
 /// ```ignore
-/// use zuri_net_derive::packet;
+/// use zuri_net_derive::proto;
 ///
-/// #[packet(u8)]
+/// #[proto(u8)]
 /// #[repr(u8)]
 /// pub enum EnumPacket {
 ///     Variant1,
@@ -67,7 +67,7 @@ use syn::spanned::Spanned;
 ///     Variant3(Data, Data, f32) = 7,
 /// }
 ///
-/// #[packet]
+/// #[proto]
 /// pub struct Data;
 /// ```
 /// Here is can be seen that the macro has an extra parameters for enums: the size to use to write
@@ -81,15 +81,15 @@ use syn::spanned::Spanned;
 /// the default type specified in the attribute, as well as be writable and readable. To write an
 /// enum with a specific discriminant type, `#[enum_header(D)]` can be used.
 /// ```ignore
-/// use zuri_net_derive::packet;
+/// use zuri_net_derive::proto;
 ///
-/// #[packet]
+/// #[proto]
 /// pub struct PacketWithEnum {
 ///     #[enum_header(u16)]
 ///     pub my_enum: MyEnum,
 /// }
 ///
-/// #[packet(u8)]
+/// #[proto(u8)]
 /// pub enum MyEnum {
 ///     V1, V2
 /// }
@@ -102,9 +102,9 @@ use syn::spanned::Spanned;
 /// as it produces a writable value. To ensure symmetry in reading and writing, the type of the
 /// field should be the same as the one being written
 /// ```ignore
-/// use zuri_net_derive::packet;
+/// use zuri_net_derive::proto;
 ///
-/// #[packet]
+/// #[proto]
 /// pub struct PacketWithVec {
 ///     pub some_field: f32,
 ///     #[value(self.some_field)]
@@ -117,7 +117,7 @@ use syn::spanned::Spanned;
 /// this is desired, use `#[overwrite(some_field)]` instead. Note that the `self` is not needed when
 /// using overwrite.
 #[proc_macro_attribute]
-pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
+pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
     let mut input = parse_macro_input!(_item as DeriveInput);
     let ident = input.ident.clone();
 
@@ -361,7 +361,7 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
             });
         }
         Data::Enum(e) => {
-            // Get the type name provided in `#[packet(TYPE_NAME)]`.
+            // Get the type name provided in `#[proto(TYPE_NAME)]`.
             let type_name = match syn::parse2::<proc_macro2::Ident>(_attr.clone().into()) {
                 Ok(t) => t,
                 Err(err) => {

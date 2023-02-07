@@ -1,15 +1,15 @@
 use glam::Vec3;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Sent by the server to spawn an outlined cube on client-side.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ClientBoundDebugRenderer {
     /// The type of action to perform on the renderer, usually to add or clear a cube.
     pub render_type: ClientBoundDebugRendererType,
 }
 
-#[packet(i32)]
+#[proto(i32)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum ClientBoundDebugRendererType {
     None,
@@ -17,7 +17,7 @@ pub enum ClientBoundDebugRendererType {
     AddCube(AddCube),
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct AddCube {
     /// The text that is displayed above the debug.

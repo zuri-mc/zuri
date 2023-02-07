@@ -1,8 +1,8 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Sent from the server to display a toast to the top of the screen. These toasts are the same as
 /// the ones seen when, for example, loading a new resource pack or obtaining an achievement.\
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ToastRequest {
     /// The title of the toast.

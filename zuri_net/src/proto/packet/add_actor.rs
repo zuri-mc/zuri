@@ -1,5 +1,5 @@
 use glam::Vec3;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::{VarI64, VarU64, VarU32};
 
 use crate::proto::types::attribute::AttributeValue;
@@ -8,7 +8,7 @@ use crate::proto::types::world::EntityLink;
 
 /// Sent by the server to the client to spawn an entity to the player. It is used for every entity
 /// except other players, for which the AddPlayer packet is used.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct AddActor {
     /// The unique ID of the entity. The unique ID is a value that remains consistent across

@@ -2,7 +2,7 @@ use glam::Vec3;
 use uuid::Uuid;
 
 use zuri_nbt::encoding::NetworkLittleEndian;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::{VarI32, VarI64, VarU64, VarU32};
 
 use crate::proto::io::{NBT, UBlockPos};
@@ -23,7 +23,7 @@ use crate::proto::types::world::{
 /// Sent by the server to send information about the world the player will be spawned in. It
 /// contains information about the position the player spawns in, and information about the world in
 /// general such as its game rules.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct StartGame {
     /// The unique ID of the player. The unique ID is a value that remains consistent across
@@ -231,14 +231,14 @@ pub struct StartGame {
     pub client_side_generation: bool,
 }
 
-#[packet(i16)]
+#[proto(i16)]
 #[derive(Debug, Clone)]
 pub enum SpawnBiomeType {
     Default,
     USerDefined,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum ChatRestrictionLevel {
     None,
@@ -246,7 +246,7 @@ pub enum ChatRestrictionLevel {
     Disabled,
 }
 
-#[packet(VarI32)]
+#[proto(VarI32)]
 #[derive(Debug, Copy, Clone)]
 pub enum EducationEditionRegion {
     None,
@@ -254,7 +254,7 @@ pub enum EducationEditionRegion {
     China,
 }
 
-#[packet(VarI32)]
+#[proto(VarI32)]
 #[derive(Debug, Clone)]
 pub enum GamePublishSetting {
     None,

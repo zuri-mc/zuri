@@ -1,10 +1,10 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::compression::Compression;
 
 /// Sent by the server to update a variety of network settings. These settings modify the way
 /// packets are sent over the network stack.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct NetworkSettings {
     /// The minimum size of a packet that is compressed when sent. If the size of a packet is under

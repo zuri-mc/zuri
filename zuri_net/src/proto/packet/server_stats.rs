@@ -1,7 +1,7 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Sent from the server to update the client on server statistics. It is purely used for telemetry.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ServerStats {
     /// The server tick when the statistics were collected.

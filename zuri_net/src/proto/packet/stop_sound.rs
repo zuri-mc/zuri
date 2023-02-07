@@ -1,8 +1,8 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Sent by the server to stop a sound playing to the player, such as a playing music disk track or
 /// other long-lasting sounds.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct StopSound {
     /// The name of the sound that should be stopped from playing. If no sound with this name is

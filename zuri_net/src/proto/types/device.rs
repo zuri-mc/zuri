@@ -1,7 +1,7 @@
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
-#[packet(i32)]
+#[proto(i32)]
 #[repr(i32)]
 #[derive(Debug, Copy, Clone, Serialize_repr, Deserialize_repr)]
 pub enum Device {

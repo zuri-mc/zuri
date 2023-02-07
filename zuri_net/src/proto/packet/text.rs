@@ -1,9 +1,9 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
 
 /// Sent by the client to the server to send chat messages, and by the server to the client to
 /// forward or send messages, which may be chat, popups, tips etc.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct Text {
     /// The type of the text sent. When a client sends this to the server, it should always be Chat.
@@ -18,7 +18,7 @@ pub struct Text {
     pub platform_chat_id: String,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum TextType {
     Raw(TextTypeSimple),
@@ -35,7 +35,7 @@ pub enum TextType {
     ObjectAnnouncement(TextTypeSimple),
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct TextTypeSimple {
     /// Specifies if any of the messages need to be translated. It seems that where % is found in
@@ -47,7 +47,7 @@ pub struct TextTypeSimple {
     pub message: String,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct TextTypeWithSource {
     /// Specifies if any of the messages need to be translated. It seems that where % is found in
@@ -62,7 +62,7 @@ pub struct TextTypeWithSource {
     pub message: String,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct TextTypeWithParams {
     /// Specifies if any of the messages need to be translated. It seems that where % is found in

@@ -1,10 +1,10 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::VarI32;
 
 /// Sent by the server to display an object as a scoreboard to the player. Once sent, it should be
 /// followed up by a SetScore packet to set the lines of the packet.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct SetDisplayObjective {
     /// The slot in which the scoreboard should be displayed.

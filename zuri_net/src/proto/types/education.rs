@@ -1,13 +1,13 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct EducationExternalLinkSettings {
     pub url: String,
     pub display_name: String,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct EducationSharedResourceURI {
     pub button_name: String,

@@ -1,10 +1,10 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
 use crate::proto::io::BlockPos;
 
 /// The purpose of this packet is currently unknown.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct GameTestRequest {
     /// The purpose of this field is currently unknown.
@@ -23,7 +23,7 @@ pub struct GameTestRequest {
     pub name: String,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum GameTestRequestRotation {
     None,

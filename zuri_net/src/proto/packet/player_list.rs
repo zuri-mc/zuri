@@ -1,11 +1,11 @@
 use uuid::Uuid;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::{VarI64, VarU32};
 use crate::proto::types::device::Device;
 use crate::proto::types::skin::Skin;
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Clone, Debug)]
 pub enum PlayerListAction {
     Add(PlayerListAdd),
@@ -17,7 +17,7 @@ pub enum PlayerListAction {
 /// packet is obligatory when sending an AddPlayer packet. The added player will not show up to a
 /// client if it has not been added to the player list, because several properties of the player are
 /// obtained from the player list, such as the skin.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PlayerList {
     /// The action to execute upon the player list. The entries that are contained specify which
@@ -25,7 +25,7 @@ pub struct PlayerList {
     pub action_type: PlayerListAction,
 }
 
-#[packet]
+#[proto]
 #[derive(Clone, Debug)]
 pub struct PlayerListRemove {
     /// A list of UUIDs to remove.
@@ -33,7 +33,7 @@ pub struct PlayerListRemove {
     pub uuids: Vec<Uuid>,
 }
 
-#[packet]
+#[proto]
 #[derive(Clone, Debug)]
 pub struct PlayerListAdd {
     #[len_type(VarU32)]
@@ -42,7 +42,7 @@ pub struct PlayerListAdd {
 
 /// An entry found in the PlayerList packet. It represents a single player using the UUID found in
 /// the entry, and contains several properties such as the skin.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PlayerListEntry {
     /// The UUID of the player as sent in the Login packet when the client joined the server. It

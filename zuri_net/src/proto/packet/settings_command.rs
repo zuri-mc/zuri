@@ -1,8 +1,8 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Sent by the client when it changes a setting in the settings that results in the issuing of a
 /// command to the server, such as when Show Coordinates is enabled.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct SettingsCommand {
     /// The full command line that was sent to the server as a result of the setting that the client

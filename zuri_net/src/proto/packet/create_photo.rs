@@ -1,8 +1,8 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Allows players to export photos from their portfolios into items in their inventory. This packet
 /// only works on the Education Edition version of Minecraft.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct CreatePhoto {
     /// The unique ID of the entity.

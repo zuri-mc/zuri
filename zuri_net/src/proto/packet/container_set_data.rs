@@ -1,4 +1,4 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
 use crate::proto::types::inventory::Window;
@@ -6,7 +6,7 @@ use crate::proto::types::inventory::Window;
 /// Sent by the server to update specific data of a single container, meaning a block such as a
 /// furnace or a brewing stand. This data is usually used by the client to display certain features
 /// client-side.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ContainerSetData {
     /// The window that the packet modifies. It must point to one of the windows that the client

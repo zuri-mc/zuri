@@ -1,4 +1,4 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::{VarI32, VarU64};
 
 use crate::proto::io::UBlockPos;
@@ -6,7 +6,7 @@ use crate::proto::types::player::PlayerActionType;
 
 /// Sent by the client when it executes any action, for example starting to sprint, swim, starting
 /// the breaking of a block, dropping an item, etc.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PlayerAction {
     /// The runtime ID of the player. The runtime ID is unique for each world session, and entities

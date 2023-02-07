@@ -1,5 +1,5 @@
 use glam::Vec3;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::{VarI64, VarU64};
 
 use crate::proto::types::entity_data::EntityMetadata;
@@ -7,7 +7,7 @@ use crate::proto::types::item::ItemInstance;
 
 /// Sent by the server to the client to make an item entity show up. It is one of the few entities
 /// that cannot be sent using the AddActor packet
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct AddItemActor {
     /// The unique ID of the entity. The unique ID is a value that remains consistent across

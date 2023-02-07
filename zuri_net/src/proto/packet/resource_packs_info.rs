@@ -1,8 +1,8 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Sent by the server to inform the client on what resource packs the server has. It sends a list
 /// of the resource packs it has and basic information on them like the version and description.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ResourcePacksInfo {
     /// Specifies if the client must accept the texture packs the server has in order to join the
@@ -26,7 +26,7 @@ pub struct ResourcePacksInfo {
 }
 
 /// Holds information about the behaviour pack such as its name, description and version.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct BehaviourPackInfo {
     /// The UUID of the behaviour pack. Each behaviour pack downloaded must have a different UUID in
@@ -52,7 +52,7 @@ pub struct BehaviourPackInfo {
 }
 
 /// Holds information about the texture pack such as its name, description and version.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct TexturePackInfo {
     /// The UUID of the texture pack. Each texture pack downloaded must have a different UUID in

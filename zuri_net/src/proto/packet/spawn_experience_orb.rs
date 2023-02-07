@@ -1,12 +1,12 @@
 use glam::Vec3;
 
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::VarI32;
 
 /// Sent by the server to spawn an experience orb entity client-side. Much like the AddPainting
 /// packet, it is one of the few packets that spawn an entity without using the AddActor packet.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct SpawnExperienceOrb {
     /// The position to spawn the experience orb on. If the entity is on a distance that the player

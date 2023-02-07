@@ -4,12 +4,12 @@ use num_traits::{FromPrimitive, ToPrimitive};
 
 use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_nbt::Value;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::{VarI32, VarI64, VarU32, VarU64};
 use crate::proto::io::{Reader, Writer};
 
-#[packet(VarI32)]
+#[proto(VarI32)]
 #[derive(Debug, Clone)]
 pub enum SpawnType {
     Player,
@@ -33,7 +33,7 @@ pub enum SubChunkResult {
     SuccessAllAir,
 }
 
-#[packet(VarU32)]
+#[proto(VarU32)]
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum Difficulty {
     Peaceful,
@@ -42,7 +42,7 @@ pub enum Difficulty {
     Hard,
 }
 
-#[packet(VarU32)]
+#[proto(VarU32)]
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum Dimension {
     Overworld,
@@ -58,7 +58,7 @@ pub enum HeightMapType {
     TooLow,
 }
 
-#[packet(VarI32)]
+#[proto(VarI32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum GameType {
     Survival,
@@ -70,7 +70,7 @@ pub enum GameType {
     Spectator,
 }
 
-#[packet(VarI32)]
+#[proto(VarI32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum Generator {
     Legacy,
@@ -81,7 +81,7 @@ pub enum Generator {
     Void,
 }
 
-#[packet(VarU32)]
+#[proto(VarU32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum PermissionLevel {
     Visitor,
@@ -90,7 +90,7 @@ pub enum PermissionLevel {
     Custom,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum EntityLinkType {
     Remove,
@@ -98,7 +98,7 @@ pub enum EntityLinkType {
     Passenger,
 }
 
-#[packet(VarU64)]
+#[proto(VarU64)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum UpdateBlockTransition {
     BlockToEntity,
@@ -125,14 +125,14 @@ impl BlockEntry {
     }
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct GenerationFeature {
     name: String,
     json: Bytes,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct DimensionDefinition {
     name: String,
@@ -140,7 +140,7 @@ pub struct DimensionDefinition {
     generator: VarI32,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct EntityLink {
     pub ridden_entity_unique_id: VarI64,
@@ -227,14 +227,14 @@ impl SubChunkOffset {
     }
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct CacheBlob {
     pub hash: u64,
     pub payload: Bytes,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ExperimentData {
     pub name: String,

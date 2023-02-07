@@ -1,6 +1,6 @@
 use bytes::Bytes;
 
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::VarU32;
 
@@ -9,7 +9,7 @@ use crate::proto::ints::VarU32;
 /// specific tab for the server in the settings of the client. A ModalFormResponse packet is sent by
 /// the client in response to a ServerSettingsResponse, when the client fills out the settings and
 /// closes the settings again.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ServerSettingsResponse {
     /// An ID used to identify the form. The ID is saved by the client and sent back when the player

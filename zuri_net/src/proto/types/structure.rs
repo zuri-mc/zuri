@@ -1,10 +1,10 @@
 use glam::Vec3;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::{VarI32, VarI64};
 
 use crate::proto::io::UBlockPos;
 
-#[packet(VarI32)]
+#[proto(VarI32)]
 #[derive(Debug, Clone)]
 pub enum StructureBlockType {
     Data,
@@ -23,7 +23,7 @@ pub enum StructureMirrorAxis {
     Both,
 }
 
-#[packet(VarI32)]
+#[proto(VarI32)]
 #[derive(Debug, Clone)]
 pub enum StructureRedstoneSaveMode {
     Memory,
@@ -38,7 +38,7 @@ pub enum StructureRotation {
     Rotate270,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum StructureTemplateDataRequestType {
     None,
@@ -55,7 +55,7 @@ pub enum StructureTemplateDataResponseType {
     Import,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum AnimationMode {
     None,
@@ -63,7 +63,7 @@ pub enum AnimationMode {
     Blocks,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct StructureSettings {
     pub palette_name: String,

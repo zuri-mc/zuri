@@ -1,6 +1,6 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::io::{Reader, Writer};
 
@@ -85,7 +85,7 @@ impl AttributeModifier {
     }
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, Default)]
 pub struct AttributeValue {
     pub name: String,

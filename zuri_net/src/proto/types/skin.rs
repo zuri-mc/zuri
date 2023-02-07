@@ -1,7 +1,7 @@
 use bytes::Bytes;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
-#[packet]
+#[proto]
 #[derive(Debug, Default, Clone)]
 pub struct Skin {
     pub skin_id: String,
@@ -33,7 +33,7 @@ pub struct Skin {
     pub trusted: bool,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct SkinAnimation {
     pub image_width: u32,
@@ -44,7 +44,7 @@ pub struct SkinAnimation {
     pub expression_type: u32,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PersonaPiece {
     pub piece_id: String,
@@ -54,7 +54,7 @@ pub struct PersonaPiece {
     pub product_id: String,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PersonaPieceTintColour {
     pub piece_type: String,

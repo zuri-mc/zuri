@@ -1,9 +1,9 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::{VarI64, VarU32};
 
 /// Sent by the server to make a specific 'boss event' occur in the world. It includes features such
 /// as showing a boss bar to the player and turning the sky dark.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct BossEvent {
     /// The unique ID of the boss entity that the boss event sent involves. The health percentage
@@ -14,7 +14,7 @@ pub struct BossEvent {
     pub event_type: BossEventType,
 }
 
-#[packet(VarU32)]
+#[proto(VarU32)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum BossEventColour {
     Grey,
@@ -26,7 +26,7 @@ pub enum BossEventColour {
     White,
 }
 
-#[packet(VarU32)]
+#[proto(VarU32)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum BossEventType {
     Show(BossEventShow),
@@ -40,7 +40,7 @@ pub enum BossEventType {
     Request(BossEventRequest),
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct BossEventShow {
     /// The title shown above the boss bar. It currently does not function, and instead uses the
@@ -59,28 +59,28 @@ pub struct BossEventShow {
     pub overlay: VarU32,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct BossEventRegisterPlayer {
     /// The unique ID of the player that is registered to or unregistered from the boss fight.
     pub player_unique_id: VarI64,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct BossEventUnregisterPlayer {
     /// The unique ID of the player that is registered to or unregistered from the boss fight.
     pub player_unique_id: VarI64,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct BossEventRequest {
     /// The unique ID of the player that is registered to or unregistered from the boss fight.
     pub player_unique_id: VarI64,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct BossEventHealthPercentage {
     /// The percentage of health that is shown in the boss bar. It currently does not function, and
@@ -88,7 +88,7 @@ pub struct BossEventHealthPercentage {
     pub health_percentage: f32,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct BossEventTitle {
     /// The title shown above the boss bar. It currently does not function, and instead uses the
@@ -96,7 +96,7 @@ pub struct BossEventTitle {
     pub boss_bar_title: String,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct BossEventAppearanceProperties {
     /// The purpose of this field is currently unknown.
@@ -109,7 +109,7 @@ pub struct BossEventAppearanceProperties {
     pub overlay: VarU32,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct BossEventTexture {
     /// The colour of the boss bar that is shown when a player is subscribed. This is functional as

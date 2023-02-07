@@ -1,4 +1,4 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
 use crate::proto::types::item::ItemStack;
 
@@ -6,7 +6,7 @@ use crate::proto::types::item::ItemStack;
 /// this packet replaces the previous method - sending an InventoryContent packet with creative
 /// inventory window ID. As of v1.16.100, this packet must be sent during the login sequence. Not
 /// sending it will stop the client from joining the server.
-#[packet(VarU32)]
+#[proto(VarU32)]
 #[derive(Debug, Clone)]
 pub struct CreativeContent {
     /// A list of the items that should be added to the creative inventory.
@@ -15,7 +15,7 @@ pub struct CreativeContent {
 }
 
 /// A creative item present in the creative inventory.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct CreativeItem {
     /// A unique ID for the creative item. It has to be unique for each creative item sent to the

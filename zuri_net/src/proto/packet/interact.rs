@@ -1,17 +1,17 @@
 use glam::Vec3;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU64;
 
 /// Sent by the client when it interacts with another entity in some way. It used to be used for
 /// normal entity and block interaction, but this is no longer the case now.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct Interact {
     /// The type of action that was executed by the player.
     pub action_type: InteractionAction,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[repr(u8)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum InteractionAction {
@@ -21,7 +21,7 @@ pub enum InteractionAction {
     OpenInventory(OpenInventory),
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct InteractionLeaveVehicle {
     /// The runtime ID of the entity that the player interacted with.
@@ -30,7 +30,7 @@ pub struct InteractionLeaveVehicle {
     pub position: Vec3,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct InteractionMouseOverEntity {
     /// The runtime ID of the entity that the player interacted with.
@@ -40,14 +40,14 @@ pub struct InteractionMouseOverEntity {
     pub position: Vec3,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct InteractionNPCOpen {
     /// The runtime ID of the entity that the player interacted with.
     pub target_entity_runtime_id: VarU64,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct OpenInventory {
     /// Unused.

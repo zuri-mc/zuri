@@ -3,7 +3,7 @@ use glam::{IVec3, Vec3};
 use num_derive::{FromPrimitive, ToPrimitive};
 
 use zuri_nbt::Value;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::{VarI32, VarU32};
 
 use crate::proto::io::{Readable, Reader, Writable, Writer};
@@ -25,7 +25,7 @@ impl Readable<EntityMetadata> for EntityMetadata {
     }
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct EntityProperties {
     #[len_type(VarU32)]
@@ -34,14 +34,14 @@ pub struct EntityProperties {
     pub float_properties: Vec<FloatEntityProperty>,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct IntegerEntityProperty {
     pub index: VarU32,
     pub value: VarI32,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct FloatEntityProperty {
     pub index: VarU32,

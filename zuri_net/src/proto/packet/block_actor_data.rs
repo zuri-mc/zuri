@@ -1,10 +1,10 @@
 use zuri_nbt::encoding::NetworkLittleEndian;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::io::{NBT, UBlockPos};
 
 /// Sent by the server to update data of a block entity, for example the data of a chest.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct BlockActorData {
     /// The position of the block that holds the block entity. If no block entity is at this

@@ -1,9 +1,9 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
 /// Sent by the server to the client to inform the client of updated progress on a lesson. This
 /// packet only functions on the Minecraft: Education Edition version of the game.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct LessonProgress {
     /// The action the client should perform to show progress.
@@ -14,7 +14,7 @@ pub struct LessonProgress {
     pub identifier: String,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum LessonAction {
     Start,

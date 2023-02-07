@@ -1,6 +1,6 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::ToPrimitive;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
@@ -83,7 +83,7 @@ pub enum ContainerDataBrewingStand {
     FuelTotal,
 }
 
-#[packet(VarI32)]
+#[proto(VarI32)]
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum ContainerType {
     Inventory = -1,

@@ -1,9 +1,9 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::VarI32;
 
 /// Sent from the server to the client to change one of the properties of a mob client-side.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ChangeMobProperty {
     /// The unique ID of the entity whose property is being changed.

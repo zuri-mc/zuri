@@ -1,8 +1,8 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Sent in response to the GameTestRequest packet, with a boolean indicating whether the test was
 /// successful or not, and an error string if the test failed.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct GameTestResults {
     /// The name of the test.

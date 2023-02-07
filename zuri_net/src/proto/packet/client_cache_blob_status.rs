@@ -1,10 +1,10 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::VarU32;
 
 /// Part of the blob cache protocol. It is sent by the client to let the server know what blobs it
 /// needs and which blobs it already has, in an ACK type system.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ClientCacheBlobStatus {
     #[len_for(miss_hashes)]

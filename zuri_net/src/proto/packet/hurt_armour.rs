@@ -1,11 +1,11 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::{VarI32, VarI64};
 
 /// Sent by the server to damage the player's armour after being hit. The packet should never be
 /// used by servers as it hands the responsibility over to the player completely, while the server
 /// can easily reliably update the armour damage of players itself.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct HurtArmour {
     /// The cause of the damage dealt to the armour.

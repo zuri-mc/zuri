@@ -1,4 +1,4 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
 
 use crate::proto::io::UBlockPos;
@@ -19,7 +19,7 @@ impl BlockUpdate {
 
 /// Sent by the server to update a block client-side, without resending the entire chunk that the
 /// block is located in. It is particularly useful for block breaking/placing.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct UpdateBlock {
     /// The block position at which a block is updated.

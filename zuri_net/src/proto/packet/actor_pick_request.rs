@@ -1,8 +1,8 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Sent by the client when it tries to pick an entity, so that it gets a spawn egg which can spawn
 /// that entity.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ActorPickRequest {
     /// The unique ID of the entity that was attempted to be picked. The server must find the type

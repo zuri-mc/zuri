@@ -1,6 +1,6 @@
 use bytes::Bytes;
 use glam::Vec3;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI64;
 
 use crate::proto::types::world::Dimension;
@@ -8,7 +8,7 @@ use crate::proto::types::world::Dimension;
 /// Sent by the server to spawn a particle effect client-side. Unlike other packets that result in
 /// the appearing of particles, this packet can show particles that are not hardcoded in the client.
 /// They can be added and changed through behaviour packs to implement custom particles.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct SpawnParticleEffect {
     /// The dimension that the particle is spawned in. Its exact usage is not clear, as the

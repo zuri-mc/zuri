@@ -1,10 +1,10 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::types::command::CommandOrigin;
 
 /// Sent by the client to request the execution of a server-side command. Although some servers
 /// support sending commands using the Text packet, this packet is guaranteed to have the correct
 /// result.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct CommandRequest {
     /// The raw entered command line. The client does no parsing of the command line by itself

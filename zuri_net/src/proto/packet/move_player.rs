@@ -1,11 +1,11 @@
 use glam::Vec3;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU64;
 
 /// Sent by players to send their movement to the server, and by the server to update the movement
 /// of player entities to other players. When using the new movement system, this is only sent by
 /// the server.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct MovePlayer {
     /// The runtime ID of the player. The runtime ID is unique for each world session, and entities
@@ -30,7 +30,7 @@ pub struct MovePlayer {
     pub tick: u64,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum MoveMode {
     Normal(MoveModeNotTeleport),
@@ -39,7 +39,7 @@ pub enum MoveMode {
     Rotation(MoveModeNotTeleport),
 }
 
-#[packet(i32)]
+#[proto(i32)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum TeleportCause {
     None,
@@ -49,7 +49,7 @@ pub enum TeleportCause {
     Behaviour,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct MoveModeNotTeleport {
     /// Specifies if the player is considered on the ground. Note that proxies or hacked clients
@@ -60,7 +60,7 @@ pub struct MoveModeNotTeleport {
     pub ridden_entity_runtime_id: VarU64,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct MoveModeTeleport {
     /// Specifies if the player is considered on the ground. Note that proxies or hacked clients

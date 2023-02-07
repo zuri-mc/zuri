@@ -1,11 +1,11 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::{VarU32, VarU64};
 
 use crate::proto::io::BlockPos;
 use crate::proto::types::world::UpdateBlockTransition;
 
 /// Essentially just the UpdateBlock packet, however for a set of blocks in a sub-chunk.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct UpdateSubChunkBlocks {
     /// The position of the sub-chunk being referred to.
@@ -19,7 +19,7 @@ pub struct UpdateSubChunkBlocks {
 }
 
 /// Used by the UpdateSubChunkBlocks packet to specify a block change entry.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct BlockChangeEntry {
     /// The position of the block being changed.

@@ -1,12 +1,12 @@
 use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
 use crate::proto::io::{Reader, Writer};
 
-#[packet(VarI32)]
+#[proto(VarI32)]
 #[derive(Debug, Clone, Copy, FromPrimitive, ToPrimitive)]
 pub enum PlayerActionType {
     StartBreak,
@@ -81,7 +81,7 @@ pub enum TeleportCause {
     Behaviour,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PlayerMovementSettings {
     pub movement_type: VarI32,

@@ -1,11 +1,11 @@
 use zuri_nbt::encoding::NetworkLittleEndian;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::io::{NBT, UBlockPos};
 use crate::proto::types::world::Dimension;
 
 /// Sends a volume entity's definition and metadata from server to client.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct AddVolumeEntity {
     /// The runtime ID of the volume. The runtime ID is unique for each world session, and entities

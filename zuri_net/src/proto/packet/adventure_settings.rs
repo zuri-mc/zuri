@@ -1,4 +1,4 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
 
 use crate::proto::types::command::CommandPermissionLevel;
@@ -40,7 +40,7 @@ pub enum ActionPermission {
 /// only. The client may also send this packet to the server when it updates one of these settings
 /// through the in-game settings interface. The server should verify if the player actually has
 /// permission to update those settings.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct AdventureSettings {
     /// A set of flags that specify certain properties of the player, such as whether or not it can

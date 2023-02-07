@@ -1,11 +1,11 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::{VarU32, VarU64};
 use crate::proto::types::attribute::Attribute;
 
 /// Sent by the server to update an amount of attributes of any entity in the world. These
 /// attributes include ones such as the health or the movement speed of the entity.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct UpdateAttributes {
     /// The runtime ID of the entity. The runtime ID is unique for each world session, and entities

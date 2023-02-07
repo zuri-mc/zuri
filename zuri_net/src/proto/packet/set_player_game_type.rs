@@ -1,9 +1,9 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::types::world::GameType;
 
 /// Sent by the server to update the game type of a player.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct SetPlayerGameType {
     /// The new game type of the player. Some of these game types require additional flags to be set

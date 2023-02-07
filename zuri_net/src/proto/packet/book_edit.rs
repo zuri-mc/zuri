@@ -1,15 +1,15 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Sent by the client when it edits a book. It is sent each time a modification was made and the
 /// player stops its typing 'session', rather than simply after closing the book.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct BookEdit {
     /// The type of the book edit action. The data obtained depends on what type this is.
     pub action_type: BookAction,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone, PartialEq)]
 pub enum BookAction {
     ReplacePage(ReplaceOrAddPage),
@@ -19,7 +19,7 @@ pub enum BookAction {
     Sign(Sign),
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct ReplaceOrAddPage {
     /// The slot in which the book that was edited may be found. Typically, the server should check
@@ -36,7 +36,7 @@ pub struct ReplaceOrAddPage {
     pub photo_name: String,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct DeletePage {
     /// The slot in which the book that was edited may be found. Typically, the server should check
@@ -47,7 +47,7 @@ pub struct DeletePage {
     pub page_number: u8,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct SwapPages {
     /// The slot in which the book that was edited may be found. Typically, the server should check
@@ -60,7 +60,7 @@ pub struct SwapPages {
     pub secondary_page_number: u8,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Sign {
     /// The slot in which the book that was edited may be found. Typically, the server should check

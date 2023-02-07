@@ -1,10 +1,10 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::types::world::EntityLink;
 
 /// Sent by the server to initiate an entity link client-side, meaning one entity will start riding
 /// another.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct SetActorLink {
     /// The link to be set client-side. It links two entities together, so that one entity rides

@@ -1,9 +1,9 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
 /// Sent by the client when it receives an invalid packet from the server. It holds some information
 /// on the error that occurred.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PacketViolationWarning {
     /// The type of violation.
@@ -17,13 +17,13 @@ pub struct PacketViolationWarning {
     pub violation_context: String,
 }
 
-#[packet(VarI32)]
+#[proto(VarI32)]
 #[derive(Debug, Clone)]
 pub enum PacketViolationType {
     Malformed,
 }
 
-#[packet(VarI32)]
+#[proto(VarI32)]
 #[derive(Debug, Clone)]
 pub enum PacketViolationSeverity {
     Warning,

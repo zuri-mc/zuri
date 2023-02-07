@@ -1,10 +1,10 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::io::UBlockPos;
 
 use crate::proto::types::structure::{StructureSettings, StructureTemplateDataRequestType};
 
 /// Sent by the client to request data of a structure.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct StructureTemplateDataRequest {
     /// Name of the structure that was set in the structure block's UI. This is the name used to

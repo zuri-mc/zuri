@@ -1,11 +1,11 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::{VarI64, VarU32};
 use crate::proto::types::colour::RGBA;
 
 /// Sent by the client to request the server to deliver information of a certain map in the
 /// inventory of the player. The server should respond with a ClientBoundMapItemData packet.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct MapInfoRequest {
     /// The unique identifier that represents the map that is requested over network. It remains
@@ -18,7 +18,7 @@ pub struct MapInfoRequest {
 }
 
 /// The request for the colour of a pixel in a MapInfoRequest packet.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PixelRequest {
     colour: RGBA,

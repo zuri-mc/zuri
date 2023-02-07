@@ -1,5 +1,5 @@
 use glam::Vec3;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
 use crate::proto::types::sound_event::SoundEvent;
@@ -8,7 +8,7 @@ use crate::proto::types::sound_event::SoundEvent;
 /// example, play a stepping sound or a shear sound. The packet is also sent by the client, in which
 /// case it could be forwarded by the server to the other players online. If possible, the packets
 /// from the client should be ignored however, and the server should play them on its own accord.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct LevelSoundEvent {
     /// The type of the sound to play. Some of the sound types require additional data, which is set

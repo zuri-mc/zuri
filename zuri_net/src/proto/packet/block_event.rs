@@ -1,11 +1,11 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
 use crate::proto::io::UBlockPos;
 
 /// Sent by the server to initiate a certain event that has to do with blocks in specific, for
 /// example opening chests.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct BlockEvent {
     /// The position of the block that an event occurred at.
@@ -18,7 +18,7 @@ pub struct BlockEvent {
     pub event_data: VarI32,
 }
 
-#[packet(VarI32)]
+#[proto(VarI32)]
 #[derive(Debug, Clone)]
 pub enum BlockEventType {
     None,

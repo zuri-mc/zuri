@@ -1,6 +1,6 @@
 use glam::Vec3;
 use num_derive::{FromPrimitive, ToPrimitive};
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
 
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
@@ -21,7 +21,7 @@ impl ClientInputLock {
 
 /// Sent by the server to the client to lock certain inputs the client usually has, such as
 /// movement, jumping, sneaking, and more.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct UpdateClientInputLocks {
     /// An encoded bitset of all locks that are currently active.

@@ -10,10 +10,10 @@ pub mod chan;
 
 #[cfg(test)]
 mod tests {
-    use zuri_net_derive::packet;
+    use zuri_net_derive::proto;
     use crate::proto::ints::VarU32;
 
-    #[packet]
+    #[proto]
     struct TestPacket {
         pub test: String,
         pub test2: i64,
@@ -28,10 +28,10 @@ mod tests {
         pub my_enum: EnumPacket,
     }
 
-    #[packet]
+    #[proto]
     struct UnitPacket;
 
-    #[packet(u32)] // the type contained in the brackets is the default type to write this enum with
+    #[proto(u32)] // the type contained in the brackets is the default type to write this enum with
     enum EnumPacket {
         Variant1,
         Variant2,
@@ -40,7 +40,7 @@ mod tests {
         Variant5,
     }
 
-    #[packet(u32)]
+    #[proto(u32)]
     enum DataEnumPacket {
         Variant1(Data1),
         Variant2(Data2),
@@ -48,9 +48,9 @@ mod tests {
         Variant4(Data1, Data2),
     }
 
-    #[packet]
+    #[proto]
     struct Data1;
-    #[packet]
+    #[proto]
     struct Data2;
 
 }

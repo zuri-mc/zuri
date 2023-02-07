@@ -1,6 +1,6 @@
 use glam::Vec3;
 
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::VarU64;
 
@@ -8,7 +8,7 @@ use crate::proto::ints::VarU64;
 /// packet fills the "history" of that component and entity movement is computed based on the
 /// points. Vanilla sends this packet instead of the SetActorMotion packet when 'spatial
 /// optimisations' are enabled.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct MotionPredictionHints {
     /// The runtime ID of the entity whose velocity is sent to the client.

@@ -1,4 +1,4 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
 /// Sent by the client to request the position and dimension of a 'tracking ID'. These IDs are
@@ -6,7 +6,7 @@ use crate::proto::ints::VarI32;
 /// this request to find the position a lodestone compass needs to point to. If found, it will point
 /// to the lodestone. If not, it will start spinning around. A PositionTrackingDBServerBroadcast
 /// packet should be sent in response to this packet.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PositionTrackingDBClientRequest {
     /// The action that should be performed upon the receiving of the packet.
@@ -17,7 +17,7 @@ pub struct PositionTrackingDBClientRequest {
     pub tracking_id: VarI32,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum PositionTrackingDBRequestAction {
     Query

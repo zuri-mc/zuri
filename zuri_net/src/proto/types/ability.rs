@@ -1,5 +1,5 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum Ability {
@@ -24,7 +24,7 @@ pub enum Ability {
     Count,
 }
 
-#[packet(u16)]
+#[proto(u16)]
 #[derive(Debug, Clone)]
 pub enum AbilityLayerType {
     CustomCache,
@@ -34,7 +34,7 @@ pub enum AbilityLayerType {
     Editor,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct AbilityData {
     pub entity_unique_id: i64,
@@ -44,7 +44,7 @@ pub struct AbilityData {
     pub layers: Vec<AbilityLayer>,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct AbilityLayer {
     layer_type: AbilityLayerType,

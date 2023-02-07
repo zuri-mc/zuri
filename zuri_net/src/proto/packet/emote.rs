@@ -1,6 +1,6 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::VarU64;
 
@@ -17,7 +17,7 @@ impl EmoteFlag {
 
 /// Sent by both the server and the client. When the client sends an emote, it sends this packet to
 /// the server, after which the server will broadcast the packet to other players online.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct Emote {
     /// The entity that sent the emote. When a player sends this packet, it has this field set as

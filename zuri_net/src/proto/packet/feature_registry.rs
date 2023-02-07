@@ -1,4 +1,4 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::VarU32;
 use crate::proto::types::world::GenerationFeature;
@@ -7,7 +7,7 @@ use crate::proto::types::world::GenerationFeature;
 /// used in combination with the client-side world generation system introduced in v1.19.20,
 /// allowing the client to completely generate the chunks of the world without having to rely on the
 /// server.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct FeatureRegistry {
     /// A list of all registered world generation features.

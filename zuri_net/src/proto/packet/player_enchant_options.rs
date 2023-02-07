@@ -1,4 +1,4 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
 use crate::proto::types::item_stack::EnchantmentOption;
 
@@ -9,7 +9,7 @@ use crate::proto::types::item_stack::EnchantmentOption;
 /// empty PlayerEnchantOptions packet when the player opens the enchantment table (air is present in
 /// the enchantment table slot) and sends the packet with actual enchantments in it when items are
 /// put in that can have enchantments.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PlayerEnchantOptions {
     /// A list of possible enchantment options for the item that was put into the enchantment table.

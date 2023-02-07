@@ -1,11 +1,11 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::VarU32;
 use crate::proto::types::world::ExperimentData;
 
 /// Sent by the server to send the order in which resource packs and behaviour packs should be
 /// applied (and downloaded) by the client.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ResourcePackStack {
     /// Specifies if the client must accept the texture packs the server has in order to join the
@@ -34,7 +34,7 @@ pub struct ResourcePackStack {
 
 /// Resource pack sent on the stack of the client. When sent, the client will apply them in the
 /// order of the stack sent.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct StackResourcePack {
     /// The UUID of the resource pack. Each resource pack downloaded must have a different UUID in

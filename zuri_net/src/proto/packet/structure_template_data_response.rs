@@ -1,12 +1,12 @@
 use zuri_nbt::encoding::NetworkLittleEndian;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::io::NBT;
 use crate::proto::types::structure::StructureTemplateDataRequestType;
 
 /// Sent by the server to send data of a structure to the client in response to a
 /// StructureTemplateDataRequest packet.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct StructureTemplateDataResponse {
     /// The name of the structure that was requested. This is the name used to export the structure

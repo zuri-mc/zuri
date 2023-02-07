@@ -1,9 +1,9 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU64;
 
 /// Sent by the client when it interacts with an NPC. The packet is specifically made for Education
 /// Edition, where NPCs are available to use.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct NPCRequest {
     /// The runtime ID of the NPC entity that the player interacted with. It is the same as sent by
@@ -23,7 +23,7 @@ pub struct NPCRequest {
     pub scene_name: String,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum NPCRequestAction {
     SetActions,

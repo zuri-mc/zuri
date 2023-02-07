@@ -1,11 +1,11 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
 use crate::proto::io::UBlockPos;
 use crate::proto::types::world::{Dimension, SpawnType};
 
 /// Sent by the server to update the spawn position of a player, for example when sleeping in a bed.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct SetSpawnPosition {
     /// Specifies the behaviour of the spawn set. If World is set, the position that compasses will

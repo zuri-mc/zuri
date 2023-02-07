@@ -1,8 +1,8 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Sent by the client to request a chunk of data from a particular resource pack, that it has
 /// obtained information about in a ResourcePackDataInfo packet.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ResourcePackChunkRequest {
     /// The unique ID of the resource pack that the chunk of data is requested from.

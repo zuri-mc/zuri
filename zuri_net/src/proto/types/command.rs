@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use bytes::Bytes;
 use num_derive::{FromPrimitive, ToPrimitive};
 use uuid::Uuid;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
 
 use crate::proto::io::{Reader, Writer};
@@ -43,7 +43,7 @@ pub enum CommandConstraint {
     HostPermissions,
 }
 
-#[packet(VarU32)]
+#[proto(VarU32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum CommandOriginType {
     Player,
@@ -64,7 +64,7 @@ pub enum CommandOriginType {
     Executor,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Copy, Clone, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum CommandOutputType {
     None,
@@ -74,7 +74,7 @@ pub enum CommandOutputType {
     DataSet,
 }
 
-#[packet(VarU32)]
+#[proto(VarU32)]
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum CommandPermissionLevel {
     Normal,
@@ -85,7 +85,7 @@ pub enum CommandPermissionLevel {
     Internal,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum SoftEnumAction {
     Add,
@@ -199,7 +199,7 @@ impl CommandEnumConstraint {
     }
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct CommandOrigin {
     pub origin: CommandOriginType,

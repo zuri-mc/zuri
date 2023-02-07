@@ -2,7 +2,7 @@ use bytes::BytesMut;
 use num_derive::{FromPrimitive, ToPrimitive};
 
 use zuri_nbt::{encoding::LittleEndian, Value};
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::io::{Readable, Reader, Writable, Writer};
 
@@ -13,7 +13,7 @@ pub enum UseItemAction {
     BreakBlock,
 }
 
-#[packet(i32)]
+#[proto(i32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum UseItemMethod {
     EquipArmour,

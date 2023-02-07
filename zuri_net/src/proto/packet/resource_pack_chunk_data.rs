@@ -1,11 +1,11 @@
 use bytes::Bytes;
 
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Sent to the client so that the client can download the resource pack. Each packet holds a chunk
 /// of the compressed resource pack, of which the size is defined in the ResourcePackDataInfo packet
 /// sent before.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ResourcePackChunkData {
     /// The unique ID of the resource pack that the chunk of data is taken out of.

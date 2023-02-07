@@ -1,10 +1,10 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
 use crate::proto::types::world::Dimension;
 
 /// Sent to the client to indicate that a volume entity has been removed.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct RemoveVolumeEntity {
     /// The entity runtime ID of the volume entity that was removed.

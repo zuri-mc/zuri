@@ -1,6 +1,6 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum ActorEventType {
     Jump = 1,

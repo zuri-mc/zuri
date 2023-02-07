@@ -1,10 +1,10 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarU64;
 use crate::proto::types::item::ItemInstance;
 
 /// Sent by the server to the client to update the armour an entity is wearing. It is sent for both
 /// players and other entities, such as zombies.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct MobArmourEquipment {
     /// The runtime ID of the entity. The runtime ID is unique for each world session, and entities

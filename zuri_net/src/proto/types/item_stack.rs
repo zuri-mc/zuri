@@ -4,7 +4,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
 use zuri_nbt::{encoding::NetworkLittleEndian, Value};
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::encodable_enum;
 use crate::proto::ints::VarU32;
@@ -141,14 +141,14 @@ impl Readable<ItemEnchantments> for ItemEnchantments {
     }
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct EnchantmentInstance {
     pub enchantment_type: u8,
     pub level: u8,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct EnchantmentOption {
     pub cost: VarU32,

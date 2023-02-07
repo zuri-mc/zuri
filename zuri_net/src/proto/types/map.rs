@@ -1,7 +1,7 @@
 use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::io::{Reader, Writer};
 use crate::proto::types::colour::VarRGBA;
@@ -25,7 +25,7 @@ impl MapUpdateFlag {
     }
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct MapDecoration {
     pub decoration_type: u8,

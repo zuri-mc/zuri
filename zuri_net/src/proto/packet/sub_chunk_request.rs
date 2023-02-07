@@ -1,11 +1,11 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
 use crate::proto::io::BlockPos;
 use crate::proto::types::world::{Dimension, SubChunkOffset};
 
 /// Requests specific sub-chunks from the server using a center point.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct SubChunkRequest {
     /// The dimension of the sub-chunks.

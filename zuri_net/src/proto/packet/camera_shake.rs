@@ -1,8 +1,8 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 /// Sent by the server to make the camera shake client-side. This feature was added for map-making
 /// partners.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct CameraShake {
     /// The intensity of the shaking. The client limits this value to 4, so anything higher may not
@@ -17,14 +17,14 @@ pub struct CameraShake {
     pub action: CameraShakeAction,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum CameraShakeAction {
     Add,
     Stop,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum CameraShakeType {
     Positional,

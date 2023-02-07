@@ -1,10 +1,10 @@
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::io::BlockPos;
 
 /// Sent by the client when it requests to pick a block in the world and place its item in their
 /// inventory.
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct BlockPickRequest {
     /// The position at which the client requested to pick the block. The block at that position

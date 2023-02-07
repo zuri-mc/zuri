@@ -1,5 +1,5 @@
 use zuri_nbt::encoding::NetworkLittleEndian;
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
 
 use crate::proto::io::{NBT};
@@ -11,7 +11,7 @@ use crate::proto::io::{NBT};
 /// those tracking IDs. What is actually done with the data sent depends on what the client chooses
 /// to do with it. For the lodestone compass, it is used to make the compass point towards
 /// lodestones and to make it spin if the lodestone at a position is no longer there.\
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PositionTrackingDBServerBroadcast {
     /// Specifies the status of the position tracking DB response. The `Update` action is sent for
@@ -25,7 +25,7 @@ pub struct PositionTrackingDBServerBroadcast {
     pub payload: NBT<NetworkLittleEndian>,
 }
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum PositionTrackingDBBroadcastAction {
     Update,

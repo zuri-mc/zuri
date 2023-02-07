@@ -4,13 +4,13 @@ use bytes::Bytes;
 use glam::{IVec3, Vec3};
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
-use zuri_net_derive::packet;
+use zuri_net_derive::proto;
 
 use crate::proto::ints::{VarI32, VarU32, VarU64};
 use crate::proto::io::{Reader, Readable, Writer, Writable};
 use crate::proto::types::item::ItemInstance;
 
-#[packet(u8)]
+#[proto(u8)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum Window {
     Inventory = 0,
@@ -88,14 +88,14 @@ impl Default for InventoryAction {
     }
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct LegacySetItemSlot {
     pub container_id: u8,
     pub slots: Bytes,
 }
 
-#[packet(u8)] // todo: figure out which type is needed here
+#[proto(u8)] // todo: figure out which type is needed here
 #[derive(Debug, Clone)]
 pub enum InventoryTransactionData {
     NormalTransaction = 0,
@@ -105,15 +105,15 @@ pub enum InventoryTransactionData {
     ReleaseItemTransaction = 4,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct MismatchTransaction;
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct NormalTransaction {}
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ReleaseItemTransaction {
     pub action_type: ReleaseItemAction,
@@ -122,14 +122,14 @@ pub struct ReleaseItemTransaction {
     pub head_position: Vec3,
 }
 
-#[packet(VarU32)]
+#[proto(VarU32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum ReleaseItemAction {
     Release,
     Consume,
 }
 
-#[packet]
+#[proto]
 #[derive(Debug, Clone)]
 pub struct UseItemOnEntityTransaction {
     pub target_entity_runtime_id: VarU64,
