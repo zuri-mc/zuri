@@ -7,9 +7,9 @@ use crate::proto::ints::VarU32;
 #[packet]
 #[derive(Debug, Clone)]
 pub struct ClientCacheBlobStatus {
-    #[size_for(miss_hashes)]
+    #[len_for(miss_hashes)]
     __: VarU32,
-    #[size_for(hit_hashes)]
+    #[len_for(hit_hashes)]
     __: VarU32,
     /// A list of blob hashes that the client does not have a blob available for. The server should
     /// send the blobs matching these hashes as soon as possible.

@@ -11,10 +11,10 @@ pub struct UpdateSubChunkBlocks {
     /// The position of the sub-chunk being referred to.
     pub position: BlockPos,
     /// Each updated block change entry.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub blocks: Vec<BlockChangeEntry>,
     /// Each updated block change entry for the second layer, usually for waterlogged blocks.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub extra: Vec<BlockChangeEntry>,
 }
 

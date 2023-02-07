@@ -16,6 +16,6 @@ pub struct SubChunkRequest {
     /// sub-chunk index.
     pub position: BlockPos,
     /// Requested offsets around the center point.
-    #[size_type(u32)]
+    #[len_type(u32)]
     pub offsets: Vec<SubChunkOffset>,
 }

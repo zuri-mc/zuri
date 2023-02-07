@@ -12,6 +12,6 @@ pub struct GameRulesChanged {
     /// necessarily need to be sent to the client. Only changed game rules need to be sent in this
     /// packet. Game rules that were not changed do not need to be sent if the client is already
     /// updated on them.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub game_rules: Vec<GameRule>,
 }

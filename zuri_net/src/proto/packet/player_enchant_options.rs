@@ -13,6 +13,6 @@ use crate::proto::types::item_stack::EnchantmentOption;
 #[derive(Debug, Clone)]
 pub struct PlayerEnchantOptions {
     /// A list of possible enchantment options for the item that was put into the enchantment table.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub options: Vec<EnchantmentOption>,
 }

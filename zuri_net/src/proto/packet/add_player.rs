@@ -61,7 +61,7 @@ pub struct AddPlayer {
     /// A list of entity links that are currently active on the player. These links alter the way
     /// the player shows up when first spawned in terms of it shown as riding an entity. Setting
     /// these links is important for new viewers to see the player is riding another entity.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub entity_links: Vec<EntityLink>,
     /// The device ID set in one of the files found in the storage of the device of the player. It
     /// may be changed freely, so it should not be relied on for anything.

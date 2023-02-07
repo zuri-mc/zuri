@@ -11,6 +11,6 @@ use crate::proto::types::world::GenerationFeature;
 #[derive(Debug, Clone)]
 pub struct FeatureRegistry {
     /// A list of all registered world generation features.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub features: Vec<GenerationFeature>,
 }

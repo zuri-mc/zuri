@@ -15,6 +15,6 @@ pub struct EmoteList {
     /// player runtime ID is always that of the player itself.
     pub player_runtime_id: VarU64,
     /// A list of emote pieces that the player with the runtime ID above has.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub emote_pieces: Vec<Uuid>,
 }

@@ -12,6 +12,6 @@ use crate::proto::types::item_stack::ItemStackRequestEntry;
 pub struct ItemStackRequest {
     /// A list of item stack requests. These requests are all separate, but the client buffers the
     /// requests, so you might find multiple unrelated requests in this packet.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub requests: Vec<ItemStackRequestEntry>,
 }

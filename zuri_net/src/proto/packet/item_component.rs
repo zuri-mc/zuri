@@ -8,6 +8,6 @@ use crate::proto::types::item_stack::ItemComponentEntry;
 #[derive(Debug, Clone)]
 pub struct ItemComponent {
     /// A list of all custom items with their respective components set.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub items: Vec<ItemComponentEntry>,
 }

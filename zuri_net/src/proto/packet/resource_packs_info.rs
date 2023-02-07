@@ -16,12 +16,12 @@ pub struct ResourcePacksInfo {
     pub forcing_server_packs: bool,
     /// A list of behaviour packs that the client needs to download before joining the server. All
     /// of these behaviour packs will be applied together.
-    #[size_type(u16)]
+    #[len_type(u16)]
     pub behaviour_packs: Vec<BehaviourPackInfo>,
     /// A list of texture packs that the client needs to download before joining the server. The
     /// order of these texture packs is not relevant in this packet. It is however important in the
     /// ResourcePackStack packet.
-    #[size_type(u16)]
+    #[len_type(u16)]
     pub texture_packs: Vec<TexturePackInfo>,
 }
 

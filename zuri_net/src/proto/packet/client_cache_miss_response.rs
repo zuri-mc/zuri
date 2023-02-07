@@ -10,6 +10,6 @@ use crate::proto::types::world::CacheBlob;
 pub struct ClientCacheMissResponse {
     /// A list of all blobs that the client sent misses for in the ClientCacheBlobStatus. These
     /// blobs hold the data of the blobs with the hashes they are matched with.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub blobs: Vec<CacheBlob>,
 }

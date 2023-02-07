@@ -10,7 +10,7 @@ pub struct Skin {
     pub skin_image_width: u32,
     pub skin_image_height: u32,
     pub skin_data: Bytes,
-    #[size_type(u32)]
+    #[len_type(u32)]
     pub animations: Vec<SkinAnimation>,
     pub cape_image_width: u32,
     pub cape_image_height: u32,
@@ -22,9 +22,9 @@ pub struct Skin {
     pub full_id: String,
     pub arm_size: String,
     pub skin_colour: String,
-    #[size_type(u32)]
+    #[len_type(u32)]
     pub persona_pieces: Vec<PersonaPiece>,
-    #[size_type(u32)]
+    #[len_type(u32)]
     pub piece_tint_colours: Vec<PersonaPieceTintColour>,
     pub premium_skin: bool,
     pub persona_skin: bool,
@@ -58,7 +58,7 @@ pub struct PersonaPiece {
 #[derive(Debug, Clone)]
 pub struct PersonaPieceTintColour {
     pub piece_type: String,
-    #[size_type(u32)]
+    #[len_type(u32)]
     pub colours: Vec<String>,
 }
 

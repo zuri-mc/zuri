@@ -14,18 +14,18 @@ pub struct ResourcePackStack {
     pub texture_pack_required: bool,
     /// A list of behaviour packs that the client needs to download before joining the server. All
     /// of these behaviour packs will be applied together, and the order does not matter.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub behaviour_packs: Vec<StackResourcePack>,
     /// A list of texture packs that the client needs to download before joining the server. The
     /// order of these texture packs specifies the order that they are applied in on the client
     /// side. The first in the list will be applied before the rest.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub texture_packs: Vec<StackResourcePack>,
     /// The vanilla version that the client should set its resource pack stack to.
     pub base_game_version: String,
     /// A list of experiments that are either enabled or disabled in the world that the player
     /// spawns in. It is not clear why experiments are sent both here and in the StartGame packet.
-    #[size_type(u32)]
+    #[len_type(u32)]
     pub experiments: Vec<ExperimentData>,
     /// Specifies if any experiments were previously toggled in this world. It is probably used for
     /// metrics.

@@ -14,7 +14,7 @@ pub struct UpdateAttributes {
     /// A list of new attributes that the entity gets. It includes attributes such as its health,
     /// movement speed, etc. Note that only changed attributes have to be sent in this packet. It is
     /// not required to send attributes that did not have their values changed.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub attributes: Vec<Attribute>,
     /// The server tick at which the packet was sent. It is used in relation to
     /// CorrectPlayerMovePrediction.

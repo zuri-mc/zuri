@@ -117,9 +117,9 @@ pub type ShapelessChemistryRecipe = ShapelessRecipe;
 #[derive(Debug, Clone)]
 pub struct ShapelessRecipe {
     pub recipe_id: String,
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub input: Vec<ItemDescriptorCount>,
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub output: Vec<ItemStack>,
     pub uuid: Uuid,
     pub block: String,

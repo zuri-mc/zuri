@@ -20,9 +20,9 @@ pub struct CraftingEvent {
     pub recipe_uuid: Uuid,
     /// List of items that the player put into the recipe so that it could create the output items.
     /// These items are consumed in the process.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub input: Vec<ItemInstance>,
     /// List of items that were obtained as a result of crafting the recipe.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub output: Vec<ItemInstance>,
 }

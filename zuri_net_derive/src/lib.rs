@@ -18,21 +18,21 @@ use syn::spanned::Spanned;
 /// still be written of its content does. These vectors do require an attribute to specify what type
 /// to use to write the length of the vector. This type needs to be convertable from and to usize.
 ///
-/// The first such attribute is `#[size_type(L)]`, where `L` i the type to use for the vector
+/// The first such attribute is `#[len_type(L)]`, where `L` i the type to use for the vector
 /// length. It should be put above the vector in question.
 /// ```ignore
 /// use zuri_net_derive::packet;
 ///
 /// #[packet]
 /// pub struct PacketWithVec {
-///     #[size_type(u8)]
+///     #[len_type(u8)]
 ///     pub vec: Vec<String>
 /// }
 /// ```
 /// This vector will use a u8 to write / read its length. Does not affect how String is read or
 /// written.
 ///
-/// The other attribute that can be used is `#[size_for(V)]`, which, unlike the previous attribute,
+/// The other attribute that can be used is `#[len_for(V)]`, which, unlike the previous attribute,
 /// should be used on a field before the actual field with the vector (named `V`). It will make
 /// previous field in a packet act like it is the size of that vector, allowing the size to be
 /// written elsewhere than right before the vector's content. The type used will be the type of the
@@ -43,14 +43,14 @@ use syn::spanned::Spanned;
 ///
 /// #[packet]
 /// pub struct PacketWithVec {
-///     #[size_for(vec)]
+///     #[len_for(vec)]
 ///     __: u16,
 ///     pub some_field: f32,
 ///     pub vec: Vec<String>
 /// }
 /// ```
 /// Note that the vector length is written with a u16 here. The field is named `__`, but it can have
-/// any name (as it will be removed anyway). This also means that multiple size_for fields can be
+/// any name (as it will be removed anyway). This also means that multiple len_for fields can be
 /// named the same.
 ///
 /// Enums work slightly differently. First, the discriminant of the variant is written and then
@@ -159,18 +159,18 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
             };
 
             // Keep track of which vectors already had their size written previously (due to a
-            // size_for attribute).
+            // len_for attribute).
             let mut vector_size_map = HashSet::new();
 
             // Keep track of which fields need to be removed from the output struct. Currently, this
-            // is every field that has a size_for attribute.
+            // is every field that has a len_for attribute.
             let mut removal_queue = Vec::<usize>::new();
 
             'field_loop: for (field_i, field) in named_fields.named.iter_mut().enumerate() {
                 let field_ident = field.ident.as_ref().unwrap();
                 let field_type = &field.ty;
 
-                // If this is Some, this indicates that the current field has a `size_type`
+                // If this is Some, this indicates that the current field has a `len_type`
                 // attribute. The second value inside the option will then contain the argument
                 // provided in the attribute. The first value is a span of the entire attribute,
                 // which is used to show an error at a certain location.
@@ -201,14 +201,14 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                     }
 
                     let path = attr.path.to_token_stream().to_string();
-                    if path == "size_for" {
+                    if path == "len_for" {
                         // Get the vec name with delimiters `(` and `)`
                         match parse_attribute_ident(attr.tokens.clone()) {
                             Err(t) => error_stream.append_all(t),
                             Ok(vec_name) => {
                                 let len_var_name = format_ident!("_{}_len", vec_name);
                                 if vector_size_map.contains(vec_name.to_string().as_str()) {
-                                    let err = format!("duplicate `size_for` for vector `{}`", vec_name);
+                                    let err = format!("duplicate `len_for` for vector `{}`", vec_name);
                                     error_stream.append_all(quote_spanned!(vec_name.span()=> compile_error!(#err);));
                                 }
 
@@ -221,14 +221,14 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                             }
                         };
                     }
-                    if path == "size_type" {
+                    if path == "len_type" {
                         if vector_size_map.contains(field_ident.to_string().as_str()) {
-                            let err = format!("Cannot combine `size_type` specifier with `size_for` for the same vector `{}`", field_ident.to_string());
+                            let err = format!("Cannot combine `len_type` specifier with `len_for` for the same vector `{}`", field_ident.to_string());
                             error_stream.append_all(quote_spanned!(attr.span()=> compile_error!(#err);));
                             continue 'field_loop;
                         }
                         if !attr_remove_queue.is_empty() {
-                            let err = format!("Found more than one `size_type` specifier for vector `{}`", field_ident.to_string());
+                            let err = format!("Found more than one `len_type` specifier for vector `{}`", field_ident.to_string());
                             error_stream.append_all(quote_spanned!(attr.span()=> compile_error!(#err);));
                         }
 
@@ -294,7 +294,7 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                             vector_size_map.insert(field_ident.to_string());
 
                             if vec_type.is_none() {
-                                let err = format!("Missing `size_for` or `size_type` for vector `{}`", field_ident.to_string());
+                                let err = format!("Missing `len_for` or `len_type` for vector `{}`", field_ident.to_string());
                                 error_stream.append_all(quote_spanned!(field_ident.span()=> compile_error!(#err);));
 
                                 continue 'field_loop;
@@ -328,10 +328,10 @@ pub fn packet(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                     }
                 }
                 // If we reach this part of the code, we know the field's type must not be a vector.
-                // If vec_type is not None, then a `size_type` attribute has been specified on this
+                // If vec_type is not None, then a `len_type` attribute has been specified on this
                 // non-vector field, which is not allowed.
                 if vec_type.is_some() {
-                    error_stream.append_all(quote_spanned!(vec_type.unwrap().0=> compile_error!("the `size_type` attribute is only allowed on vectors");));
+                    error_stream.append_all(quote_spanned!(vec_type.unwrap().0=> compile_error!("the `len_type` attribute is only allowed on vectors");));
                 }
 
                 if enum_type.is_some() {

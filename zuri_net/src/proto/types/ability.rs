@@ -40,7 +40,7 @@ pub struct AbilityData {
     pub entity_unique_id: i64,
     pub player_permissions: u8,
     pub command_permission: u8,
-    #[size_type(u8)]
+    #[len_type(u8)]
     pub layers: Vec<AbilityLayer>,
 }
 

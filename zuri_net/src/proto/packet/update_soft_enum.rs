@@ -16,7 +16,7 @@ pub struct UpdateSoftEnum {
     /// A list of options that should be updated. Depending on the ActionType field, either these
     /// options will be added to the enum, the enum options will be set to these options or all of
     /// these options will be removed from the enum.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub options: Vec<String>,
     /// The type of the action to execute on the enum. The Options field has a different result,
     /// depending on what action type is used.

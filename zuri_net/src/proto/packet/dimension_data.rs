@@ -10,6 +10,6 @@ use crate::proto::types::world::DimensionDefinition;
 #[derive(Debug, Clone)]
 pub struct DimensionData {
     /// A list of data-driven dimension definitions registered on the server.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub definitions: Vec<DimensionDefinition>,
 }

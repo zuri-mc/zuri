@@ -74,6 +74,6 @@ pub struct TextTypeWithParams {
     pub message: String,
     /// A list of parameters that should be filled into the message. These parameters are only
     /// written if the type of the packet is Translation, Tip, Popup or JukeboxPopup.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub parameters: Vec<String>,
 }

@@ -12,6 +12,6 @@ use crate::proto::types::item_stack::ItemStackResponseEntry;
 pub struct ItemStackResponse {
     /// A list of responses to ItemStackRequests sent by the client before. Responses either approve
     /// or reject a request from the client. Vanilla limits the size of this list to 4096.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub responses: Vec<ItemStackResponseEntry>,
 }

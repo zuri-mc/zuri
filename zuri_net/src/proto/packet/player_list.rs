@@ -29,14 +29,14 @@ pub struct PlayerList {
 #[derive(Clone, Debug)]
 pub struct PlayerListRemove {
     /// A list of UUIDs to remove.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub uuids: Vec<Uuid>,
 }
 
 #[packet]
 #[derive(Clone, Debug)]
 pub struct PlayerListAdd {
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub uuids: Vec<PlayerListEntry>,
 }
 

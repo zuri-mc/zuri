@@ -10,6 +10,6 @@ pub struct DeathInfo {
     /// The cause of the player's death, such as "suffocation" or "suicide".
     pub cause: String,
     /// A list of death messages to be shown on the death screen.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub messages: Vec<String>,
 }

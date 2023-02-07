@@ -28,9 +28,9 @@ impl Readable<EntityMetadata> for EntityMetadata {
 #[packet]
 #[derive(Debug, Clone)]
 pub struct EntityProperties {
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub integer_properties: Vec<IntegerEntityProperty>,
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub float_properties: Vec<FloatEntityProperty>,
 }
 

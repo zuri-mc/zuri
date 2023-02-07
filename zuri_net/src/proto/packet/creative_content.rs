@@ -10,7 +10,7 @@ use crate::proto::types::item::ItemStack;
 #[derive(Debug, Clone)]
 pub struct CreativeContent {
     /// A list of the items that should be added to the creative inventory.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub items: Vec<CreativeItem>,
 }
 

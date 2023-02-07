@@ -17,9 +17,9 @@ mod tests {
     struct TestPacket {
         pub test: String,
         pub test2: i64,
-        #[size_for(test_vec)]
+        #[len_for(test_vec)]
         __: u32,
-        #[size_for(test_vec2)]
+        #[len_for(test_vec2)]
         __: u32,
         pub some_field: bool,
         pub test_vec: Vec<String>,

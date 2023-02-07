@@ -9,6 +9,6 @@ use crate::proto::ints::VarU32;
 pub struct PurchaseReceipt {
     /// A list of receipts, or proofs of purchases, for the offers that have been purchased by the
     /// player. This is used for server-side verification of the purchase.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub receipts: Vec<String>,
 }

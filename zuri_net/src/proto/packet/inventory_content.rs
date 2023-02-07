@@ -16,6 +16,6 @@ pub struct InventoryContent {
     pub window: Window,
     /// The new content of the inventory. The length of this list must be equal to the full size of
     /// the inventory window that was updated.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub content: Vec<ItemInstance>,
 }

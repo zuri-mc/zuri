@@ -23,6 +23,6 @@ pub struct NetworkChunkPublisherUpdate {
     /// the left by four.)
     pub radius: VarU32,
     /// It is unclear what the purpose of this field is.
-    #[size_type(u32)]
+    #[len_type(u32)]
     pub saved_chunks: Vec<IVec2>,
 }

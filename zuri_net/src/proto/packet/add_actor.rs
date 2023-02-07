@@ -40,7 +40,7 @@ pub struct AddActor {
     pub body_yaw: f32,
     /// A list of attributes that the entity has. It includes attributes such as its health,
     /// movement speed, etc.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub attributes: Vec<AttributeValue>,
     /// A map of entity metadata, which includes flags and data properties that alter in particular
     /// the way the entity looks. Flags include ones such as 'on fire' and 'sprinting'. The meta
@@ -52,6 +52,6 @@ pub struct AddActor {
     /// A list of entity links that are currently active on the entity. These links alter the way
     /// the entity shows up when first spawned in terms of it shown as riding an entity. Setting
     /// these links is important for new viewers to see the entity is riding another entity.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub entity_links: Vec<EntityLink>,
 }

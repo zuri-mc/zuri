@@ -13,7 +13,7 @@ pub struct MapInfoRequest {
     pub map_id: VarI64,
     /// A list of pixels sent from the client to notify the server about the pixels that it isn't
     /// aware of.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub client_pixels: Vec<PixelRequest>,
 }
 

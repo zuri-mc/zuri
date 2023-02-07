@@ -9,6 +9,6 @@ use crate::proto::ints::VarU32;
 pub struct PlayerFog {
     /// A list of fog identifiers to be sent to the client. Examples of fog identifiers are
     /// "minecraft:fog_ocean" and "minecraft:fog_hell".
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub stack: Vec<String>,
 }

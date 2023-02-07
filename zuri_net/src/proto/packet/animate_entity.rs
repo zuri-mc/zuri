@@ -25,6 +25,6 @@ pub struct AnimateEntity {
     /// It is not clear what the purpose of this field is.
     pub blend_out_time: f32,
     /// List of runtime IDs of entities that the animation should be applied to.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub entity_runtime_ids: Vec<VarU64>,
 }

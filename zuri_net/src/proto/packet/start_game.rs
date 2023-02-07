@@ -110,11 +110,11 @@ pub struct StartGame {
     /// The game rules currently active with their respective values. The value of these game rules
     /// may be either 'bool', 'i32' or 'j32'. Some game rules are server side only and don't need to
     /// be sent to the client.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub game_rules: Vec<GameRule>,
     /// A list of experiments that are either enabled or disabled in the world that the player
     /// spawns in.
-    #[size_type(u32)]
+    #[len_type(u32)]
     pub experiments: Vec<ExperimentData>,
     /// Specifies if any experiments were previously toggled in this world. It is likely used for
     /// metrics.
@@ -202,11 +202,11 @@ pub struct StartGame {
     /// both client-side and server-side.
     pub enchantment_seed: VarI32,
     /// A list of all custom blocks registered on the server.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub blocks: Vec<BlockEntry>,
     /// A list of all items with their legacy IDs which are available in the game. Failing to send
     /// any of the items that are in the game will crash mobile clients.
-    #[size_type(VarU32)]
+    #[len_type(VarU32)]
     pub items: Vec<ItemEntry>,
     /// A unique ID specifying the session of the player. A random UUID should be filled out for
     /// this field.

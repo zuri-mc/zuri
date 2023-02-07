@@ -11,6 +11,6 @@ pub struct ResourcePackClientResponse {
     pub response: ResourcePackResponse,
     /// A list of resource pack UUIDs combined with their version that need to be downloaded, if the
     /// `response` field is `SendPacks`.
-    #[size_type(u16)]
+    #[len_type(u16)]
     pub packs_to_download: Vec<String>,
 }
