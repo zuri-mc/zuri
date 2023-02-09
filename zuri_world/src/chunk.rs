@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::iter;
 
 use bevy::prelude::*;
@@ -300,5 +301,45 @@ impl Chunk {
         }
         let neighbour_geo = geometries.get(self.at(ChunkIndex::new((x as i8 + x_off) as u8, (y + y_off) as i16, (z as i8 + z_off) as u8)));
         neighbour_geo.is_some() // todo: have a smarter system for this
+    }
+}
+
+/// A 2D vector referring to a chunk in the world. It is always a multiple of 16 of the position of
+/// the first block in the chunk.
+pub type ChunkPos = IVec2;
+
+/// Keeps track of all chunks present in the world.
+/// Contains a reference to the entity that contains a chunk's data given a certain chunk position.
+#[derive(Resource, Default, Debug)]
+pub struct ChunkManager {
+    chunks: HashMap<ChunkPos, Entity>,
+}
+
+impl ChunkManager {
+    /// Returns the chunk entity associated to the chunk position passed as an argument.
+    /// If there is no loaded chunk at the position, None is returned.
+    pub fn get(&self, chunk_pos: ChunkPos) -> Option<Entity> {
+        self.chunks.get(&chunk_pos).copied()
+    }
+
+    /// Changes what chunk entity a chunk position refers to.
+    /// If None is passed, the chunk is removed from the chunk manager (but not from the world).
+    pub fn set(&mut self, chunk_pos: ChunkPos, val: Option<Entity>) -> Option<Entity> {
+        match val {
+            Some(inner) => self.chunks.insert(chunk_pos, inner),
+            None => self.chunks.remove(&chunk_pos),
+        }
+    }
+
+    /// Returns the chunk in which the provided world position is in (if it is loaded).
+    /// The provided Y-value does not have an effect on the result.
+    pub fn at(&self, world_pos: Vec3) -> Option<Entity> {
+        self.get(IVec2::new(world_pos.x.floor() as i32 >> 4, world_pos.z.floor() as i32 >> 4))
+    }
+
+    /// Removes all known chunks from the chunk manager. Does NOT remove these entities from the
+    /// world.
+    pub fn clear(&mut self) {
+        self.chunks.clear();
     }
 }

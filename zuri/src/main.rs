@@ -17,7 +17,7 @@ use zuri_net::proto::io::Reader;
 use zuri_world::block::component::geometry::Geometry;
 use zuri_world::block::RuntimeBlocks;
 
-use zuri_world::chunk::Chunk;
+use zuri_world::chunk::{Chunk, ChunkManager};
 use zuri_world::range::YRange;
 use zuri_world::WorldPlugin;
 
@@ -58,6 +58,7 @@ async fn main() {
         .add_plugin(WorldPlugin)
 
         .insert_resource(BlockTextures::default())
+        .insert_resource(ChunkManager::default())
         .add_startup_system(setup)
         .add_system(cursor_grab_system)
         .add_system(chunk_load_system)
@@ -91,17 +92,25 @@ pub struct BlockTextures {
 fn chunk_load_system(
     mut commands: Commands,
     mut events: EventReader<LevelChunk>,
+    mut chunks: ResMut<ChunkManager>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut world_chunks: Query<&mut Chunk>,
     block_tex: Res<BlockTextures>,
     blocks: Res<RuntimeBlocks>,
 ) {
     for event in events.iter() {
+        let mut reader = Reader::from_buf(event.raw_payload.clone(), 0);
+        // If the chunk already exists, so replace its contents.
+        if let Some(entity) = chunks.get(event.position) {
+            *world_chunks.get_mut(entity).unwrap() = Chunk::read(&mut reader, YRange::new(-64, 319), event.sub_chunk_count, 10462);
+            continue;
+        }
+
         let pos = event.position * 16;
 
-        let mut reader = Reader::from_buf(event.raw_payload.clone(), 0);
         let s = Chunk::read(&mut reader, YRange::new(-64, 319), event.sub_chunk_count, 10462);
-        commands.spawn((
+        let entity = commands.spawn((
             PbrBundle {
                 mesh: meshes.add(s.build_mesh(blocks.components::<Geometry>())),
                 material: materials.add(StandardMaterial {
@@ -115,7 +124,9 @@ fn chunk_load_system(
                 ..default()
             },
             s,
-        ));
+        )).id();
+
+        chunks.set(event.position, Some(entity));
     }
 }
 
