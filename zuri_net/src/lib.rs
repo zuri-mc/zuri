@@ -10,10 +10,13 @@ pub mod chan;
 
 #[cfg(test)]
 mod tests {
+    use bytes::Bytes;
     use zuri_net_derive::proto;
     use crate::proto::ints::VarU32;
+    use crate::proto::io::{Reader, Writable, Writer, Readable};
 
     #[proto]
+    #[derive(PartialEq, Debug)]
     struct TestPacket {
         pub test: String,
         pub test2: i64,
@@ -32,6 +35,7 @@ mod tests {
     struct UnitPacket;
 
     #[proto(u32)] // the type contained in the brackets is the default type to write this enum with
+    #[derive(PartialEq, Debug)]
     enum EnumPacket {
         Variant1,
         Variant2,
@@ -53,4 +57,36 @@ mod tests {
     #[proto]
     struct Data2;
 
+    #[test]
+    fn read_write_test() {
+        let mut writer = Writer::new(0);
+        let pk_from = TestPacket {
+            test: "Example string".to_string(),
+            test2: 20,
+            some_field: true,
+            test_vec: vec!["beep".to_string(), "boop".to_string(), "".to_string()],
+            test_vec2: vec![],
+            my_enum: EnumPacket::Variant4,
+        };
+        pk_from.write(&mut writer);
+
+        let mut writer2 = Writer::new(0);
+        writer2.string("Example string");
+        writer2.i64(20);
+        writer2.u32(3);
+        writer2.u32(0);
+        writer2.bool(true);
+        writer2.string("beep");
+        writer2.string("boop");
+        writer2.string("");
+        writer2.var_u32(83);
+
+        let bytes: Bytes = writer.into();
+        let bytes2: Bytes = writer2.into();
+        assert_eq!(bytes, bytes2);
+
+        let mut reader = Reader::from_buf(bytes, 0);
+        let pk_to = TestPacket::read(&mut reader);
+        assert_eq!(pk_from, pk_to);
+    }
 }
