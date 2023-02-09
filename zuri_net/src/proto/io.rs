@@ -782,11 +782,12 @@ impl Readable<Bytes> for Bytes {
     }
 }
 
-// todo
+/// A special trait to allow enum discriminants to be read with different integer types.
 pub trait EnumWritable<D> {
     fn write(&self, writer: &mut Writer);
 }
 
+/// A special trait to allow enum discriminants to be written with different integer types.
 pub trait EnumReadable<T, D> {
     fn read(reader: &mut Reader) -> T;
 }
