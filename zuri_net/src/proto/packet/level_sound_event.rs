@@ -1,14 +1,14 @@
 use glam::Vec3;
-use num_traits::{FromPrimitive, ToPrimitive};
+use zuri_net_derive::proto;
+use crate::proto::ints::VarI32;
 
-use crate::proto::packet::PacketType;
-use crate::proto::io::{Reader, Writer};
 use crate::proto::types::sound_event::SoundEvent;
 
 /// Sent by the server to make any kind of built-in sound heard to a player. It is sent to, for
 /// example, play a stepping sound or a shear sound. The packet is also sent by the client, in which
 /// case it could be forwarded by the server to the other players online. If possible, the packets
 /// from the client should be ignored however, and the server should play them on its own accord.
+#[proto]
 #[derive(Debug, Clone)]
 pub struct LevelSoundEvent {
     /// The type of the sound to play. Some of the sound types require additional data, which is set
@@ -19,7 +19,7 @@ pub struct LevelSoundEvent {
     pub position: Vec3,
     /// A packed integer that some sound types use to provide extra data. An example of this is the
     /// note sound, which is composed of a pitch and an instrument type.
-    pub extra_data: i32,
+    pub extra_data: VarI32,
     /// The string entity type of the entity that emitted the sound, for example
     /// 'minecraft:skeleton'. Some sound types use this entity type for additional data.
     pub entity_type: String,
@@ -30,26 +30,4 @@ pub struct LevelSoundEvent {
     /// have full volume, regardless of where the position is, whereas if set to false, the sound's
     /// volume will be based on the distance to position.
     pub disable_relative_volume: bool,
-}
-
-impl PacketType for LevelSoundEvent {
-    fn write(&self, writer: &mut Writer) {
-        writer.var_u32(self.sound.to_u32().unwrap());
-        writer.vec3(self.position);
-        writer.var_i32(self.extra_data);
-        writer.string(self.entity_type.as_str());
-        writer.bool(self.baby_mob);
-        writer.bool(self.disable_relative_volume);
-    }
-
-    fn read(reader: &mut Reader) -> Self {
-        Self {
-            sound: SoundEvent::from_u32(reader.var_u32()).unwrap(),
-            position: reader.vec3(),
-            extra_data: reader.var_i32(),
-            entity_type: reader.string(),
-            baby_mob: reader.bool(),
-            disable_relative_volume: reader.bool(),
-        }
-    }
 }

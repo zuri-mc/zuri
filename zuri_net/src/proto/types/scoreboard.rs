@@ -1,8 +1,10 @@
 use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{ToPrimitive, FromPrimitive};
+use num_traits::{FromPrimitive, ToPrimitive};
+use zuri_net_derive::proto;
 
 use crate::proto::io::{Reader, Writer};
 
+#[proto(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, FromPrimitive, ToPrimitive)]
 pub enum ScoreboardAction {
     Modify,

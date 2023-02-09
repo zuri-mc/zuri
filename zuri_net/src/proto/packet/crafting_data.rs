@@ -1,7 +1,7 @@
 use crate::proto::io::{Readable, Reader, Writable, Writer};
-use crate::proto::packet::PacketType;
 use crate::proto::types::recipe::{MaterialReducer, PotionContainerChangeRecipe, PotionRecipe, Recipe};
 
+// todo: implement CraftingData properly (requires shield_id to be known)
 /// Sent by the server to let the client know all crafting data that the server maintains. This
 /// includes shapeless crafting, crafting table recipes, furnace recipes etc. Each crafting
 /// station's recipes are included in it.
@@ -10,7 +10,6 @@ pub struct CraftingData {
     /// List of all recipes available on the server. It includes among others shapeless, shaped and
     /// furnace recipes. The client will only be able to craft these recipes.
     pub recipes: Vec<Recipe>,
-    // TODO: Recipe trait
     /// List of all potion mixing recipes which may be used in the brewing stand.
     pub potion_recipes: Vec<PotionRecipe>,
     /// List of all recipes to convert a potion from one type to another, such as from a drinkable
@@ -25,31 +24,24 @@ pub struct CraftingData {
     pub clear_recipes: bool,
 }
 
-impl PacketType for CraftingData {
+impl Writable for CraftingData {
     fn write(&self, writer: &mut Writer) {
-        writer.var_u32(self.recipes.len() as u32);
-        self.recipes.iter().for_each(|recipe| recipe.write(writer));
-        self.potion_recipes.iter().for_each(|recipe| recipe.write(writer));
-        self.potion_container_change_recipes.iter().for_each(|recipe| recipe.write(writer));
-        self.material_reducers.iter().for_each(|reducer| reducer.write(writer));
-        writer.bool(self.clear_recipes);
+        writer.var_u32(0);
+        writer.var_u32(0);
+        writer.var_u32(0);
+        writer.var_u32(0);
+        writer.bool(false);
     }
+}
 
-    fn read(reader: &mut Reader) -> Self {
+impl Readable<CraftingData> for CraftingData {
+    fn read(_reader: &mut Reader) -> CraftingData {
         Self {
-            recipes: (0..reader.var_u32())
-                .map(|_| Recipe::read(reader))
-                .collect(),
-            potion_recipes: (0..reader.var_u32())
-                .map(|_| PotionRecipe::read(reader))
-                .collect(),
-            potion_container_change_recipes: (0..reader.var_u32())
-                .map(|_| PotionContainerChangeRecipe::read(reader))
-                .collect(),
-            material_reducers: (0..reader.var_u32())
-                .map(|_| MaterialReducer::read(reader))
-                .collect(),
-            clear_recipes: reader.bool(),
+            recipes: vec![],
+            potion_recipes: vec![],
+            potion_container_change_recipes: vec![],
+            material_reducers: vec![],
+            clear_recipes: false,
         }
     }
 }

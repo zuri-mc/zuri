@@ -1,11 +1,11 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use serde_repr::{Serialize_repr, Deserialize_repr};
+use serde_repr::{Deserialize_repr, Serialize_repr};
+use zuri_net_derive::proto;
 
+#[proto(i32)]
 #[repr(i32)]
-#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive, Serialize_repr, Deserialize_repr)]
+#[derive(Debug, Copy, Clone, Serialize_repr, Deserialize_repr)]
 pub enum Device {
-    None,
-    Android,
+    Android = 1,
     IOS,
     OSX,
     FireOS,
@@ -20,4 +20,7 @@ pub enum Device {
     XBOX,
     WP,
     Linux,
+    #[fallback]
+    #[serde(other)]
+    Unknown,
 }

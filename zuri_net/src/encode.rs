@@ -1,8 +1,8 @@
 use bytes::Bytes;
-use crate::proto::io::{Reader, Writer};
 
-use crate::encryption::Encryption;
 use crate::compression::Compression;
+use crate::encryption::Encryption;
+use crate::proto::io::{Reader, Writer};
 
 #[derive(Default)]
 pub struct Encoder {

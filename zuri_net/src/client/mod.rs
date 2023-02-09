@@ -6,10 +6,10 @@ use oauth2::basic::BasicTokenResponse;
 use rust_raknet::RaknetSocket;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::Mutex;
-use crate::chan::{pk_chan, PkSender};
 
+use crate::chan::{pk_chan, PkSender};
 use crate::client::data::{ClientData, IdentityData};
-use crate::client::login::{LoginData, LoginSequence};
+use crate::client::login::LoginSequence;
 use crate::connection::{Connection, ConnError, ExpectedPackets, Sequence};
 use crate::proto::packet::Packet;
 
@@ -33,7 +33,7 @@ impl<H: Handler + Send + 'static> Client<H> {
         identity_data: Option<IdentityData>,
         live_token: Option<BasicTokenResponse>,
         handler: H,
-    ) -> Result<(Self, LoginData), ConnError> {
+    ) -> Result<Self, ConnError> {
         let guaranteed_identity_data = identity_data.unwrap_or(IdentityData {
             xuid: String::new(),
             identity: String::new(),
@@ -60,13 +60,13 @@ impl<H: Handler + Send + 'static> Client<H> {
         tokio::spawn(Self::read_loop(send, client.conn.clone(), seq_recv));
         tokio::spawn(Self::handle_loop(recv, client.handler.clone(), client.conn.clone()));
 
-        let login_ret = client.exec_sequence(LoginSequence::new(
+        client.exec_sequence(LoginSequence::new(
             &client.client_data,
             &client.identity_data,
             live_token,
             false,
         )).await?;
-        Ok((client, login_ret))
+        Ok(client)
     }
 
     pub async fn disconnect(&self) {

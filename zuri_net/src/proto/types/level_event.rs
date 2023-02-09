@@ -1,5 +1,8 @@
 use num_derive::{FromPrimitive, ToPrimitive};
+use zuri_net_derive::proto;
+use crate::proto::ints::VarI32;
 
+#[proto(VarI32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum LevelEventType {
     Undefined,
@@ -110,5 +113,5 @@ pub enum LevelEventType {
     AllPlayersSleeping = 9800,
     SleepingPlayers = 9801,
     JumpPrevented = 9810,
-    ParticleLegacyEvent = 0x4000,
+    ParticleLegacyEvent = 16384,
 }

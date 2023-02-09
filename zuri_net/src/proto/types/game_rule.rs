@@ -1,5 +1,6 @@
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
+
 use crate::proto::io::{Reader, Writer};
 
 #[derive(Debug, Clone)]

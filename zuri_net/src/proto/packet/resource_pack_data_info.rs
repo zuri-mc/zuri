@@ -1,12 +1,11 @@
 use bytes::Bytes;
-use num_traits::{FromPrimitive, ToPrimitive};
+use zuri_net_derive::proto;
 
-use crate::proto::packet::PacketType;
-use crate::proto::io::{Reader, Writer};
 use crate::proto::types::resource_pack::ResourcePackType;
 
 /// Sent by the server to the client to inform the client about the data contained in one of the
 /// resource packs that are about to be sent.
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ResourcePackDataInfo {
     /// The unique ID of the resource pack that the info concerns.
@@ -30,28 +29,4 @@ pub struct ResourcePackDataInfo {
     pub premium: bool,
     /// The type of the resource pack.
     pub pack_type: ResourcePackType,
-}
-
-impl PacketType for ResourcePackDataInfo {
-    fn write(&self, writer: &mut Writer) {
-        writer.string(self.uuid.as_str());
-        writer.u32(self.data_chunk_size);
-        writer.u32(self.chunk_count);
-        writer.u64(self.size);
-        writer.byte_slice(&self.hash);
-        writer.bool(self.premium);
-        writer.u8(self.pack_type.to_u8().unwrap());
-    }
-
-    fn read(reader: &mut Reader) -> Self {
-        Self {
-            uuid: reader.string(),
-            data_chunk_size: reader.u32(),
-            chunk_count: reader.u32(),
-            size: reader.u64(),
-            hash: reader.byte_slice(),
-            premium: reader.bool(),
-            pack_type: ResourcePackType::from_u8(reader.u8()).unwrap(),
-        }
-    }
 }

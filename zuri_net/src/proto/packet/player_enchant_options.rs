@@ -1,5 +1,5 @@
-use crate::proto::io::{Reader, Writer};
-use crate::proto::packet::PacketType;
+use zuri_net_derive::proto;
+use crate::proto::ints::VarU32;
 use crate::proto::types::item_stack::EnchantmentOption;
 
 /// Sent by the server to update the enchantment options displayed when the user opens the
@@ -9,19 +9,10 @@ use crate::proto::types::item_stack::EnchantmentOption;
 /// empty PlayerEnchantOptions packet when the player opens the enchantment table (air is present in
 /// the enchantment table slot) and sends the packet with actual enchantments in it when items are
 /// put in that can have enchantments.
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PlayerEnchantOptions {
     /// A list of possible enchantment options for the item that was put into the enchantment table.
+    #[len_type(VarU32)]
     pub options: Vec<EnchantmentOption>,
-}
-
-impl PacketType for PlayerEnchantOptions {
-    fn write(&self, writer: &mut Writer) {
-        writer.var_u32(self.options.len() as u32);
-        self.options.iter().for_each(|option| option.write(writer));
-    }
-
-    fn read(reader: &mut Reader) -> Self {
-        Self { options: (0..reader.var_u32()).map(|_| EnchantmentOption::read(reader)).collect() }
-    }
 }

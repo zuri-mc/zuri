@@ -1,9 +1,10 @@
 use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
+use zuri_net_derive::proto;
 
-use crate::proto::types::colour::RGBA;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::types::colour::VarRGBA;
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum MapObjectType {
@@ -24,6 +25,7 @@ impl MapUpdateFlag {
     }
 }
 
+#[proto]
 #[derive(Debug, Clone)]
 pub struct MapDecoration {
     pub decoration_type: u8,
@@ -31,29 +33,7 @@ pub struct MapDecoration {
     pub x: u8,
     pub y: u8,
     pub label: String,
-    pub colour: RGBA,
-}
-
-impl MapDecoration {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.u8(self.decoration_type);
-        writer.u8(self.rotation);
-        writer.u8(self.x);
-        writer.u8(self.y);
-        writer.string(self.label.as_str());
-        self.colour.write_var(writer);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            decoration_type: reader.u8(),
-            rotation: reader.u8(),
-            x: reader.u8(),
-            y: reader.u8(),
-            label: reader.string(),
-            colour: RGBA::read_var(reader),
-        }
-    }
+    pub colour: VarRGBA,
 }
 
 #[derive(Debug, Clone)]

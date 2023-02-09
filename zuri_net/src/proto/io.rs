@@ -1,25 +1,23 @@
-use uuid::Uuid;
 use std::collections::{HashMap, VecDeque};
-use zuri_nbt::encoding::NetworkLittleEndian;
-use num_traits::{FromPrimitive, ToPrimitive};
-use crate::proto::types::entity_data::{EntityDataEntry, EntityDataType};
 
-use glam::{
-    IVec3,
-    Vec2,
-    Vec3,
-};
-use zuri_nbt::{
-    Value,
-    decode,
-    encode,
-};
 use bytes::{
     Buf,
     BufMut,
     Bytes,
     BytesMut,
 };
+use glam::{IVec2, IVec3, Vec2, Vec3};
+use num_traits::{FromPrimitive, ToPrimitive};
+use uuid::Uuid;
+
+use zuri_nbt::{
+    decode,
+    encode,
+    Value,
+};
+use zuri_nbt::encoding::NetworkLittleEndian;
+
+use crate::proto::types::entity_data::{EntityDataEntry, EntityDataType};
 
 #[derive(Default)]
 pub struct Writer {
@@ -266,25 +264,130 @@ pub trait Writable {
     fn write(&self, writer: &mut Writer);
 }
 
+impl<T: Writable, const N: usize> Writable for [T; N] {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        for i in 0..N {
+            self[i].write(writer);
+        }
+    }
+}
+
+impl<T: Writable> Writable for Option<T> {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.optional(self);
+    }
+}
+
+impl Writable for Vec3 {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.vec3(*self);
+    }
+}
+
+impl Writable for Vec2 {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.vec2(*self);
+    }
+}
+
+impl Writable for IVec2 {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.var_i32(self.x);
+        writer.var_i32(self.y);
+    }
+}
+
+impl Writable for Uuid {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.uuid(self.clone());
+    }
+}
+
 impl Writable for bool {
+    #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.u8(*self as u8);
     }
 }
 
 impl Writable for u8 {
+    #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.u8(*self);
     }
 }
 
+impl Writable for u16 {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.u16(*self);
+    }
+}
+
+impl Writable for u32 {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.u32(*self);
+    }
+}
+
+impl Writable for u64 {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.u64(*self);
+    }
+}
+
+impl Writable for i8 {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.i8(*self);
+    }
+}
+
+impl Writable for i16 {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.i16(*self);
+    }
+}
+
+impl Writable for i32 {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.i32(*self);
+    }
+}
+
+impl Writable for i64 {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.i64(*self);
+    }
+}
+
+impl Writable for f32 {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.f32(*self);
+    }
+}
+
 impl Writable for Bytes {
+    #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.byte_slice(self);
     }
 }
 
 impl Writable for String {
+    #[inline]
     fn write(&self, writer: &mut Writer) {
         writer.string(self);
     }
@@ -547,34 +650,267 @@ pub trait Readable<T> {
     fn read(reader: &mut Reader) -> T;
 }
 
+impl Readable<Vec3> for Vec3 {
+    #[inline]
+    fn read(reader: &mut Reader) -> Vec3 {
+        reader.vec3()
+    }
+}
+
+impl Readable<Vec2> for Vec2 {
+    #[inline]
+    fn read(reader: &mut Reader) -> Vec2 {
+        reader.vec2()
+    }
+}
+
+impl Readable<IVec2> for IVec2 {
+    #[inline]
+    fn read(reader: &mut Reader) -> IVec2 {
+        IVec2::new(reader.var_i32(), reader.var_i32())
+    }
+}
+
+impl Readable<Uuid> for Uuid {
+    #[inline]
+    fn read(reader: &mut Reader) -> Uuid {
+        reader.uuid()
+    }
+}
+
+impl<T: Readable<T>, const N: usize> Readable<[T; N]> for [T; N] {
+    #[inline]
+    fn read(reader: &mut Reader) -> [T; N] {
+        match (0..N).map(|_| T::read(reader)).collect::<Vec<T>>().try_into() {
+            Ok(r) => r,
+            _ => unreachable!(),
+        }
+    }
+}
+
+impl<T: Readable<T>> Readable<Option<T>> for Option<T> {
+    #[inline]
+    fn read(reader: &mut Reader) -> Option<T> {
+        match reader.bool() {
+            true => Some(T::read(reader)),
+            false => None,
+        }
+    }
+}
+
 impl Readable<bool> for bool {
+    #[inline]
     fn read(reader: &mut Reader) -> bool {
         reader.bool()
     }
 }
 
 impl Readable<u8> for u8 {
+    #[inline]
     fn read(reader: &mut Reader) -> u8 {
         reader.u8()
     }
 }
 
+impl Readable<u16> for u16 {
+    #[inline]
+    fn read(reader: &mut Reader) -> u16 {
+        reader.u16()
+    }
+}
+
+impl Readable<u32> for u32 {
+    #[inline]
+    fn read(reader: &mut Reader) -> u32 {
+        reader.u32()
+    }
+}
+
+impl Readable<u64> for u64 {
+    #[inline]
+    fn read(reader: &mut Reader) -> u64 {
+        reader.u64()
+    }
+}
+
+impl Readable<i8> for i8 {
+    #[inline]
+    fn read(reader: &mut Reader) -> i8 {
+        reader.i8()
+    }
+}
+
+impl Readable<i16> for i16 {
+    #[inline]
+    fn read(reader: &mut Reader) -> i16 {
+        reader.i16()
+    }
+}
+
+impl Readable<i32> for i32 {
+    #[inline]
+    fn read(reader: &mut Reader) -> i32 {
+        reader.i32()
+    }
+}
+
+impl Readable<i64> for i64 {
+    #[inline]
+    fn read(reader: &mut Reader) -> i64 {
+        reader.i64()
+    }
+}
+
+impl Readable<f32> for f32 {
+    #[inline]
+    fn read(reader: &mut Reader) -> f32 {
+        reader.f32()
+    }
+}
+
 impl Readable<String> for String {
+    #[inline]
     fn read(reader: &mut Reader) -> String {
         reader.string()
     }
 }
 
 impl Readable<Bytes> for Bytes {
+    #[inline]
     fn read(reader: &mut Reader) -> Bytes {
-        reader.bytes()
+        reader.byte_slice()
+    }
+}
+
+/// A special trait to allow enum discriminants to be read with different integer types.
+pub trait EnumWritable<D> {
+    fn write(&self, writer: &mut Writer);
+}
+
+/// A special trait to allow enum discriminants to be written with different integer types.
+pub trait EnumReadable<T, D> {
+    fn read(reader: &mut Reader) -> T;
+}
+
+#[derive(Clone, Debug)]
+pub struct NBT<E: decode::Reader + encode::Writer> {
+    val: Value,
+    encoding: E,
+}
+
+impl<E: decode::Reader + encode::Writer + Default> NBT<E> {
+    fn new(val: Value) -> Self {
+        Self {val, encoding: E::default()}
+    }
+}
+
+impl<E: decode::Reader + encode::Writer> NBT<E> {
+    #![allow(unused)]
+    fn new_with_encoder(val: Value, encoder: E) -> Self {
+        Self {val, encoding: encoder }
+    }
+}
+
+impl<E: decode::Reader + encode::Writer> Into<Value> for NBT<E> {
+    fn into(self) -> Value {
+        self.val
+    }
+}
+
+impl<E: decode::Reader + encode::Writer + Default> From<Value> for NBT<E> {
+    fn from(value: Value) -> Self {
+        NBT::new(value)
+    }
+}
+
+impl<E: decode::Reader + encode::Writer + Clone> Writable for NBT<E> {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.nbt(&self.val, self.encoding.clone())
+    }
+}
+
+impl<E: decode::Reader + encode::Writer + Default> Readable<NBT<E>> for NBT<E> {
+    #[inline]
+    fn read(reader: &mut Reader) -> NBT<E> {
+        NBT::new(reader.nbt(E::default()))
+    }
+}
+
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+pub struct UBlockPos {
+    pub x: i32,
+    pub y: u32,
+    pub z: i32,
+}
+
+impl Writable for UBlockPos {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.var_i32(self.x);
+        writer.var_u32(self.y);
+        writer.var_i32(self.z);
+    }
+}
+
+impl Readable<UBlockPos> for UBlockPos {
+    #[inline]
+    fn read(reader: &mut Reader) -> UBlockPos {
+        Self {
+            x: reader.var_i32(),
+            y: reader.var_u32(),
+            z: reader.var_i32(),
+        }
+    }
+}
+
+impl Into<IVec3> for UBlockPos {
+    fn into(self) -> IVec3 {
+        IVec3::new(self.x, self.y as i32, self.z)
+    }
+}
+
+impl From<IVec3> for UBlockPos {
+    fn from(value: IVec3) -> Self {
+        Self {
+            x: value.x,
+            y: value.y as u32,
+            z: value.z,
+        }
+    }
+}
+
+#[derive(Default, Copy, Clone, Debug, PartialEq, Eq)]
+pub struct BlockPos(pub IVec3);
+
+impl Writable for BlockPos {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.block_pos(self.0)
+    }
+}
+
+impl Readable<BlockPos> for BlockPos {
+    #[inline]
+    fn read(reader: &mut Reader) -> BlockPos {
+        Self(reader.block_pos())
+    }
+}
+
+impl Into<IVec3> for BlockPos {
+    fn into(self) -> IVec3 {
+        self.0
+    }
+}
+
+impl From<IVec3> for BlockPos {
+    fn from(value: IVec3) -> Self {
+        Self(value)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use bytes::BytesMut;
-
     use crate::proto::io::{Reader, Writer};
 
     #[test]

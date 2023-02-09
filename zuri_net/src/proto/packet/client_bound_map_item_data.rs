@@ -1,7 +1,8 @@
 use glam::IVec3;
-use crate::proto::io::{Reader, Writer};
+
+use crate::proto::io::{Reader, Readable, Writer, Writable};
 use crate::proto::packet::PacketType;
-use crate::proto::types::colour::RGBA;
+use crate::proto::types::colour::VarRGBA;
 use crate::proto::types::map::{MapDecoration, MapTrackedObject, MapUpdateFlag};
 
 /// Sent by the server to the client to update the data of a map shown to the client. It is sent
@@ -49,7 +50,7 @@ pub struct ClientBoundMapItemData {
     /// texture will extend exactly height pixels up.
     pub y_offset: i32,
     /// A list of pixel colours for the new texture of the map. It is indexed using [y*height + x].
-    pub pixels: Vec<RGBA>,
+    pub pixels: Vec<VarRGBA>,
 }
 
 impl PacketType for ClientBoundMapItemData {
@@ -79,7 +80,7 @@ impl PacketType for ClientBoundMapItemData {
             writer.i32(self.x_offset);
             writer.i32(self.y_offset);
             writer.var_u32(self.pixels.len() as u32);
-            self.pixels.iter().for_each(|pixels| pixels.write_var(writer));
+            self.pixels.iter().for_each(|pixels| pixels.write(writer));
         }
     }
 
@@ -107,7 +108,7 @@ impl PacketType for ClientBoundMapItemData {
             packet.height = reader.i32();
             packet.x_offset = reader.i32();
             packet.y_offset = reader.i32();
-            packet.pixels = (0..reader.var_u32()).map(|_| RGBA::read_var(reader)).collect();
+            packet.pixels = (0..reader.var_u32()).map(|_| VarRGBA::read(reader)).collect();
         }
 
         packet

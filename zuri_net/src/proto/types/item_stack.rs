@@ -1,10 +1,14 @@
 use std::fmt::Debug;
+
 use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{ToPrimitive, FromPrimitive};
-use zuri_nbt::{Value, encoding::NetworkLittleEndian};
+use num_traits::{FromPrimitive, ToPrimitive};
+
+use zuri_nbt::{encoding::NetworkLittleEndian, Value};
+use zuri_net_derive::proto;
 
 use crate::encodable_enum;
-use crate::proto::io::{Reader, Writer};
+use crate::proto::ints::VarU32;
+use crate::proto::io::{Readable, Reader, Writable, Writer};
 use crate::proto::types::item::ItemStack;
 use crate::proto::types::item_descriptor::ItemDescriptorCount;
 
@@ -114,16 +118,18 @@ pub struct ItemEnchantments {
     pub enchantments: [Vec<EnchantmentInstance>; 3],
 }
 
-impl ItemEnchantments {
-    pub fn write(&self, writer: &mut Writer) {
+impl Writable for ItemEnchantments {
+    fn write(&self, writer: &mut Writer) {
         writer.i32(self.slot);
         self.enchantments.iter().for_each(|enchantment| {
             writer.var_u32(enchantment.len() as u32);
             enchantment.iter().for_each(|enchantment| enchantment.write(writer));
         });
     }
+}
 
-    pub fn read(reader: &mut Reader) -> Self {
+impl Readable<ItemEnchantments> for ItemEnchantments {
+    fn read(reader: &mut Reader) -> Self {
         Self {
             slot: reader.i32(),
             enchantments: [
@@ -135,50 +141,20 @@ impl ItemEnchantments {
     }
 }
 
+#[proto]
 #[derive(Debug, Clone)]
 pub struct EnchantmentInstance {
     pub enchantment_type: u8,
     pub level: u8,
 }
 
-impl EnchantmentInstance {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.u8(self.enchantment_type);
-        writer.u8(self.level);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            enchantment_type: reader.u8(),
-            level: reader.u8(),
-        }
-    }
-}
-
+#[proto]
 #[derive(Debug, Clone)]
 pub struct EnchantmentOption {
-    pub cost: u32,
+    pub cost: VarU32,
     pub enchantments: ItemEnchantments,
     pub name: String,
-    pub recipe_network_id: u32,
-}
-
-impl EnchantmentOption {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_u32(self.cost);
-        self.enchantments.write(writer);
-        writer.string(self.name.as_str());
-        writer.var_u32(self.recipe_network_id);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            cost: reader.var_u32(),
-            enchantments: ItemEnchantments::read(reader),
-            name: reader.string(),
-            recipe_network_id: reader.var_u32(),
-        }
-    }
+    pub recipe_network_id: VarU32,
 }
 
 #[derive(Debug, Clone)]

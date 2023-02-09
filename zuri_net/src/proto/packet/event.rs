@@ -1,5 +1,5 @@
-use crate::proto::packet::PacketType;
 use crate::proto::io::{Reader, Writer};
+use crate::proto::packet::PacketType;
 use crate::proto::types::event::EventType;
 
 /// Sent by the server to send an event with additional data. It is typically sent to the client for

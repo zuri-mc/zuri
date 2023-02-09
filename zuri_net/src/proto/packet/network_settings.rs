@@ -1,12 +1,10 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use zuri_net_derive::proto;
 
 use crate::compression::Compression;
-use crate::proto::packet::PacketType;
-use crate::proto::io::{Reader, Writer};
 
 /// Sent by the server to update a variety of network settings. These settings modify the way
 /// packets are sent over the network stack.
+#[proto]
 #[derive(Debug, Clone)]
 pub struct NetworkSettings {
     /// The minimum size of a packet that is compressed when sent. If the size of a packet is under
@@ -23,24 +21,4 @@ pub struct NetworkSettings {
     /// The scalar for client throttling. The scalar is the amount of players that are ticked when
     /// throttling is enabled.
     pub client_throttle_scalar: f32,
-}
-
-impl PacketType for NetworkSettings {
-    fn write(&self, writer: &mut Writer) {
-        writer.u16(self.compression_threshold);
-        writer.u16(self.compression_algorithm.to_u16().unwrap());
-        writer.bool(self.client_throttle);
-        writer.u8(self.client_throttle_threshold);
-        writer.f32(self.client_throttle_scalar);
-    }
-
-    fn read(reader: &mut Reader) -> Self {
-        Self {
-            compression_threshold: reader.u16(),
-            compression_algorithm: Compression::from_u16(reader.u16()).unwrap(),
-            client_throttle: reader.bool(),
-            client_throttle_threshold: reader.u8(),
-            client_throttle_scalar: reader.f32(),
-        }
-    }
 }

@@ -1,6 +1,3 @@
-use crate::encodable_enum;
-use crate::proto::io::{Reader, Writer};
-
 use actor_event::*;
 use actor_pick_request::*;
 use add_actor::*;
@@ -190,6 +187,9 @@ use update_player_game_type::*;
 use update_soft_enum::*;
 use update_sub_chunk_blocks::*;
 use update_trade::*;
+
+use crate::encodable_enum;
+use crate::proto::io::{Readable, Reader, Writable, Writer};
 
 pub mod actor_event;
 pub mod actor_pick_request;

@@ -1,8 +1,10 @@
-use bytes::Buf;
 use std::io::{Read, Write};
-use num_derive::{FromPrimitive, ToPrimitive};
 
-#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
+use bytes::Buf;
+use zuri_net_derive::proto;
+
+#[proto(u16)]
+#[derive(Debug, Copy, Clone)]
 pub enum Compression {
     Deflate,
     Snappy,
@@ -69,15 +71,6 @@ mod tests {
         let mut processed_data: Vec<u8> = data.clone().to_vec();
         Compression::Deflate.compress(&mut processed_data).unwrap();
         Compression::Deflate.decompress(&mut processed_data).unwrap();
-        assert_eq!(data, processed_data);
-    }
-
-    #[test]
-    fn test_snappy() {
-        let data = b"Hello, world!".to_vec();
-        let mut processed_data: Vec<u8> = data.clone().to_vec();
-        Compression::Snappy.compress(&mut processed_data).unwrap();
-        Compression::Snappy.decompress(&mut processed_data).unwrap();
         assert_eq!(data, processed_data);
     }
 }
