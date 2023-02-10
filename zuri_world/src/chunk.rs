@@ -12,31 +12,27 @@ use crate::pos::{ChunkIndex};
 use crate::range::YRange;
 use crate::sub_chunk::*;
 
+/// A 16xYx16 column of blocks in a world.
 #[derive(Component)]
 pub struct Chunk {
-    air_rid: u32,
+    _air_rid: u32,
 
     range: YRange,
     sub_chunks: Vec<Option<Box<SubChunk<8>>>>,
 }
 
 impl Chunk {
-    pub fn empty(range: YRange, air_rid: u32) -> Self {
+    /// Creates a chunk filled with the provided runtime id. The height of the chunk can also be
+    /// configured.
+    pub fn empty(range: YRange, _air_rid: u32) -> Self {
         Self {
-            air_rid,
+            _air_rid,
             range,
             sub_chunks: iter::repeat(None).take((range.height() >> 4) as usize).collect(),
         }
     }
 
-    pub fn from_subchunks(min_pos: i16, sub_chunks: Vec<Option<Box<SubChunk<8>>>>, air_rid: u32) -> Self {
-        Self {
-            air_rid,
-            range: YRange::new(min_pos, min_pos + sub_chunks.len() as i16 * 16 - 1),
-            sub_chunks,
-        }
-    }
-
+    /// Returns the runtime id of the block located at the provided location in the chunk.
     pub fn at(&self, pos: ChunkIndex) -> u32 {
         if !self.range.is_inside(pos) {
             panic!("chunk pos is outside of bounds"); // todo: maybe return an option
@@ -44,7 +40,7 @@ impl Chunk {
         if let Some(subchunk) = &self.sub_chunks[self.subchunk_id(pos.y())] {
             subchunk.at(pos.into(), 0)
         } else {
-            self.air_rid
+            self._air_rid
         }
     }
 
@@ -56,7 +52,7 @@ impl Chunk {
         if let Some(subchunk) = &mut self.sub_chunks[id] {
             subchunk.set(pos.into(), 0, val)
         } else {
-            let mut s = Box::new(SubChunk::empty(self.air_rid));
+            let mut s = Box::new(SubChunk::empty(self._air_rid));
             s.set(pos.into(), 0, val);
             self.sub_chunks[id] = Some(s);
         }

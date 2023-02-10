@@ -104,7 +104,7 @@ impl PalettedStorage {
         let bit_offset = offset % self.filled_bits_per_index;
 
         self.indices[u32_offset as usize] &= !(self.index_mask << bit_offset);
-        self.indices[u32_offset as usize] |= (index << bit_offset);
+        self.indices[u32_offset as usize] |= index << bit_offset;
     }
 
     pub fn read(reader: &mut Reader) -> PalettedStorage {

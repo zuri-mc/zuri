@@ -3,7 +3,6 @@ pub mod component;
 
 use std::any::TypeId;
 use std::collections::HashMap;
-use std::fmt::Debug;
 use bevy::prelude::{Mesh, Resource};
 use bevy::render::mesh::PrimitiveTopology;
 use bevy_render::mesh::Indices;

@@ -57,6 +57,7 @@ impl<T: Component> ComponentStorage<T> {
 // Internal
 // --------
 
+#[allow(dead_code)] // todo
 #[derive(Debug)]
 pub(super) enum ComponentStorageImpl<T: Component> {
     Vector(Vec<Option<T>>),

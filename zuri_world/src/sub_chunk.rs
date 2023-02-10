@@ -2,14 +2,17 @@ use zuri_net::proto::io::Reader;
 use crate::paletted_storage::{Palette, PalettedStorage};
 use crate::pos::SubChunkIndex;
 
+/// A 16x16x16 area that makes up part of a world chunk.
+/// It consists of `L` layers which are used for things like waterlogged blocks.
 #[derive(Clone)]
 pub struct SubChunk<const L: usize> {
-    air_id: u32,
+    _air_id: u32,
     layers: [PalettedStorage; L],
     // todo: biomes
 }
 
 impl<const L: usize> SubChunk<L> {
+    /// Creates `L` paletted storages filled with `air_rid`.
     fn empty_layers(air_id: u32) -> [PalettedStorage; L] {
         let mut layers = Vec::with_capacity(L);
         for _ in 0..L {
@@ -18,9 +21,10 @@ impl<const L: usize> SubChunk<L> {
         layers.iter().cloned().collect::<Vec<PalettedStorage>>().try_into().unwrap()
     }
 
+    /// Creates a subchunk filled with `air_rid`.
     pub fn empty(air_id: u32) -> Self {
         Self {
-            air_id,
+            _air_id: air_id,
             layers: Self::empty_layers(air_id),
         }
     }
@@ -49,7 +53,7 @@ impl<const L: usize> SubChunk<L> {
         if ver > 1 {
             layer_count = reader.u8();
             if layer_count as usize >= L {
-                panic!("SubChunk layer count overflows may supported layers");
+                panic!("Subchunk layer count overflows max supported layers");
             }
 
             // If the version is 9, there is an extra byte which tells us where the sub chunk is
@@ -69,7 +73,7 @@ impl<const L: usize> SubChunk<L> {
 
         // todo: biomes
         Self {
-            air_id,
+            _air_id: air_id,
             layers,
         }
     }
