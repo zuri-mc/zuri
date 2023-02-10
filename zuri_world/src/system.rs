@@ -1,17 +1,36 @@
 use bevy::asset::{Assets, Handle};
-use bevy::prelude::{Changed, Mesh, Query, Res, ResMut};
+use bevy::prelude::{Changed, EventReader, Mesh, Query, Res, ResMut};
+use zuri_net::proto::packet::update_block::UpdateBlock;
 use crate::block::component::geometry::Geometry;
 use crate::block::RuntimeBlocks;
 
-use crate::chunk::Chunk;
+use crate::chunk::{Chunk, ChunkManager};
+use crate::pos::ChunkIndex;
 
 /// Updates the mesh of a chunk when it has been modified.
-pub fn chunk_update_system(
+pub(crate) fn chunk_update_system(
     mut assets: ResMut<Assets<Mesh>>,
     mut query: Query<(&mut Handle<Mesh>, &Chunk), Changed<Chunk>>,
     blocks: Res<RuntimeBlocks>,
 ) {
     for (mesh, chunk) in &mut query {
         assets.set_untracked(mesh.id(), chunk.build_mesh(blocks.components::<Geometry>()));
+    }
+}
+
+/// Updates a block in the world when the server sends a block update.
+pub(crate) fn block_update_system(
+    mut pks: EventReader<UpdateBlock>,
+    chunks: Res<ChunkManager>,
+    mut query: Query<&mut Chunk>,
+) {
+    for pk in pks.iter() {
+        // Multi-layer chunks are not yet supported.
+        if pk.layer != 0 {
+            continue;
+        }
+        if let Some(chunk_entity) = chunks.at_block_pos(pk.position) {
+            query.get_mut(chunk_entity).unwrap().set(ChunkIndex::from(pk.position), pk.new_block_runtime_id);
+        }
     }
 }

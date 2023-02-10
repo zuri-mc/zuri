@@ -21,6 +21,7 @@ use zuri_net::client::login::LoginData;
 use zuri_net::connection::ConnError;
 use zuri_net::proto::packet::level_chunk::LevelChunk;
 use zuri_net::proto::packet::Packet;
+use zuri_net::proto::packet::update_block::UpdateBlock;
 use zuri_xbox::live;
 
 /// The ClientPlugin is responsible for handling and managing the connection to the server.
@@ -41,6 +42,7 @@ impl Plugin for ClientPlugin {
             .init_resource::<Events<Packet>>()
             // Packet events go here.
             .add_event::<LevelChunk>()
+            .add_event::<UpdateBlock>()
 
             .add_startup_system(init_client)
             .add_system_to_stage(CoreStage::Last, graceful_disconnect)
@@ -187,6 +189,7 @@ fn receive_packets(world: &mut World) {
             },
             Ok(pk) => match pk {
                 Packet::LevelChunk(pk) => world.send_event(pk),
+                Packet::UpdateBlock(pk) => world.send_event(pk),
                 _ => {
                     warn!("Unhandled packet {pk}");
                 }

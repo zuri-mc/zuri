@@ -32,14 +32,14 @@ impl<const L: usize> SubChunk<L> {
         self.layers[layer as usize].at(pos)
     }
 
-    pub fn set(&mut self, _pos: SubChunkIndex, layer: u8, _val: u32) {
+    pub fn set(&mut self, pos: SubChunkIndex, layer: u8, val: u32) {
         if layer as usize >= L {
             panic!("layer {layer} is out of bounds")
         }
-        todo!()
+        self.layers[layer as usize].set(pos, val);
     }
 
-    pub fn read(reader: &mut Reader, y_index: &mut u32, air_id: u32) -> Self {
+    pub fn read(reader: &mut Reader, _y_index: &mut u32, air_id: u32) -> Self {
         // The first byte contains the chunk version. We support version 8 and 9.
         let ver = reader.u8();
         assert!(ver == 1 || ver == 8 || ver == 9);

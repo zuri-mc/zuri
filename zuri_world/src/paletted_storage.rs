@@ -18,6 +18,15 @@ impl Palette {
             mapping,
         }
     }
+
+    pub fn index(&self, val: u32) -> Option<u32> {
+        for (i, rid) in self.mapping.iter().copied().enumerate() {
+            if rid == val {
+                return Some(i as u32)
+            }
+        }
+        None
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -64,6 +73,39 @@ impl PalettedStorage {
         self.palette.mapping[palette_index as usize]
     }
 
+    pub fn set(&mut self, pos: SubChunkIndex, val: u32) {
+        let index = match self.palette.index(val) {
+            None => {
+                self.palette.mapping.push(val);
+
+                if self.palette.mapping.len() > (1 << self.bits_per_index) {
+                    let new_indices = vec![0; 4096 / (32 / self.bits_per_index + 1) as usize];
+                    let mut new_storage = PalettedStorage::new(new_indices, self.palette.clone());
+
+                    for x in 0..16 {
+                        for y in 0..16 {
+                            for z in 0..16 {
+                                let t_pos = SubChunkIndex::new(x, y, z);
+                                new_storage.set(t_pos, self.at(t_pos));
+                            }
+                        }
+                    }
+                    *self = new_storage;
+                }
+                (self.palette.mapping.len() - 1) as u32
+            },
+            Some(index) => index,
+        };
+        let offset = (((pos.x() as u16) << 8)
+            | ((pos.z() as u16) << 4)
+            | (pos.y() as u16)) * self.bits_per_index;
+
+        let u32_offset = offset / self.filled_bits_per_index;
+        let bit_offset = offset % self.filled_bits_per_index;
+
+        self.indices[u32_offset as usize] &= !(self.index_mask << bit_offset);
+        self.indices[u32_offset as usize] |= (index << bit_offset);
+    }
 
     pub fn read(reader: &mut Reader) -> PalettedStorage {
         // The first byte encodes two values: the first 7 bits denote the amount of bits each index

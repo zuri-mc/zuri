@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 /// A block position relative to the origin of a chunk. The x and z coordinates are always
 /// guaranteed to be in the range `0..16`.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct ChunkIndex {
     x: u8,
     y: i16,
@@ -34,14 +34,14 @@ impl From<IVec3> for ChunkIndex {
     #[inline]
     fn from(value: IVec3) -> Self {
         Self {
-            x: (value.x % 16) as u8,
+            x: (value.x.rem_euclid(16)) as u8,
             y: value.y as i16,
-            z: (value.z % 16) as u8,
+            z: (value.z.rem_euclid(16)) as u8,
         }
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct SubChunkIndex {
     x: u8,
     y: u8,
@@ -76,9 +76,9 @@ impl From<IVec3> for SubChunkIndex {
     #[inline]
     fn from(value: IVec3) -> Self {
         Self {
-            x: (value.x % 16) as u8,
-            y: (value.y % 16) as u8,
-            z: (value.z % 16) as u8,
+            x: (value.x.rem_euclid(16)) as u8,
+            y: (value.y.rem_euclid(16)) as u8,
+            z: (value.z.rem_euclid(16)) as u8,
         }
     }
 }
@@ -88,7 +88,7 @@ impl From<ChunkIndex> for SubChunkIndex {
     fn from(value: ChunkIndex) -> Self {
         Self {
             x: value.x,
-            y: (value.y % 16) as u8,
+            y: (value.y.rem_euclid(16)) as u8,
             z: value.z,
         }
     }

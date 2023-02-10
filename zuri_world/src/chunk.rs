@@ -333,8 +333,14 @@ impl ChunkManager {
 
     /// Returns the chunk in which the provided world position is in (if it is loaded).
     /// The provided Y-value does not have an effect on the result.
-    pub fn at(&self, world_pos: Vec3) -> Option<Entity> {
+    pub fn at_pos(&self, world_pos: Vec3) -> Option<Entity> {
         self.get(IVec2::new(world_pos.x.floor() as i32 >> 4, world_pos.z.floor() as i32 >> 4))
+    }
+
+    /// Returns the chunk in which the provided block position is in (if it is loaded).
+    /// The provided Y-value does not have an effect on the result.
+    pub fn at_block_pos(&self, world_pos: IVec3) -> Option<Entity> {
+        self.get(IVec2::new(world_pos.x >> 4, world_pos.z >> 4))
     }
 
     /// Removes all known chunks from the chunk manager. Does NOT remove these entities from the
