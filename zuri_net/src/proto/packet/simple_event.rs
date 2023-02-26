@@ -1,29 +1,19 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
-use crate::proto::io::{Reader, Writer};
-use crate::proto::packet::PacketType;
+use zuri_net_derive::proto;
 
+/// Sent by the server to send a 'simple event' to the client, meaning an event without any
+/// additional event data. The event is typically used by the client for telemetry.
+#[proto]
 #[derive(Debug, Clone)]
 pub struct SimpleEvent {
+    /// The type of the event to be called.
     pub event_type: SimpleEventType,
 }
 
-#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
+#[proto(i16)]
+#[derive(Debug, Clone)]
 pub enum SimpleEventType {
     None,
     CommandsEnabled,
     CommandsDisabled,
     UnlockWorldTemplateSettings,
-}
-
-impl PacketType for SimpleEvent {
-    fn write(&self, writer: &mut Writer) {
-        writer.i16(self.event_type.to_i16().unwrap());
-    }
-
-    fn read(reader: &mut Reader) -> Self {
-        Self {
-            event_type: SimpleEventType::from_i16(reader.i16()).unwrap(),
-        }
-    }
 }

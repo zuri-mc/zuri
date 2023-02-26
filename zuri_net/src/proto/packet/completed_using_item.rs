@@ -1,22 +1,14 @@
-use crate::proto::io::{Reader, Writer};
-use crate::proto::packet::PacketType;
+use zuri_net_derive::proto;
 
+use crate::proto::types::item::UseItemMethod;
+
+/// Sent by the server to notify client that it should be done using the item it is currently using.
+#[proto]
 #[derive(Debug, Clone)]
 pub struct CompletedUsingItem {
+    /// The item ID of the item that the client completed using. This should typically be the ID of
+    /// the item held in the hand.
     pub used_item_id: i16,
-    pub use_method: i32,
-}
-
-impl PacketType for CompletedUsingItem {
-    fn write(&self, writer: &mut Writer) {
-        writer.i16(self.used_item_id);
-        writer.i32(self.use_method);
-    }
-
-    fn read(reader: &mut Reader) -> Self {
-        Self {
-            used_item_id: reader.i16(),
-            use_method: reader.i32(),
-        }
-    }
+    /// The method of the using of the item that was completed.
+    pub use_method: UseItemMethod,
 }

@@ -1,7 +1,10 @@
 use bytes::BytesMut;
 use num_derive::{FromPrimitive, ToPrimitive};
-use crate::proto::io::{Writer, Reader};
-use zuri_nbt::{Value, encoding::LittleEndian};
+
+use zuri_nbt::{encoding::LittleEndian, Value};
+use zuri_net_derive::proto;
+
+use crate::proto::io::{Readable, Reader, Writable, Writer};
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum UseItemAction {
@@ -10,6 +13,7 @@ pub enum UseItemAction {
     BreakBlock,
 }
 
+#[proto(i32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum UseItemMethod {
     EquipArmour,
@@ -41,8 +45,8 @@ pub struct ItemInstance {
     pub stack: ItemStack,
 }
 
-impl ItemInstance {
-    pub fn write(&self, writer: &mut Writer) {
+impl Writable for ItemInstance {
+    fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.stack.network_id);
         if self.stack.network_id == 0 {
             // The item was air, so there's no more data to follow. Return immediately.
@@ -85,8 +89,10 @@ impl ItemInstance {
 
         writer.byte_slice(Into::<BytesMut>::into(extra_data).as_ref());
     }
+}
 
-    pub fn read(reader: &mut Reader) -> Self {
+impl Readable<ItemInstance> for ItemInstance {
+    fn read(reader: &mut Reader) -> Self {
         let mut instance = Self {
             stack: ItemStack {
                 network_id: reader.var_i32(),
@@ -149,8 +155,8 @@ pub struct ItemStack {
     pub has_network_id: bool,
 }
 
-impl ItemStack {
-    pub fn write(&self, writer: &mut Writer) {
+impl Writable for ItemStack {
+    fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.network_id);
         if self.network_id == 0 {
             // The item was air, so there's no more data to follow. Return immediately.
@@ -186,8 +192,10 @@ impl ItemStack {
 
         writer.byte_slice(Into::<BytesMut>::into(extra_data).as_ref());
     }
+}
 
-    pub fn read(reader: &mut Reader) -> Self {
+impl Readable<ItemStack> for ItemStack {
+    fn read(reader: &mut Reader) -> Self {
         let mut stack = Self {
             network_id: reader.var_i32(),
             ..Default::default()

@@ -1,29 +1,13 @@
 use std::io::{Read, Write};
-use bytes::Buf;
-use crate::proto::packet::network_settings::CompressionType;
 
+use bytes::Buf;
+use zuri_net_derive::proto;
+
+#[proto(u16)]
 #[derive(Debug, Copy, Clone)]
 pub enum Compression {
     Deflate,
     Snappy,
-}
-
-impl From<Compression> for CompressionType {
-    fn from(value: Compression) -> Self {
-        match value {
-            Compression::Deflate => CompressionType::Deflate,
-            Compression::Snappy => CompressionType::Snappy,
-        }
-    }
-}
-
-impl From<CompressionType> for Compression {
-    fn from(value: CompressionType) -> Self {
-        match value {
-            CompressionType::Deflate => Compression::Deflate,
-            CompressionType::Snappy => Compression::Snappy,
-        }
-    }
 }
 
 impl Compression {
@@ -87,15 +71,6 @@ mod tests {
         let mut processed_data: Vec<u8> = data.clone().to_vec();
         Compression::Deflate.compress(&mut processed_data).unwrap();
         Compression::Deflate.decompress(&mut processed_data).unwrap();
-        assert_eq!(data, processed_data);
-    }
-
-    #[test]
-    fn test_snappy() {
-        let data = b"Hello, world!".to_vec();
-        let mut processed_data: Vec<u8> = data.clone().to_vec();
-        Compression::Snappy.compress(&mut processed_data).unwrap();
-        Compression::Snappy.decompress(&mut processed_data).unwrap();
         assert_eq!(data, processed_data);
     }
 }

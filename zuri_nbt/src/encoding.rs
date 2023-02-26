@@ -3,10 +3,10 @@ use crate::decode::Reader;
 use crate::encode::Writer;
 use crate::err::{NbtError, Res};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct LittleEndian;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct NetworkLittleEndian;
 
 impl Reader for LittleEndian {

@@ -4,11 +4,13 @@ use bytes::Bytes;
 use glam::{IVec3, Vec3};
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
+use zuri_net_derive::proto;
 
-use crate::encodable_enum;
-use crate::proto::io::{Reader, Writer};
+use crate::proto::ints::{VarI32, VarU32, VarU64};
+use crate::proto::io::{Reader, Readable, Writer, Writable};
 use crate::proto::types::item::ItemInstance;
 
+#[proto(u8)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum Window {
     Inventory = 0,
@@ -39,7 +41,7 @@ impl InventoryAction {
     pub fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.source_type.to_u32().unwrap());
         match self.source_type {
-            InventoryActionSource::Container | InventoryActionSource::TODO => {
+            InventoryActionSource::Container | InventoryActionSource::TODO => { // todo: this can be done with an enum
                 writer.var_i32(self.window.to_i32().unwrap());
             }
             InventoryActionSource::World => {
@@ -86,121 +88,56 @@ impl Default for InventoryAction {
     }
 }
 
+#[proto]
 #[derive(Debug, Clone)]
 pub struct LegacySetItemSlot {
     pub container_id: u8,
     pub slots: Bytes,
 }
 
-impl LegacySetItemSlot {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.u8(self.container_id);
-        writer.byte_slice(&self.slots);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            container_id: reader.u8(),
-            slots: reader.byte_slice(),
-        }
-    }
+#[proto(u8)] // todo: figure out which type is needed here
+#[derive(Debug, Clone)]
+pub enum InventoryTransactionData {
+    NormalTransaction = 0,
+    MismatchTransaction = 1,
+    UseItemTransactionData = 2,
+    UseItemOnEntityTransaction = 3,
+    ReleaseItemTransaction = 4,
 }
 
-encodable_enum!(
-    #[derive(Debug, Clone)]
-    pub enum InventoryTransactionData {
-        NormalTransaction = 0,
-        MismatchTransaction = 1,
-        UseItemTransactionData = 2,
-        UseItemOnEntityTransaction = 3,
-        ReleaseItemTransaction = 4,
-    }
-);
-
+#[proto]
 #[derive(Debug, Clone)]
 pub struct MismatchTransaction;
 
-impl MismatchTransaction {
-    pub fn read(_: &mut Reader) -> Self {
-        Self {}
-    }
-
-    pub fn write(&self, _: &mut Writer) {}
-}
-
+#[proto]
 #[derive(Debug, Clone)]
 pub struct NormalTransaction {}
 
-impl NormalTransaction {
-    pub fn read(_: &mut Reader) -> Self {
-        Self {}
-    }
-
-    pub fn write(&self, _: &mut Writer) {}
-}
-
+#[proto]
 #[derive(Debug, Clone)]
 pub struct ReleaseItemTransaction {
     pub action_type: ReleaseItemAction,
-    pub hot_bar_slot: i32,
+    pub hot_bar_slot: VarI32,
     pub held_item: ItemInstance,
     pub head_position: Vec3,
 }
 
+#[proto(VarU32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum ReleaseItemAction {
     Release,
     Consume,
 }
 
-impl ReleaseItemTransaction {
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            action_type: ReleaseItemAction::from_u32(reader.var_u32()).unwrap(),
-            hot_bar_slot: reader.var_i32(),
-            held_item: ItemInstance::read(reader),
-            head_position: reader.vec3(),
-        }
-    }
-
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_u32(self.action_type.to_u32().unwrap());
-        writer.var_i32(self.hot_bar_slot);
-        self.held_item.write(writer);
-        writer.vec3(self.head_position);
-    }
-}
-
+#[proto]
 #[derive(Debug, Clone)]
 pub struct UseItemOnEntityTransaction {
-    pub target_entity_runtime_id: u64,
-    pub action_type: u32,
-    pub hot_bar_slot: i32,
+    pub target_entity_runtime_id: VarU64,
+    pub action_type: VarU32,
+    pub hot_bar_slot: VarI32,
     pub held_item: ItemInstance,
     pub position: Vec3,
     pub clicked_position: Vec3,
-}
-
-impl UseItemOnEntityTransaction {
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            target_entity_runtime_id: reader.var_u64(),
-            action_type: reader.var_u32(),
-            hot_bar_slot: reader.var_i32(),
-            held_item: ItemInstance::read(reader),
-            position: reader.vec3(),
-            clicked_position: reader.vec3(),
-        }
-    }
-
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_u64(self.target_entity_runtime_id);
-        writer.var_u32(self.action_type);
-        writer.var_i32(self.hot_bar_slot);
-        self.held_item.write(writer);
-        writer.vec3(self.position);
-        writer.vec3(self.clicked_position);
-    }
 }
 
 #[derive(Debug, Clone, Default)]

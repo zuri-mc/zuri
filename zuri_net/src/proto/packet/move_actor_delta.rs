@@ -1,13 +1,23 @@
 use glam::Vec3;
 use num_derive::{FromPrimitive, ToPrimitive};
+
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 
+/// Sent by the server to move an entity. The packet is specifically optimised to save as much space
+/// as possible, by only writing non-zero fields. As of 1.16.100, this packet no longer actually
+/// contains any deltas.
 #[derive(Debug, Clone)]
 pub struct MoveActorDelta {
+    /// The runtime ID of the entity that is being moved. The packet works provided a non-player
+    /// entity with this runtime ID is present.
     pub entity_runtime_id: u64,
+    /// A list of flags that specify what data is in the packet.
     pub flags: u16,
+    /// The new position that the entity was moved to.
     pub position: Vec3,
+    /// The new absolute rotation. Unlike the position, it is not actually a delta. If any of the
+    /// values of this rotation are not sent, these values are zero and no flag for them is present.
     pub rotation: Vec3,
 }
 

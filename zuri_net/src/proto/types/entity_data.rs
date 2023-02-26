@@ -1,13 +1,74 @@
+use std::collections::HashMap;
+use glam::{IVec3, Vec3};
 use num_derive::{FromPrimitive, ToPrimitive};
+
+use zuri_nbt::Value;
+use zuri_net_derive::proto;
+use crate::proto::ints::{VarI32, VarU32};
+
+use crate::proto::io::{Readable, Reader, Writable, Writer};
+
+#[derive(Clone, Default, Debug)]
+pub struct EntityMetadata(pub HashMap<u32, EntityDataEntry>);
+
+impl Writable for EntityMetadata {
+    #[inline]
+    fn write(&self, writer: &mut Writer) {
+        writer.entity_metadata(&self.0)
+    }
+}
+
+impl Readable<EntityMetadata> for EntityMetadata {
+    #[inline]
+    fn read(reader: &mut Reader) -> EntityMetadata {
+        Self(reader.entity_metadata())
+    }
+}
+
+#[proto]
+#[derive(Debug, Clone)]
+pub struct EntityProperties {
+    #[len_type(VarU32)]
+    pub integer_properties: Vec<IntegerEntityProperty>,
+    #[len_type(VarU32)]
+    pub float_properties: Vec<FloatEntityProperty>,
+}
+
+#[proto]
+#[derive(Debug, Clone)]
+pub struct IntegerEntityProperty {
+    pub index: VarU32,
+    pub value: VarI32,
+}
+
+#[proto]
+#[derive(Debug, Clone)]
+pub struct FloatEntityProperty {
+    pub index: VarU32,
+    pub value: f32,
+}
+
+#[derive(Debug, Clone)]
+pub enum EntityDataEntry {
+    U8(u8),
+    I16(i16),
+    I32(i32),
+    F32(f32),
+    String(String),
+    NBT(Value),
+    BlockPos(IVec3),
+    I64(i64),
+    Vec3(Vec3),
+}
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum EntityDataType {
-    Byte,
+    U8,
     I16,
     I32,
     F32,
     String,
-    CompoundTag,
+    NBT,
     BlockPos,
     I64,
     Vec3,

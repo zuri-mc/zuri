@@ -55,12 +55,12 @@ macro_rules! encodable_enum {
 
         /// Allow the enum to converted into a variant itself if it matches the variant.
         $(impl TryFrom<$name> for $elem {
-            type Error = $name; // todo: some kind of error here?
+            type Error = (); // todo: some kind of error here?
 
             fn try_from(value: $name) -> Result<Self, Self::Error> {
                 match value {
                     $name::$elem(e) => Ok(e),
-                    _ => Err(value),
+                    _ => Err(()),
                 }
             }
         })+

@@ -1,4 +1,5 @@
 use bevy::asset::{Assets, Handle};
+use bevy::math::IVec3;
 use bevy::prelude::{Changed, EventReader, Mesh, Query, Res, ResMut};
 use zuri_net::proto::packet::update_block::UpdateBlock;
 use crate::block::component::geometry::Geometry;
@@ -26,11 +27,11 @@ pub(crate) fn block_update_system(
 ) {
     for pk in pks.iter() {
         // Multi-layer chunks are not yet supported.
-        if pk.layer != 0 {
+        if pk.layer.0 != 0 {
             continue;
         }
-        if let Some(chunk_entity) = chunks.at_block_pos(pk.position) {
-            query.get_mut(chunk_entity).unwrap().set(ChunkIndex::from(pk.position), pk.new_block_runtime_id);
+        if let Some(chunk_entity) = chunks.at_block_pos(pk.position.into()) {
+            query.get_mut(chunk_entity).unwrap().set(<ChunkIndex as From<IVec3>>::from(pk.position.into()), pk.new_block_runtime_id.into());
         }
     }
 }

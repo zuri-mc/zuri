@@ -4,9 +4,17 @@ use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::PacketType;
 use crate::proto::types::scoreboard::{ScoreboardIdentityAction, ScoreboardIdentityEntry};
 
+/// Sent by the server to change the identity type of one of the entries on a scoreboard. This is
+/// used to change, for example, an entry pointing to a player, to a fake player when it leaves the
+/// server, and to change it back to a real player when it joins again. In non-vanilla situations,
+/// the packet is quite useless.
 #[derive(Debug, Clone)]
 pub struct SetScoreboardIdentity {
+    /// The type of the action to execute. The action is either `Register` to associate an identity
+    /// with the entry, or `Clear` to remove associations with an entity.
     pub action_type: ScoreboardIdentityAction,
+    /// A list of all entries in the packet. Each of these entries points to one of the entries on
+    /// a scoreboard. Depending on `action_type`, it'll either be registered or cleared.
     pub entries: Vec<ScoreboardIdentityEntry>,
 }
 

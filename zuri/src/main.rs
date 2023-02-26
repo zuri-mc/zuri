@@ -8,7 +8,7 @@ use bevy::{
     render::{render_resource::WgpuFeatures, settings::WgpuSettings},
 };
 use bevy::core_pipeline::clear_color::ClearColorConfig;
-use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
+use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::window::{CursorGrabMode, PresentMode};
 
 use dotenvy::dotenv;
@@ -49,7 +49,6 @@ async fn main() {
             ..default()
         }).set(ImagePlugin::default_nearest()))
         .add_plugin(WireframePlugin)
-        .add_plugin(LogDiagnosticsPlugin::default())
         .add_plugin(FrameTimeDiagnosticsPlugin)
 
         .add_plugin(ClientPlugin)

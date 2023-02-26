@@ -1,19 +1,11 @@
-use crate::proto::io::{Reader, Writer};
-use crate::proto::packet::PacketType;
+use zuri_net_derive::proto;
 
+use crate::proto::ints::VarI64;
+
+/// Sent by the client to request photo information from the server.
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PhotoInfoRequest {
-    pub photo_id: i64,
-}
-
-impl PacketType for PhotoInfoRequest {
-    fn write(&self, writer: &mut Writer) {
-        writer.var_i64(self.photo_id);
-    }
-
-    fn read(reader: &mut Reader) -> Self {
-        Self {
-            photo_id: reader.var_i64(),
-        }
-    }
+    /// The ID of the photo.
+    pub photo_id: VarI64,
 }

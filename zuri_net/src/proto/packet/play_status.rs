@@ -1,18 +1,17 @@
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{FromPrimitive, ToPrimitive};
+use zuri_net_derive::proto;
+use crate::proto::ints::I32BE;
 
-use crate::proto::packet::PacketType;
-use crate::proto::io::{Reader, Writer};
-
-/// Sent by the server to update a player on the play status. This includes failed statuses due to a mismatched version,
-/// but also success statuses.
+/// Sent by the server to update a player on the play status. This includes failed statuses due to a
+/// mismatched version, but also success statuses.
+#[proto]
 #[derive(Debug, Clone)]
 pub struct PlayStatus {
     /// The status of the packet.
     pub status: PlayStatusType,
 }
 
-#[derive(Debug, Clone, PartialEq, FromPrimitive, ToPrimitive)]
+#[proto(I32BE)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum PlayStatusType {
     LoginSuccess,
     LoginFailedClient,
@@ -24,14 +23,4 @@ pub enum PlayStatusType {
     LoginFailedServerFull,
     LoginFailedEditorVanilla,
     LoginFailedVanillaEditor,
-}
-
-impl PacketType for PlayStatus {
-    fn write(&self, writer: &mut Writer) {
-        writer.i32_be(self.status.to_i32().unwrap());
-    }
-
-    fn read(reader: &mut Reader) -> Self {
-        Self { status: PlayStatusType::from_i32(reader.i32_be()).unwrap() }
-    }
 }

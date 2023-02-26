@@ -1,19 +1,14 @@
-use crate::proto::io::{Reader, Writer};
-use crate::proto::packet::PacketType;
+use zuri_net_derive::proto;
 
+use crate::proto::types::world::GameType;
+
+/// Sent by the client when it toggles the default game type in the settings UI, and is sent by the
+/// server when it actually changes the default game type, resulting in the toggle being changed in
+/// the settings UI.
+#[proto]
 #[derive(Debug, Clone)]
 pub struct SetDefaultGameType {
-    pub game_type: i32,
-}
-
-impl PacketType for SetDefaultGameType {
-    fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.game_type);
-    }
-
-    fn read(reader: &mut Reader) -> Self {
-        Self {
-            game_type: reader.var_i32(),
-        }
-    }
+    /// The new game type that is set. When sent by the client, this is the requested new default
+    /// game type.
+    pub game_type: GameType,
 }

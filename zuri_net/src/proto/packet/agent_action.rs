@@ -1,11 +1,9 @@
 use bytes::Bytes;
-use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{ToPrimitive, FromPrimitive};
+use zuri_net_derive::proto;
+use crate::proto::ints::VarI32;
 
-use crate::proto::packet::PacketType;
-use crate::proto::io::{Reader, Writer};
-
-#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
+#[proto(VarI32)]
+#[derive(Debug, Clone)]
 pub enum AgentActionType {
     None,
     Attack,
@@ -28,25 +26,15 @@ pub enum AgentActionType {
     Turn,
 }
 
+/// An Education Edition packet sent from the server to the client to return a response to a
+/// previously requested action.
+#[proto]
 #[derive(Debug, Clone)]
 pub struct AgentAction {
+    /// JSON identifier referenced in the initial action.
     pub identifier: String,
+    /// The action type that was requested.
     pub action: AgentActionType,
+    /// JSON containing the response to the action.
     pub response: Bytes,
-}
-
-impl PacketType for AgentAction {
-    fn write(&self, writer: &mut Writer) {
-        writer.string(self.identifier.as_str());
-        writer.var_i32(self.action.to_i32().unwrap());
-        writer.byte_slice(&self.response);
-    }
-
-    fn read(reader: &mut Reader) -> Self {
-        Self {
-            identifier: reader.string(),
-            action: AgentActionType::from_i32(reader.var_i32()).unwrap(),
-            response: reader.byte_slice(),
-        }
-    }
 }

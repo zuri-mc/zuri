@@ -1,17 +1,9 @@
 use glam::Vec3;
 use num_derive::{FromPrimitive, ToPrimitive};
-use num_traits::{ToPrimitive, FromPrimitive};
-use crate::proto::io::{Reader, Writer};
-use crate::proto::packet::PacketType;
+use zuri_net_derive::proto;
+use crate::proto::ints::VarU32;
 
-#[derive(Debug, Clone)]
-pub struct UpdateClientInputLocks {
-    pub locks: ClientInputLock,
-    pub position: Vec3,
-}
-
-
-#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum ClientInputLock {
     Move,
     Jump,
@@ -21,16 +13,20 @@ pub enum ClientInputLock {
     Rotation,
 }
 
-impl PacketType for UpdateClientInputLocks {
-    fn write(&self, writer: &mut Writer) {
-        writer.var_u32(self.locks.to_u32().unwrap());
-        writer.vec3(self.position);
+impl ClientInputLock {
+    pub fn flag(&self) -> u32 {
+        1 << ((*self as u32) + 1)
     }
+}
 
-    fn read(reader: &mut Reader) -> Self {
-        Self {
-            locks: ClientInputLock::from_u32(reader.var_u32()).unwrap(),
-            position: reader.vec3(),
-        }
-    }
+/// Sent by the server to the client to lock certain inputs the client usually has, such as
+/// movement, jumping, sneaking, and more.
+#[proto]
+#[derive(Debug, Clone)]
+pub struct UpdateClientInputLocks {
+    /// An encoded bitset of all locks that are currently active.
+    pub locks: VarU32,
+    /// The server's position of the client at the time the packet was sent. It is unclear what the
+    /// exact purpose of this field is.
+    pub position: Vec3,
 }

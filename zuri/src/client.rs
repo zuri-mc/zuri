@@ -17,7 +17,6 @@ use uuid::Uuid;
 
 use zuri_net::client::Handler;
 use zuri_net::client::data::{ClientData, IdentityData};
-use zuri_net::client::login::LoginData;
 use zuri_net::connection::ConnError;
 use zuri_net::proto::packet::level_chunk::LevelChunk;
 use zuri_net::proto::packet::Packet;
@@ -68,7 +67,7 @@ fn graceful_disconnect(shutdown: EventReader<AppExit>, client: Option<NonSend<Ar
 /// Used to keep track of the task responsible for connecting to the server. It is removed after the
 /// connection has been made.
 struct ClientWaiter {
-    task: JoinHandle<Result<(Client, LoginData), ConnError>>,
+    task: JoinHandle<Result<Client, ConnError>>,
 }
 
 /// Temporary system responsible for starting the thread which handles the login sequence.
@@ -129,11 +128,10 @@ fn client_connection_system(world: &mut World) {
             error!("Could not connect to the server: {e}");
             world.send_event(AppExit);
         }
-        Ok((client, data)) => {
-            let client = Arc::new(client);
+        Ok(client) => {
+            let client = Arc::<Client>::new(client);
             world.remove_non_send_resource::<ClientWaiter>();
             world.insert_non_send_resource(client.clone());
-            world.insert_non_send_resource(data);
             info!("Connection has been completed");
 
             let (send, mut recv) = mpsc::channel::<Vec<Packet>>(1);

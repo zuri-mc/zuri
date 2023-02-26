@@ -4,4 +4,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy_math = "0.9.1"
+glam = "0.22.0"
