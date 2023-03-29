@@ -1,8 +1,8 @@
+use crate::proto::ints::VarI32;
 use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_net_derive::proto;
-use crate::proto::ints::VarI32;
 
-use crate::proto::io::{NBT};
+use crate::proto::io::NBT;
 
 /// Sent by the server in response to the PositionTrackingDBClientRequest packet. This packet is, as
 /// of 1.16, currently only used for lodestones. The server maintains a database with tracking IDs

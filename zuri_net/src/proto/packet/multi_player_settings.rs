@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
+use zuri_net_derive::proto;
 
 /// Sent by the client to update multi-player related settings server-side and sent back to online
 /// players by the server. The MultiPlayerSettings packet is a Minecraft: Education Edition packet.

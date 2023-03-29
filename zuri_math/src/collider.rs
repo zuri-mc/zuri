@@ -91,7 +91,12 @@ impl Collider {
         if self.outer.is_none() || other.outer.is_none() {
             return false;
         }
-        if !self.outer.as_ref().unwrap().intersects_with(other.outer.as_ref().unwrap()) {
+        if !self
+            .outer
+            .as_ref()
+            .unwrap()
+            .intersects_with(other.outer.as_ref().unwrap())
+        {
             return false;
         }
 
@@ -112,7 +117,12 @@ impl Collider {
         if self.outer.is_none() || other.outer.is_none() {
             return None;
         }
-        if !self.outer.as_ref().unwrap().intersects_with(other.outer.as_ref().unwrap()) {
+        if !self
+            .outer
+            .as_ref()
+            .unwrap()
+            .intersects_with(other.outer.as_ref().unwrap())
+        {
             return None;
         }
 

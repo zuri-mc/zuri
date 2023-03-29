@@ -34,7 +34,9 @@ impl Attribute {
         writer.f32(self.default);
         writer.string(self.value.name.as_str());
         writer.var_u32(self.modifiers.len() as u32);
-        self.modifiers.iter().for_each(|modifier| modifier.write(writer));
+        self.modifiers
+            .iter()
+            .for_each(|modifier| modifier.write(writer));
     }
 
     pub fn read(reader: &mut Reader) -> Self {
@@ -47,7 +49,9 @@ impl Attribute {
         };
         attribute.default = reader.f32();
         attribute.value.name = reader.string();
-        attribute.modifiers = (0..reader.var_u32()).map(|_| AttributeModifier::read(reader)).collect();
+        attribute.modifiers = (0..reader.var_u32())
+            .map(|_| AttributeModifier::read(reader))
+            .collect();
 
         attribute
     }

@@ -1,23 +1,17 @@
 use glam::Vec3;
 use uuid::Uuid;
 
+use crate::proto::ints::{VarI32, VarI64, VarU32, VarU64};
 use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_net_derive::proto;
-use crate::proto::ints::{VarI32, VarI64, VarU64, VarU32};
 
-use crate::proto::io::{NBT, UBlockPos};
+use crate::proto::io::{UBlockPos, NBT};
 use crate::proto::types::education::EducationSharedResourceURI;
 use crate::proto::types::game_rule::GameRule;
 use crate::proto::types::item_stack::ItemEntry;
 use crate::proto::types::player::PlayerMovementSettings;
 use crate::proto::types::world::{
-    BlockEntry,
-    Difficulty,
-    Dimension,
-    ExperimentData,
-    GameType,
-    Generator,
-    PermissionLevel,
+    BlockEntry, Difficulty, Dimension, ExperimentData, GameType, Generator, PermissionLevel,
 };
 
 /// Sent by the server to send information about the world the player will be spawned in. It

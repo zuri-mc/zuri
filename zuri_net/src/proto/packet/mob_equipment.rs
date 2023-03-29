@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarU64;
+use zuri_net_derive::proto;
 
 use crate::proto::types::inventory::Window;
 use crate::proto::types::item::ItemInstance;

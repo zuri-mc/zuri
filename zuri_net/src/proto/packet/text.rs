@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
+use zuri_net_derive::proto;
 
 /// Sent by the client to the server to send chat messages, and by the server to the client to
 /// forward or send messages, which may be chat, popups, tips etc.

@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use crate::pos::{ChunkPos};
+use crate::pos::ChunkPos;
 use crate::subchunk::SUBCHUNKS_SIZE;
 
 /// Represents the vertical range of a world.

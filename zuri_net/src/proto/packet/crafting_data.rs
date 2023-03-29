@@ -1,5 +1,7 @@
 use crate::proto::io::{Readable, Reader, Writable, Writer};
-use crate::proto::types::recipe::{MaterialReducer, PotionContainerChangeRecipe, PotionRecipe, Recipe};
+use crate::proto::types::recipe::{
+    MaterialReducer, PotionContainerChangeRecipe, PotionRecipe, Recipe,
+};
 
 // todo: implement CraftingData properly (requires shield_id to be known)
 /// Sent by the server to let the client know all crafting data that the server maintains. This

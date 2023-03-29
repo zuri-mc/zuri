@@ -1,6 +1,6 @@
+use crate::proto::ints::VarU64;
 use glam::Vec3;
 use zuri_net_derive::proto;
-use crate::proto::ints::VarU64;
 
 /// Sent by players to send their movement to the server, and by the server to update the movement
 /// of player entities to other players. When using the new movement system, this is only sent by

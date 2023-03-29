@@ -6,7 +6,7 @@ use crate::proto::ints::VarU64;
 
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum EmoteFlag {
-    ServerSide
+    ServerSide,
 }
 
 impl EmoteFlag {

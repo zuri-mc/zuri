@@ -1,6 +1,6 @@
+use crate::proto::ints::VarU32;
 use bytes::Bytes;
 use zuri_net_derive::proto;
-use crate::proto::ints::VarU32;
 
 /// Sent by the client in response to a ModalFormRequest, after the player has submitted the form
 /// sent. It contains the options/properties selected by the player, or a JSON encoded 'null' if the

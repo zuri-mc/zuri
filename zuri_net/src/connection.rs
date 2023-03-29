@@ -7,8 +7,8 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use bytes::Bytes;
 use p384::ecdsa::SigningKey;
-use rust_raknet::{RaknetSocket, Reliability};
 use rust_raknet::error::RaknetError;
+use rust_raknet::{RaknetSocket, Reliability};
 use tokio::sync::Mutex;
 
 use crate::chan::PkReceiver;
@@ -65,13 +65,19 @@ impl Connection {
         if batch_mu.is_empty() {
             return Ok(());
         }
-        let batch = self.encoder.lock().await
+        let batch = self
+            .encoder
+            .lock()
+            .await
             .encode(&mut *batch_mu)
             .map_err(|s| ConnError::EncodeError(s))?;
         batch_mu.clear();
         drop(batch_mu);
 
-        Ok(self.socket.send(&batch, Reliability::ReliableOrdered).await?)
+        Ok(self
+            .socket
+            .send(&batch, Reliability::ReliableOrdered)
+            .await?)
     }
 
     pub async fn write_packet(&self, packet: &Packet) {
@@ -93,7 +99,10 @@ impl Connection {
 
     async fn read_next_batch(&self) -> Result<Vec<Packet>, ConnError> {
         let encoded = self.socket.recv().await?;
-        let batch = self.encoder.lock().await
+        let batch = self
+            .encoder
+            .lock()
+            .await
             .decode(&mut encoded.into())
             .map_err(|e| ConnError::DecodeError(e))?;
 
@@ -108,7 +117,12 @@ impl Connection {
 
 #[async_trait]
 pub trait Sequence<T> {
-    async fn execute(self, reader: PkReceiver, conn: Arc<Connection>, expecter: Arc<ExpectedPackets>) -> T;
+    async fn execute(
+        self,
+        reader: PkReceiver,
+        conn: Arc<Connection>,
+        expecter: Arc<ExpectedPackets>,
+    ) -> T;
 }
 
 #[derive(Default, Debug)]
@@ -125,7 +139,10 @@ impl ExpectedPackets {
 
     pub async fn retract<T: TryFrom<Packet> + 'static>(&self) {
         let mut packets = self.packets.lock().await;
-        let index = packets.iter().position(|t| *t == TypeId::of::<T>()).unwrap();
+        let index = packets
+            .iter()
+            .position(|t| *t == TypeId::of::<T>())
+            .unwrap();
         packets.remove(index);
     }
 
@@ -142,7 +159,10 @@ impl ExpectedPackets {
 
     pub(crate) async fn remove(&self, pk: &Packet) {
         let mut packets = self.packets.lock().await;
-        let index = packets.iter().position(|t| *t == pk.inner_type_id()).unwrap();
+        let index = packets
+            .iter()
+            .position(|t| *t == pk.inner_type_id())
+            .unwrap();
         packets.remove(index);
     }
 }

@@ -1,6 +1,6 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
 use crate::proto::types::game_rule::GameRule;
+use zuri_net_derive::proto;
 
 /// Sent by the server to the client to update client-side game rules, such as game rules like the
 /// 'showCoordinates' game rule.

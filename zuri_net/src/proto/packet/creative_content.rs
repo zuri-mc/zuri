@@ -1,6 +1,6 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
 use crate::proto::types::item::ItemStack;
+use zuri_net_derive::proto;
 
 /// Sent by the server to set the creative inventory's content for a player. Introduced in 1.16,
 /// this packet replaces the previous method - sending an InventoryContent packet with creative

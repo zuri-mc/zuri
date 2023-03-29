@@ -2,31 +2,31 @@ extern crate core;
 
 use std::f32::consts::PI;
 
+use bevy::core_pipeline::clear_color::ClearColorConfig;
+use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
+use bevy::window::{CursorGrabMode, PresentMode};
 use bevy::{
     pbr::wireframe::{WireframeConfig, WireframePlugin},
     prelude::*,
     render::{render_resource::WgpuFeatures, settings::WgpuSettings},
 };
-use bevy::core_pipeline::clear_color::ClearColorConfig;
-use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
-use bevy::window::{CursorGrabMode, PresentMode};
 use dotenvy::dotenv;
 use noise::{NoiseFn, SuperSimplex};
 
+use crate::client::ClientPlugin;
 use zuri_world::chunk::Chunk;
 use zuri_world::pos::ChunkPos;
 use zuri_world::range::YRange;
 use zuri_world::WorldPlugin;
-use crate::client::ClientPlugin;
 
 use crate::entity::Head;
 use crate::input::InputPlugin;
 use crate::player::{Local, LocalPlayerPlugin};
 
-mod entity;
-mod player;
-mod input;
 mod client;
+mod entity;
+mod input;
+mod player;
 
 #[tokio::main]
 async fn main() {
@@ -37,22 +37,24 @@ async fn main() {
             features: WgpuFeatures::POLYGON_MODE_LINE,
             ..default()
         })
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            window: WindowDescriptor {
-                title: "Minecraft".into(),
-                present_mode: PresentMode::Immediate,
-                ..default()
-            },
-            ..default()
-        }).set(ImagePlugin::default_nearest()))
+        .add_plugins(
+            DefaultPlugins
+                .set(WindowPlugin {
+                    window: WindowDescriptor {
+                        title: "Minecraft".into(),
+                        present_mode: PresentMode::Immediate,
+                        ..default()
+                    },
+                    ..default()
+                })
+                .set(ImagePlugin::default_nearest()),
+        )
         .add_plugin(WireframePlugin)
         .add_plugin(FrameTimeDiagnosticsPlugin)
-
         .add_plugin(ClientPlugin)
         .add_plugin(InputPlugin)
         .add_plugin(LocalPlayerPlugin)
         .add_plugin(WorldPlugin)
-
         .add_startup_system(setup)
         .add_system(cursor_grab_system)
         .run();
@@ -99,7 +101,8 @@ fn setup(
                 for z in 0..16 {
                     let world_z = chunk_z * 16 + z;
 
-                    let max = (noise.get([world_x as f64 / 50., world_z as f64 / 50.]) * 10.) as i32;
+                    let max =
+                        (noise.get([world_x as f64 / 50., world_z as f64 / 50.]) * 10.) as i32;
                     for y in 0..max + 50 {
                         cube_count += 1;
                         s.set(ChunkPos::new(x, y as i16, z), true);
@@ -119,7 +122,11 @@ fn setup(
                         //unlit: true,
                         ..default()
                     }),
-                    transform: Transform::from_xyz(chunk_x as f32 * 16., -32., chunk_z as f32 * 16.),
+                    transform: Transform::from_xyz(
+                        chunk_x as f32 * 16.,
+                        -32.,
+                        chunk_z as f32 * 16.,
+                    ),
                     ..default()
                 },
                 //Wireframe,
@@ -173,8 +180,10 @@ fn setup(
         transform: Transform::from_xyz(-5.0, 2.5, 5.0),
         ..default()
     });
-    commands.spawn(TransformBundle {
-        local: Transform::from_xyz(-5.0, 2.5, 5.0),
-        ..default()
-    }).insert((Head::default(), Local));
+    commands
+        .spawn(TransformBundle {
+            local: Transform::from_xyz(-5.0, 2.5, 5.0),
+            ..default()
+        })
+        .insert((Head::default(), Local));
 }

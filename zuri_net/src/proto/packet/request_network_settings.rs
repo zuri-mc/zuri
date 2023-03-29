@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::I32BE;
+use zuri_net_derive::proto;
 
 /// Sent by the client to request network settings, such as compression, from the server.
 #[proto]

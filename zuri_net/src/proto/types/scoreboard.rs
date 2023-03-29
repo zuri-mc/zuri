@@ -126,7 +126,11 @@ impl ScoreboardIdentityEntry {
     pub fn read(reader: &mut Reader, action: ScoreboardIdentityAction) -> Self {
         Self {
             entry_id: reader.var_i64(),
-            entity_unique_id: if action == ScoreboardIdentityAction::Register { reader.var_i64() } else { 0 },
+            entity_unique_id: if action == ScoreboardIdentityAction::Register {
+                reader.var_i64()
+            } else {
+                0
+            },
         }
     }
 }

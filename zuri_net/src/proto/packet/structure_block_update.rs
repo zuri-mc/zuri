@@ -1,7 +1,9 @@
 use zuri_net_derive::proto;
 
 use crate::proto::io::UBlockPos;
-use crate::proto::types::structure::{StructureBlockType, StructureRedstoneSaveMode, StructureSettings};
+use crate::proto::types::structure::{
+    StructureBlockType, StructureRedstoneSaveMode, StructureSettings,
+};
 
 /// Sent by the client when it updates a structure block using the in-game UI. The data it contains
 /// depends on the type of structure block that it is. In Minecraft Bedrock Edition v1.11, there is

@@ -1,6 +1,6 @@
+use crate::proto::ints::VarU32;
 use glam::IVec2;
 use zuri_net_derive::proto;
-use crate::proto::ints::VarU32;
 
 use crate::proto::io::BlockPos;
 

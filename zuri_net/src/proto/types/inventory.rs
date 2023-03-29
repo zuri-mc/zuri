@@ -7,7 +7,7 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use zuri_net_derive::proto;
 
 use crate::proto::ints::{VarI32, VarU32, VarU64};
-use crate::proto::io::{Reader, Readable, Writer, Writable};
+use crate::proto::io::{Readable, Reader, Writable, Writer};
 use crate::proto::types::item::ItemInstance;
 
 #[proto(u8)]
@@ -41,7 +41,8 @@ impl InventoryAction {
     pub fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.source_type.to_u32().unwrap());
         match self.source_type {
-            InventoryActionSource::Container | InventoryActionSource::TODO => { // todo: this can be done with an enum
+            InventoryActionSource::Container | InventoryActionSource::TODO => {
+                // todo: this can be done with an enum
                 writer.var_i32(self.window.to_i32().unwrap());
             }
             InventoryActionSource::World => {
@@ -58,7 +59,9 @@ impl InventoryAction {
         let source_type = InventoryActionSource::from_u32(reader.var_u32()).unwrap();
         Self {
             source_type: source_type.clone(),
-            window: if source_type == InventoryActionSource::Container || source_type == InventoryActionSource::TODO {
+            window: if source_type == InventoryActionSource::Container
+                || source_type == InventoryActionSource::TODO
+            {
                 Window::from_i32(reader.var_i32()).unwrap()
             } else {
                 Window::Inventory
@@ -185,7 +188,9 @@ impl UseItemTransactionData {
         writer.var_i32(self.legacy_request_id);
         if self.legacy_request_id < -1 && (self.legacy_request_id & 1) == 0 {
             writer.var_u32(self.legacy_set_item_slots.len() as u32);
-            self.legacy_set_item_slots.iter().for_each(|slot| slot.write(writer));
+            self.legacy_set_item_slots
+                .iter()
+                .for_each(|slot| slot.write(writer));
         }
         writer.var_u32(self.actions.len() as u32);
         self.actions.iter().for_each(|action| action.write(writer));
@@ -204,11 +209,15 @@ impl UseItemTransactionData {
         Self {
             legacy_request_id,
             legacy_set_item_slots: if legacy_request_id < -1 && (legacy_request_id & 1) == 0 {
-                (0..reader.var_u32()).map(|_| LegacySetItemSlot::read(reader)).collect()
+                (0..reader.var_u32())
+                    .map(|_| LegacySetItemSlot::read(reader))
+                    .collect()
             } else {
                 Vec::new()
             },
-            actions: (0..reader.var_u32()).map(|_| InventoryAction::read(reader)).collect(),
+            actions: (0..reader.var_u32())
+                .map(|_| InventoryAction::read(reader))
+                .collect(),
             action_type: reader.var_u32(),
             block_position: reader.block_pos(),
             block_face: reader.var_i32(),

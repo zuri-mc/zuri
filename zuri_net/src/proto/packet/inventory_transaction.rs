@@ -1,4 +1,4 @@
-use crate::proto::io::{Reader, Readable, Writer, Writable};
+use crate::proto::io::{Readable, Reader, Writable, Writer};
 use crate::proto::packet::PacketType;
 use crate::proto::types::inventory::*;
 
@@ -36,7 +36,9 @@ impl PacketType for InventoryTransaction {
         writer.var_i32(self.legacy_request_id);
         if self.legacy_request_id != 0 {
             writer.var_u32(self.legacy_set_item_slots.len() as u32);
-            self.legacy_set_item_slots.iter().for_each(|slot| slot.write(writer));
+            self.legacy_set_item_slots
+                .iter()
+                .for_each(|slot| slot.write(writer));
         }
 
         // todo: split the type from the data when writing
@@ -51,7 +53,9 @@ impl PacketType for InventoryTransaction {
     fn read(reader: &mut Reader) -> Self {
         let legacy_request_id = reader.var_i32();
         let legacy_set_item_slots = if legacy_request_id != 0 {
-            (0..reader.var_u32()).map(|_| LegacySetItemSlot::read(reader)).collect()
+            (0..reader.var_u32())
+                .map(|_| LegacySetItemSlot::read(reader))
+                .collect()
         } else {
             Vec::new()
         };
@@ -60,7 +64,9 @@ impl PacketType for InventoryTransaction {
         Self {
             legacy_request_id,
             legacy_set_item_slots,
-            actions: (0..reader.var_u32()).map(|_| InventoryAction::read(reader)).collect(),
+            actions: (0..reader.var_u32())
+                .map(|_| InventoryAction::read(reader))
+                .collect(),
             transaction_data: InventoryTransactionData::read(reader),
         }
     }

@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
+use zuri_net_derive::proto;
 
 /// Sent by the server to show the Minecraft credits screen to the client. It is typically sent when
 /// the player beats the ender dragon and leaves the End.

@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
+use zuri_net_derive::proto;
 
 /// Allows the client to display dialog boxes for interacting with NPCs.
 #[proto]

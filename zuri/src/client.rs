@@ -1,21 +1,21 @@
+use async_trait::async_trait;
+use bevy::app::AppExit;
 use std::env;
 use std::net::ToSocketAddrs;
 use std::sync::Arc;
 use std::time::Duration;
-use async_trait::async_trait;
-use bevy::app::AppExit;
 
 use bevy::prelude::*;
 use futures_lite::future;
 use oauth2::devicecode::StandardDeviceAuthorizationResponse;
 use tokio::sync::mpsc;
-use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::mpsc::error::TryRecvError;
+use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
 use uuid::Uuid;
-use zuri_net::client::{Handler};
 use zuri_net::client::data::{ClientData, IdentityData};
+use zuri_net::client::Handler;
 use zuri_net::connection::ConnError;
 use zuri_net::proto::packet::Packet;
 use zuri_xbox::live;
@@ -97,9 +97,7 @@ fn init_client(world: &mut World) {
             ClientData::default(),
             identity_data,
             live_token,
-            PacketHandler {
-                send_chan: send,
-            },
+            PacketHandler { send_chan: send },
         )),
     });
     world.insert_non_send_resource(recv);
@@ -160,7 +158,8 @@ fn send_packets(mut packets: ResMut<Events<Packet>>, chan: Option<NonSend<Sender
     if packets.is_empty() || chan.is_none() {
         return;
     }
-    chan.unwrap().blocking_send(packets.drain().collect())
+    chan.unwrap()
+        .blocking_send(packets.drain().collect())
         .expect("Could not send packets to writer");
 }
 
@@ -173,12 +172,16 @@ fn receive_packets(world: &mut World) {
     }
     loop {
         match opt_chan.as_mut().unwrap().try_recv() {
-            Err(err) => return match err {
-                TryRecvError::Empty => {}
-                TryRecvError::Disconnected => {
-                    world.remove_non_send_resource::<Receiver<Vec<Packet>>>().unwrap();
+            Err(err) => {
+                return match err {
+                    TryRecvError::Empty => {}
+                    TryRecvError::Disconnected => {
+                        world
+                            .remove_non_send_resource::<Receiver<Vec<Packet>>>()
+                            .unwrap();
+                    }
                 }
-            },
+            }
             Ok(pk) => match pk {
                 _ => {
                     warn!("Unhandled packet {pk}");

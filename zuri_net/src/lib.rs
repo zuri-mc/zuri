@@ -1,19 +1,19 @@
 extern crate core;
 
+pub mod chan;
 pub mod client;
 pub mod compression;
 pub mod connection;
 pub mod encode;
 pub mod encryption;
 pub mod proto;
-pub mod chan;
 
 #[cfg(test)]
 mod tests {
+    use crate::proto::ints::VarU32;
+    use crate::proto::io::{Readable, Reader, Writable, Writer};
     use bytes::Bytes;
     use zuri_net_derive::proto;
-    use crate::proto::ints::VarU32;
-    use crate::proto::io::{Reader, Writable, Writer, Readable};
 
     #[proto]
     #[derive(PartialEq, Debug)]

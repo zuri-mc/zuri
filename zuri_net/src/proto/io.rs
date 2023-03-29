@@ -1,21 +1,12 @@
 use std::collections::{HashMap, VecDeque};
 
-use bytes::{
-    Buf,
-    BufMut,
-    Bytes,
-    BytesMut,
-};
+use bytes::{Buf, BufMut, Bytes, BytesMut};
 use glam::{IVec2, IVec3, Vec2, Vec3};
 use num_traits::{FromPrimitive, ToPrimitive};
 use uuid::Uuid;
 
-use zuri_nbt::{
-    decode,
-    encode,
-    Value,
-};
 use zuri_nbt::encoding::NetworkLittleEndian;
+use zuri_nbt::{decode, encode, Value};
 
 use crate::proto::types::entity_data::{EntityDataEntry, EntityDataType};
 
@@ -407,10 +398,7 @@ impl Into<Bytes> for Reader {
 
 impl Reader {
     pub fn from_buf(buf: Bytes, shield_id: i32) -> Self {
-        Reader {
-            buf,
-            shield_id,
-        }
+        Reader { buf, shield_id }
     }
 
     pub fn shield_id(&self) -> i32 {
@@ -478,11 +466,7 @@ impl Reader {
             v |= ((b & 0x7f) as u32) << i;
             if b & 0x80 == 0 {
                 let x = (v >> 1) as i32;
-                return if v & 1 != 0 {
-                    -x
-                } else {
-                    x
-                };
+                return if v & 1 != 0 { -x } else { x };
             }
         }
         panic!("varint overflows integer");
@@ -509,11 +493,7 @@ impl Reader {
             v |= ((b & 0x7f) as u64) << i;
             if b & 0x80 == 0 {
                 let x = (v >> 1) as i64;
-                return if v & 1 != 0 {
-                    -x
-                } else {
-                    x
-                };
+                return if v & 1 != 0 { -x } else { x };
             }
         }
         panic!("varint overflows integer");
@@ -681,7 +661,11 @@ impl Readable<Uuid> for Uuid {
 impl<T: Readable<T>, const N: usize> Readable<[T; N]> for [T; N] {
     #[inline]
     fn read(reader: &mut Reader) -> [T; N] {
-        match (0..N).map(|_| T::read(reader)).collect::<Vec<T>>().try_into() {
+        match (0..N)
+            .map(|_| T::read(reader))
+            .collect::<Vec<T>>()
+            .try_into()
+        {
             Ok(r) => r,
             _ => unreachable!(),
         }
@@ -800,14 +784,20 @@ pub struct NBT<E: decode::Reader + encode::Writer> {
 
 impl<E: decode::Reader + encode::Writer + Default> NBT<E> {
     fn new(val: Value) -> Self {
-        Self {val, encoding: E::default()}
+        Self {
+            val,
+            encoding: E::default(),
+        }
     }
 }
 
 impl<E: decode::Reader + encode::Writer> NBT<E> {
     #![allow(unused)]
     fn new_with_encoder(val: Value, encoder: E) -> Self {
-        Self {val, encoding: encoder }
+        Self {
+            val,
+            encoding: encoder,
+        }
     }
 }
 
@@ -924,7 +914,10 @@ mod tests {
         let mut reader = Reader::from_buf(buf.into(), 0);
         assert_eq!(reader.bool(), true);
         assert_eq!(reader.i32(), 23974);
-        assert_eq!(reader.string_utf(), <&str as Into<String>>::into("This is a test!"));
+        assert_eq!(
+            reader.string_utf(),
+            <&str as Into<String>>::into("This is a test!")
+        );
         assert_eq!(reader.var_i32(), 243563456);
     }
 }

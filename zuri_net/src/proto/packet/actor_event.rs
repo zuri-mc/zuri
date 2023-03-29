@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::{VarI32, VarU64};
+use zuri_net_derive::proto;
 
 use crate::proto::types::actor_event::ActorEventType;
 

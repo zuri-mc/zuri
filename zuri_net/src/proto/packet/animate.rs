@@ -1,5 +1,5 @@
+use crate::proto::ints::{VarI32, VarU64};
 use zuri_net_derive::proto;
-use crate::proto::ints::{VarU64, VarI32};
 
 #[proto(VarI32)]
 #[repr(u32)]

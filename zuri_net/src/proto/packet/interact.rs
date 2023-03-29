@@ -1,6 +1,6 @@
+use crate::proto::ints::VarU64;
 use glam::Vec3;
 use zuri_net_derive::proto;
-use crate::proto::ints::VarU64;
 
 /// Sent by the client when it interacts with another entity in some way. It used to be used for
 /// normal entity and block interaction, but this is no longer the case now.

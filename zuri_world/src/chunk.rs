@@ -3,7 +3,7 @@ use std::iter;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 
-use crate::pos::{ChunkPos};
+use crate::pos::ChunkPos;
 use crate::range::YRange;
 use crate::subchunk::*;
 
@@ -17,7 +17,9 @@ impl Chunk {
     pub fn empty(range: YRange) -> Self {
         Self {
             range,
-            sub_chunks: iter::repeat(None).take((range.height() >> 4) as usize).collect(),
+            sub_chunks: iter::repeat(None)
+                .take((range.height() >> 4) as usize)
+                .collect(),
         }
     }
 
@@ -38,10 +40,20 @@ impl Chunk {
         }
         let id = self.subchunk_id(pos.y());
         if let Some(subchunk) = &mut self.sub_chunks[id] {
-            subchunk.set(pos.x(), ((pos.y() - self.range.min()) % 16) as u8, pos.z(), val)
+            subchunk.set(
+                pos.x(),
+                ((pos.y() - self.range.min()) % 16) as u8,
+                pos.z(),
+                val,
+            )
         } else {
             let mut s = SubChunk::default();
-            s.set(pos.x(), ((pos.y() - self.range.min()) % 16) as u8, pos.z(), val);
+            s.set(
+                pos.x(),
+                ((pos.y() - self.range.min()) % 16) as u8,
+                pos.z(),
+                val,
+            );
             self.sub_chunks[id] = Some(s);
         }
     }
@@ -232,9 +244,19 @@ impl Chunk {
 
     fn face_visible(&self, x: u8, y: i16, z: u8, x_off: i8, y_off: i16, z_off: i8) -> bool {
         let max = SUBCHUNKS_SIZE as u8 - 1;
-        if x_off < 0 && x == 0 || x_off > 0 && x == max || y_off < 0 && y == self.range.min() || y_off > 0 && y == self.range.max() || z_off < 0 && z == 0 || z_off > 0 && z == max {
+        if x_off < 0 && x == 0
+            || x_off > 0 && x == max
+            || y_off < 0 && y == self.range.min()
+            || y_off > 0 && y == self.range.max()
+            || z_off < 0 && z == 0
+            || z_off > 0 && z == max
+        {
             return true;
         }
-        !self.at(ChunkPos::new((x as i8 + x_off) as u8, (y + y_off) as i16, (z as i8 + z_off) as u8))
+        !self.at(ChunkPos::new(
+            (x as i8 + x_off) as u8,
+            (y + y_off) as i16,
+            (z as i8 + z_off) as u8,
+        ))
     }
 }

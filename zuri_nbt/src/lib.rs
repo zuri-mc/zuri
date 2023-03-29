@@ -8,10 +8,10 @@ use encode::Writer;
 use crate::decode::Reader;
 use crate::err::{NbtError, Res};
 
-mod err;
-pub mod encode;
 pub mod decode;
+pub mod encode;
 pub mod encoding;
+mod err;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
@@ -84,7 +84,9 @@ impl Value {
                 let content_type = r.u8(buf)?;
                 let len = r.i32(buf)?;
                 if len < 0 {
-                    return Err(NbtError::ParseError("list length must be greater than or equal to 0".to_string()));
+                    return Err(NbtError::ParseError(
+                        "list length must be greater than or equal to 0".to_string(),
+                    ));
                 }
                 let mut vec = Vec::with_capacity(len as usize);
                 for _ in 0..len {
@@ -127,14 +129,14 @@ impl Value {
                 w.write_i32(buf, x.len() as i32)?;
                 for v in x {
                     if v.tag_id() != first_id {
-                        return Err(NbtError::ParseError("list elements must be of same type".to_string()));
+                        return Err(NbtError::ParseError(
+                            "list elements must be of same type".to_string(),
+                        ));
                     }
                     v.write_inner(buf, w)?;
                 }
             }
-            Self::ByteArray(x) => {
-                w.write_u8_vec(buf, x)?
-            }
+            Self::ByteArray(x) => w.write_u8_vec(buf, x)?,
             Self::IntArray(x) => w.write_i32_vec(buf, x)?,
             Self::LongArray(x) => w.write_i64_vec(buf, x)?,
         };
@@ -150,11 +152,11 @@ impl Default for Value {
 
 #[cfg(test)]
 mod tests {
-    use bytes::{Bytes, BytesMut};
     use crate::decode::Reader;
     use crate::encode::Writer;
     use crate::encoding::{LittleEndian, NetworkLittleEndian};
     use crate::Value;
+    use bytes::{Bytes, BytesMut};
 
     #[test]
     fn test_little_endian() {
@@ -167,7 +169,18 @@ mod tests {
     }
 
     fn test<T: Reader + Writer + Sized + Default>() {
-        let nbt = Value::Compound(vec![("test".to_string(), Value::Long(10)), ("test".to_string(), Value::List(vec![Value::Byte(1), Value::Byte(3)]))].iter().cloned().collect());
+        let nbt = Value::Compound(
+            vec![
+                ("test".to_string(), Value::Long(10)),
+                (
+                    "test".to_string(),
+                    Value::List(vec![Value::Byte(1), Value::Byte(3)]),
+                ),
+            ]
+            .iter()
+            .cloned()
+            .collect(),
+        );
         let mut buf_writer = BytesMut::default();
         nbt.write(&mut buf_writer, &mut T::default()).unwrap();
 

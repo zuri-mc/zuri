@@ -1,8 +1,8 @@
+use crate::proto::ints::VarI32;
 use glam::IVec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 use zuri_net_derive::proto;
-use crate::proto::ints::VarI32;
 
 use crate::proto::io::{Reader, Writer};
 
@@ -100,7 +100,11 @@ impl PlayerBlockAction {
     pub fn write(&self, writer: &mut Writer) {
         writer.var_i32(self.action.to_i32().unwrap());
         match self.action {
-            PlayerActionType::StartBreak | PlayerActionType::AbortBreak | PlayerActionType::CrackBreak | PlayerActionType::PredictDestroyBlock | PlayerActionType::ContinueDestroyBlock => {
+            PlayerActionType::StartBreak
+            | PlayerActionType::AbortBreak
+            | PlayerActionType::CrackBreak
+            | PlayerActionType::PredictDestroyBlock
+            | PlayerActionType::ContinueDestroyBlock => {
                 writer.block_pos(self.block_pos);
                 writer.var_i32(self.face);
             }
@@ -115,7 +119,11 @@ impl PlayerBlockAction {
             face: 0,
         };
         match action.action {
-            PlayerActionType::StartBreak | PlayerActionType::AbortBreak | PlayerActionType::CrackBreak | PlayerActionType::PredictDestroyBlock | PlayerActionType::ContinueDestroyBlock => {
+            PlayerActionType::StartBreak
+            | PlayerActionType::AbortBreak
+            | PlayerActionType::CrackBreak
+            | PlayerActionType::PredictDestroyBlock
+            | PlayerActionType::ContinueDestroyBlock => {
                 action.block_pos = reader.block_pos();
                 action.face = reader.var_i32();
             }

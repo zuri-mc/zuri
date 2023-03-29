@@ -59,9 +59,12 @@ impl AABB {
     ///   +-------+
     /// ```
     pub fn intersects_with(&self, other: &AABB) -> bool {
-        ((self.min.x + self.size().x / 2.) - (other.min.x + other.size().x / 2.)).abs() * 2. < (self.size().x + other.size().x)
-            && ((self.min.y + self.size().y / 2.) - (other.min.y + other.size().y / 2.)).abs() * 2. < (self.size().y + other.size().y)
-            && ((self.min.z + self.size().z / 2.) - (other.min.z + other.size().z / 2.)).abs() * 2. < (self.size().z + other.size().z)
+        ((self.min.x + self.size().x / 2.) - (other.min.x + other.size().x / 2.)).abs() * 2.
+            < (self.size().x + other.size().x)
+            && ((self.min.y + self.size().y / 2.) - (other.min.y + other.size().y / 2.)).abs() * 2.
+                < (self.size().y + other.size().y)
+            && ((self.min.z + self.size().z / 2.) - (other.min.z + other.size().z / 2.)).abs() * 2.
+                < (self.size().z + other.size().z)
     }
 
     /// Returns how much two AABB's intersect with each other, or None if they do not intersect.
@@ -93,25 +96,37 @@ impl AABB {
 
         if dx.abs() > dy.abs() && dx.abs() > dz.abs() {
             // Collision in the x-axis
-            Some(Vec3::new(if self.center().x > other.center().x {
-                -dx
-            } else {
-                dx
-            }, 0., 0.))
+            Some(Vec3::new(
+                if self.center().x > other.center().x {
+                    -dx
+                } else {
+                    dx
+                },
+                0.,
+                0.,
+            ))
         } else if dz.abs() > dx.abs() && dz.abs() > dy.abs() {
             // Collision in the z-axis
-            Some(Vec3::new(0., 0., if self.center().z > other.center().z {
-                -dz
-            } else {
-                dz
-            }))
+            Some(Vec3::new(
+                0.,
+                0.,
+                if self.center().z > other.center().z {
+                    -dz
+                } else {
+                    dz
+                },
+            ))
         } else {
             // Collision in the y-axis
-            Some(Vec3::new(0., if self.center().y > other.center().y {
-                -dy
-            } else {
-                dy
-            }, 0.))
+            Some(Vec3::new(
+                0.,
+                if self.center().y > other.center().y {
+                    -dy
+                } else {
+                    dy
+                },
+                0.,
+            ))
         }
     }
 }
@@ -154,8 +169,8 @@ impl SubAssign<Vec3> for AABB {
 
 #[cfg(test)]
 mod tests {
-    use glam::Vec3;
     use crate::aabb::AABB;
+    use glam::Vec3;
 
     #[test]
     fn test_intersect() {
@@ -170,13 +185,13 @@ mod tests {
                 // Two boxes that obviously don't intersect
                 AABB::new(Vec3::new(0., 0., 0.), Vec3::new(1., 1., 1.)),
                 AABB::new(Vec3::new(-0.5, -0.5, -0.5), Vec3::new(-0.1, -0.1, -0.1)),
-                None
+                None,
             ),
             (
                 // Two boxes that collide only at a single point, but don't actually intersect
                 AABB::new(Vec3::new(0., 0., 0.), Vec3::new(1., 1., 1.)),
                 AABB::new(Vec3::new(-0.5, -0.5, -0.5), Vec3::new(0., 0., -0.)),
-                None
+                None,
             ),
             (
                 // Two boxes that intersects less in the y-axis.
@@ -188,14 +203,23 @@ mod tests {
 
         let mut i = 1;
         for (this, other, intersect_depth) in &cases {
-            assert_eq!(this.intersects_with(other), match intersect_depth {
-                Some(_) => true,
-                None => false,
-            }, "test case {}/{} failed (intersects_with)", i, cases.len());
+            assert_eq!(
+                this.intersects_with(other),
+                match intersect_depth {
+                    Some(_) => true,
+                    None => false,
+                },
+                "test case {}/{} failed (intersects_with)",
+                i,
+                cases.len()
+            );
 
             assert_eq!(
-                this.intersect_depth(other), *intersect_depth,
-                "test case {}/{} failed (intersect_depth)", i, cases.len(),
+                this.intersect_depth(other),
+                *intersect_depth,
+                "test case {}/{} failed (intersect_depth)",
+                i,
+                cases.len(),
             );
             i += 1;
         }

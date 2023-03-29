@@ -1,10 +1,10 @@
 use std::collections::BTreeMap;
 
+use crate::proto::ints::VarU32;
 use bytes::Bytes;
 use num_derive::{FromPrimitive, ToPrimitive};
 use uuid::Uuid;
 use zuri_net_derive::proto;
-use crate::proto::ints::VarU32;
 
 use crate::proto::io::{Reader, Writer};
 
@@ -152,15 +152,23 @@ impl CommandEnum {
         writer.string(self.enum_type.as_str());
         writer.var_u32(self.options.len() as u32);
         if self.dynamic {
-            self.options.iter().for_each(|option| writer.string(option.as_str()));
+            self.options
+                .iter()
+                .for_each(|option| writer.string(option.as_str()));
         } else {
             let len = value_indices.len();
             if len <= u8::MAX as usize {
-                self.options.iter().for_each(|option| writer.u8(*value_indices.get(option).unwrap() as u8));
+                self.options
+                    .iter()
+                    .for_each(|option| writer.u8(*value_indices.get(option).unwrap() as u8));
             } else if len <= u16::MAX as usize {
-                self.options.iter().for_each(|option| writer.u16(*value_indices.get(option).unwrap() as u16));
+                self.options
+                    .iter()
+                    .for_each(|option| writer.u16(*value_indices.get(option).unwrap() as u16));
             } else {
-                self.options.iter().for_each(|option| writer.u32(*value_indices.get(option).unwrap() as u32));
+                self.options
+                    .iter()
+                    .for_each(|option| writer.u32(*value_indices.get(option).unwrap() as u32));
             }
         }
     }
@@ -220,7 +228,9 @@ impl CommandOutputMessage {
         writer.bool(self.success);
         writer.string(self.message.as_str());
         writer.var_u32(self.parameters.len() as u32);
-        self.parameters.iter().for_each(|parameter| writer.string(parameter.as_str()));
+        self.parameters
+            .iter()
+            .for_each(|parameter| writer.string(parameter.as_str()));
     }
 
     pub fn read(reader: &mut Reader) -> Self {
@@ -240,12 +250,16 @@ pub struct CommandOverload {
 impl CommandOverload {
     pub fn write(&self, writer: &mut Writer) {
         writer.var_u32(self.parameters.len() as u32);
-        self.parameters.iter().for_each(|parameter| parameter.write(writer));
+        self.parameters
+            .iter()
+            .for_each(|parameter| parameter.write(writer));
     }
 
     pub fn read(reader: &mut Reader) -> Self {
         Self {
-            parameters: (0..reader.var_u32()).map(|_| CommandParameter::read(reader)).collect(),
+            parameters: (0..reader.var_u32())
+                .map(|_| CommandParameter::read(reader))
+                .collect(),
         }
     }
 }

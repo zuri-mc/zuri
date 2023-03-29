@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
+use zuri_net_derive::proto;
 
 /// Sent by the client when it receives an invalid packet from the server. It holds some information
 /// on the error that occurred.

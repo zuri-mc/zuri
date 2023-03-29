@@ -1,6 +1,6 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarU64;
 use crate::proto::types::item::ItemInstance;
+use zuri_net_derive::proto;
 
 /// Sent by the server to the client to update the armour an entity is wearing. It is sent for both
 /// players and other entities, such as zombies.

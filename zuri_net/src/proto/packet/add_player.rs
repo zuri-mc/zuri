@@ -1,7 +1,7 @@
+use crate::proto::ints::{VarU32, VarU64};
 use glam::Vec3;
 use uuid::Uuid;
 use zuri_net_derive::proto;
-use crate::proto::ints::{VarU64, VarU32};
 
 use crate::proto::types::ability::AbilityData;
 use crate::proto::types::device::Device;

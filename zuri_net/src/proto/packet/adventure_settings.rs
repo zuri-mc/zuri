@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
+use zuri_net_derive::proto;
 
 use crate::proto::types::command::CommandPermissionLevel;
 use crate::proto::types::world::PermissionLevel;

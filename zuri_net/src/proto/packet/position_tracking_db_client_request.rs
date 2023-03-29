@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
+use zuri_net_derive::proto;
 
 /// Sent by the client to request the position and dimension of a 'tracking ID'. These IDs are
 /// tracked in a database by the server. In 1.16, this is used for lodestones. The client will send
@@ -20,5 +20,5 @@ pub struct PositionTrackingDBClientRequest {
 #[proto(u8)]
 #[derive(Debug, Clone)]
 pub enum PositionTrackingDBRequestAction {
-    Query
+    Query,
 }

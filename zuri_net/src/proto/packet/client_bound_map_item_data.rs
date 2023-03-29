@@ -1,6 +1,6 @@
 use glam::IVec3;
 
-use crate::proto::io::{Reader, Readable, Writer, Writable};
+use crate::proto::io::{Readable, Reader, Writable, Writer};
 use crate::proto::packet::PacketType;
 use crate::proto::types::colour::VarRGBA;
 use crate::proto::types::map::{MapDecoration, MapTrackedObject, MapUpdateFlag};
@@ -63,16 +63,27 @@ impl PacketType for ClientBoundMapItemData {
 
         if self.update_flags & MapUpdateFlag::Initialisation.flag() != 0 {
             writer.var_u32(self.maps_included_in.len() as u32);
-            self.maps_included_in.iter().for_each(|map_id| { writer.var_i64(*map_id); });
+            self.maps_included_in.iter().for_each(|map_id| {
+                writer.var_i64(*map_id);
+            });
         }
-        if self.update_flags & (MapUpdateFlag::Initialisation.flag() | MapUpdateFlag::Decoration.flag() | MapUpdateFlag::Texture.flag()) != 0 {
+        if self.update_flags
+            & (MapUpdateFlag::Initialisation.flag()
+                | MapUpdateFlag::Decoration.flag()
+                | MapUpdateFlag::Texture.flag())
+            != 0
+        {
             writer.u8(self.scale);
         }
         if self.update_flags & MapUpdateFlag::Decoration.flag() != 0 {
             writer.var_u32(self.tracked_objects.len() as u32);
-            self.tracked_objects.iter().for_each(|tracked_object| tracked_object.write(writer));
+            self.tracked_objects
+                .iter()
+                .for_each(|tracked_object| tracked_object.write(writer));
             writer.var_u32(self.decorations.len() as u32);
-            self.decorations.iter().for_each(|decoration| decoration.write(writer));
+            self.decorations
+                .iter()
+                .for_each(|decoration| decoration.write(writer));
         }
         if self.update_flags & MapUpdateFlag::Texture.flag() != 0 {
             writer.i32(self.width);
@@ -96,19 +107,30 @@ impl PacketType for ClientBoundMapItemData {
         if packet.update_flags & MapUpdateFlag::Initialisation.flag() != 0 {
             packet.maps_included_in = (0..reader.var_u32()).map(|_| reader.var_i64()).collect();
         }
-        if packet.update_flags & (MapUpdateFlag::Initialisation.flag() | MapUpdateFlag::Decoration.flag() | MapUpdateFlag::Texture.flag()) != 0 {
+        if packet.update_flags
+            & (MapUpdateFlag::Initialisation.flag()
+                | MapUpdateFlag::Decoration.flag()
+                | MapUpdateFlag::Texture.flag())
+            != 0
+        {
             packet.scale = reader.u8();
         }
         if packet.update_flags & MapUpdateFlag::Decoration.flag() != 0 {
-            packet.tracked_objects = (0..reader.var_u32()).map(|_| MapTrackedObject::read(reader)).collect();
-            packet.decorations = (0..reader.var_u32()).map(|_| MapDecoration::read(reader)).collect();
+            packet.tracked_objects = (0..reader.var_u32())
+                .map(|_| MapTrackedObject::read(reader))
+                .collect();
+            packet.decorations = (0..reader.var_u32())
+                .map(|_| MapDecoration::read(reader))
+                .collect();
         }
         if packet.update_flags & MapUpdateFlag::Texture.flag() != 0 {
             packet.width = reader.i32();
             packet.height = reader.i32();
             packet.x_offset = reader.i32();
             packet.y_offset = reader.i32();
-            packet.pixels = (0..reader.var_u32()).map(|_| VarRGBA::read(reader)).collect();
+            packet.pixels = (0..reader.var_u32())
+                .map(|_| VarRGBA::read(reader))
+                .collect();
         }
 
         packet

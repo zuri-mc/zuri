@@ -20,7 +20,11 @@ impl PacketType for Disconnect {
 
     fn read(reader: &mut Reader) -> Self {
         Self {
-            message: if reader.bool() { None } else { Some(reader.string()) },
+            message: if reader.bool() {
+                None
+            } else {
+                Some(reader.string())
+            },
         }
     }
 }

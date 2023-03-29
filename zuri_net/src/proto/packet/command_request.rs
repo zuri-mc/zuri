@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::types::command::CommandOrigin;
+use zuri_net_derive::proto;
 
 /// Sent by the client to request the execution of a server-side command. Although some servers
 /// support sending commands using the Text packet, this packet is guaranteed to have the correct

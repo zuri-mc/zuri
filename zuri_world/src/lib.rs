@@ -3,8 +3,8 @@ use bevy::prelude::*;
 use crate::system::chunk_update_system;
 
 pub mod chunk;
-pub mod range;
 pub mod pos;
+pub mod range;
 mod subchunk;
 mod system;
 

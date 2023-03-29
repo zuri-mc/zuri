@@ -1,12 +1,12 @@
 extern crate proc_macro;
 
-use proc_macro::TokenStream;
-use std::collections::HashSet;
 use lazy_static::lazy_static;
-use syn::{Data, DeriveInput, Fields, FieldsNamed, parse_macro_input, PathArguments, Type};
-use quote::{format_ident, quote, quote_spanned, TokenStreamExt, ToTokens};
+use proc_macro::TokenStream;
+use quote::{format_ident, quote, quote_spanned, ToTokens, TokenStreamExt};
 use regex::Regex;
+use std::collections::HashSet;
 use syn::spanned::Spanned;
+use syn::{parse_macro_input, Data, DeriveInput, Fields, FieldsNamed, PathArguments, Type};
 
 /// Implements `Readable<T>` and `Writable` for a type named `T`.
 ///
@@ -181,7 +181,9 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                     // Helper function to parse attribute data of the form `(ident)`, and return the
                     // contained ident, or an error (to write to the error token stream) if parsing
                     // was unsuccessful.
-                    fn parse_attribute_ident(tokens: proc_macro2::TokenStream) -> Result<proc_macro2::Ident, proc_macro2::TokenStream> {
+                    fn parse_attribute_ident(
+                        tokens: proc_macro2::TokenStream,
+                    ) -> Result<proc_macro2::Ident, proc_macro2::TokenStream> {
                         let group = match syn::parse2::<proc_macro2::Group>(tokens) {
                             Ok(g) => g,
                             Err(err) => {
@@ -208,8 +210,11 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                             Ok(vec_name) => {
                                 let len_var_name = format_ident!("_{}_len", vec_name);
                                 if vector_size_map.contains(vec_name.to_string().as_str()) {
-                                    let err = format!("duplicate `len_for` for vector `{}`", vec_name);
-                                    error_stream.append_all(quote_spanned!(vec_name.span()=> compile_error!(#err);));
+                                    let err =
+                                        format!("duplicate `len_for` for vector `{}`", vec_name);
+                                    error_stream.append_all(
+                                        quote_spanned!(vec_name.span()=> compile_error!(#err);),
+                                    );
                                 }
 
                                 write_stream.append_all(quote!(<#field_type>::try_from(self.#vec_name.len()).unwrap().write(writer);));
@@ -224,12 +229,17 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                     if path == "len_type" {
                         if vector_size_map.contains(field_ident.to_string().as_str()) {
                             let err = format!("Cannot combine `len_type` specifier with `len_for` for the same vector `{}`", field_ident.to_string());
-                            error_stream.append_all(quote_spanned!(attr.span()=> compile_error!(#err);));
+                            error_stream
+                                .append_all(quote_spanned!(attr.span()=> compile_error!(#err);));
                             continue 'field_loop;
                         }
                         if !attr_remove_queue.is_empty() {
-                            let err = format!("Found more than one `len_type` specifier for vector `{}`", field_ident.to_string());
-                            error_stream.append_all(quote_spanned!(attr.span()=> compile_error!(#err);));
+                            let err = format!(
+                                "Found more than one `len_type` specifier for vector `{}`",
+                                field_ident.to_string()
+                            );
+                            error_stream
+                                .append_all(quote_spanned!(attr.span()=> compile_error!(#err);));
                         }
 
                         match parse_attribute_ident(attr.tokens.clone()) {
@@ -262,11 +272,13 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                                 error_stream.append_all(quote_spanned!(err.span()=> #err_msg));
                                 continue 'field_loop;
                             }
-                        }.stream();
+                        }
+                        .stream();
                         if path == "overwrite" {
                             write_stream.append_all(quote!(eq::<#field_type>(self.#tokens);));
                             write_stream.append_all(quote!(self.#tokens.write(writer);));
-                            read_body_stream.append_all(quote!(#tokens = <#field_type>::read(reader);));
+                            read_body_stream
+                                .append_all(quote!(#tokens = <#field_type>::read(reader);));
                         } else {
                             write_stream.append_all(quote!(eq::<#field_type>(#tokens);));
                             write_stream.append_all(quote!(#tokens.write(writer);));
@@ -294,8 +306,13 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                             vector_size_map.insert(field_ident.to_string());
 
                             if vec_type.is_none() {
-                                let err = format!("Missing `len_for` or `len_type` for vector `{}`", field_ident.to_string());
-                                error_stream.append_all(quote_spanned!(field_ident.span()=> compile_error!(#err);));
+                                let err = format!(
+                                    "Missing `len_for` or `len_type` for vector `{}`",
+                                    field_ident.to_string()
+                                );
+                                error_stream.append_all(
+                                    quote_spanned!(field_ident.span()=> compile_error!(#err);),
+                                );
 
                                 continue 'field_loop;
                             }
@@ -347,11 +364,16 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
             // We can only remove the fields that need to be removed after iterating over them, so
             // we remove them here.
             let mut xi = 0usize;
-            named_fields.named = named_fields.named.clone().into_pairs().filter(|_| {
-                let remove = !removal_queue.contains(&xi);
-                xi += 1;
-                remove
-            }).collect();
+            named_fields.named = named_fields
+                .named
+                .clone()
+                .into_pairs()
+                .filter(|_| {
+                    let remove = !removal_queue.contains(&xi);
+                    xi += 1;
+                    remove
+                })
+                .collect();
 
             read_stream.append_all(quote! {
                #read_body_stream
@@ -366,9 +388,15 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                 Ok(t) => t,
                 Err(err) => {
                     let err_msg = if _attr.is_empty() {
-                        format!("expected default variant type for enum `{}`", ident.to_string())
+                        format!(
+                            "expected default variant type for enum `{}`",
+                            ident.to_string()
+                        )
                     } else {
-                        format!("unexpected token in default variant type for enum `{}`", ident.to_string())
+                        format!(
+                            "unexpected token in default variant type for enum `{}`",
+                            ident.to_string()
+                        )
                     };
                     error_stream.append_all(quote_spanned!(err.span()=> compile_error!(#err_msg);));
                     format_ident!("_")
@@ -381,8 +409,7 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
             // to a user-defined integer type.
             lazy_static! {
                 static ref PRIM_RE: Regex = Regex::new("^(u|i)(8|(16)|(32)|(64)|(128))$").unwrap();
-            }
-            ;
+            };
             let is_primitive = PRIM_RE.is_match(type_name.to_string().as_str());
 
             // Token streams for all the match cases in the read/write implementation.
@@ -423,10 +450,21 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                 // Check if the variant has an explicit integer discriminant such as the `1` in
                 // `Variant = 1`.
                 if let Some(discriminant) = variant.discriminant.as_ref() {
-                    match discriminant.1.to_token_stream().to_string().chars().filter(|c| !c.is_ascii_whitespace()).collect::<String>().parse::<i128>() {
+                    match discriminant
+                        .1
+                        .to_token_stream()
+                        .to_string()
+                        .chars()
+                        .filter(|c| !c.is_ascii_whitespace())
+                        .collect::<String>()
+                        .parse::<i128>()
+                    {
                         Err(err) => {
-                            let err_msg = format!("could not parse enum variant into integer: {}", err);
-                            error_stream.append_all(quote_spanned!(discriminant.1.span()=> compile_error!(#err_msg);));
+                            let err_msg =
+                                format!("could not parse enum variant into integer: {}", err);
+                            error_stream.append_all(
+                                quote_spanned!(discriminant.1.span()=> compile_error!(#err_msg);),
+                            );
                         }
                         Ok(val) => variant_number = val,
                     }
@@ -517,9 +555,9 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                 }
             });
         }
-        Data::Union(u) => {
-            error_stream.append_all(quote_spanned!(u.union_token.span()=> compile_error!("Unions are not supported");))
-        }
+        Data::Union(u) => error_stream.append_all(
+            quote_spanned!(u.union_token.span()=> compile_error!("Unions are not supported");),
+        ),
     }
 
     if !error_stream.is_empty() {

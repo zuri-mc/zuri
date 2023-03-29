@@ -10,7 +10,12 @@ pub struct RGBA {
 
 impl Writable for RGBA {
     fn write(&self, writer: &mut Writer) {
-        writer.u32((self.r as u32) | ((self.g as u32) << 8) | ((self.b as u32) << 16) | ((self.a as u32) << 24));
+        writer.u32(
+            (self.r as u32)
+                | ((self.g as u32) << 8)
+                | ((self.b as u32) << 16)
+                | ((self.a as u32) << 24),
+        );
     }
 }
 
@@ -36,7 +41,12 @@ pub struct VarRGBA {
 
 impl Writable for VarRGBA {
     fn write(&self, writer: &mut Writer) {
-        writer.var_u32((self.r as u32) | ((self.g as u32) << 8) | ((self.b as u32) << 16) | ((self.a as u32) << 24));
+        writer.var_u32(
+            (self.r as u32)
+                | ((self.g as u32) << 8)
+                | ((self.b as u32) << 16)
+                | ((self.a as u32) << 24),
+        );
     }
 }
 

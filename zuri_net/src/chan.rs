@@ -5,16 +5,7 @@ use crate::proto::packet::Packet;
 pub fn pk_chan() -> (PkSender, PkReceiver) {
     let (s0, r0) = mpsc::channel(1);
     let (s1, r1) = mpsc::channel(1);
-    (
-        PkSender {
-            r: r1,
-            s: s0,
-        },
-        PkReceiver {
-            r: r0,
-            s: s1,
-        },
-    )
+    (PkSender { r: r1, s: s0 }, PkReceiver { r: r0, s: s1 })
 }
 
 #[derive(Debug)]

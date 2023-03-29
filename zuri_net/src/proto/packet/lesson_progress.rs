@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
+use zuri_net_derive::proto;
 
 /// Sent by the server to the client to inform the client of updated progress on a lesson. This
 /// packet only functions on the Minecraft: Education Edition version of the game.
