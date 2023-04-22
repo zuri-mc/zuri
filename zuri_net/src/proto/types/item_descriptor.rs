@@ -1,7 +1,9 @@
 use std::fmt::Debug;
+use zuri_net_derive::proto;
 
 use crate::encodable_enum;
-use crate::proto::io::{Reader, Writer};
+use crate::proto::ints::VarI32;
+use crate::proto::io::{Readable, Reader, Writable, Writer};
 
 encodable_enum!(
     #[derive(Debug, Clone)]
@@ -11,26 +13,29 @@ encodable_enum!(
         MoLangDescriptor = 2,
         ItemTagDescriptor = 3,
         DeferredDescriptor = 4,
+        ComplexAliasDescriptor = 5,
     }
 );
 
 #[derive(Debug, Clone)]
 pub struct ItemDescriptorCount {
     pub item_descriptor: ItemDescriptor,
-    pub count: i32,
+    pub count: VarI32,
 }
 
-impl ItemDescriptorCount {
-    pub fn write(&self, writer: &mut Writer) {
-        self.item_descriptor.write(writer);
-        writer.var_i32(self.count);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
+impl Readable<ItemDescriptorCount> for ItemDescriptorCount {
+    fn read(reader: &mut Reader) -> ItemDescriptorCount {
+        ItemDescriptorCount {
             item_descriptor: ItemDescriptor::read(reader),
-            count: reader.var_i32(),
+            count: VarI32(reader.var_i32()),
         }
+    }
+}
+
+impl Writable for ItemDescriptorCount {
+    fn write(&self, writer: &mut Writer) {
+        self.item_descriptor.write(writer);
+        self.count.write(writer);
     }
 }
 
@@ -38,21 +43,14 @@ impl Default for ItemDescriptorCount {
     fn default() -> Self {
         Self {
             item_descriptor: ItemDescriptor::InvalidDescriptor(InvalidDescriptor),
-            count: 0,
+            count: VarI32(0),
         }
     }
 }
 
+#[proto]
 #[derive(Debug, Clone)]
 pub struct InvalidDescriptor;
-
-impl InvalidDescriptor {
-    pub fn read(_: &mut Reader) -> Self {
-        Self {}
-    }
-
-    pub fn write(&self, _: &mut Writer) {}
-}
 
 #[derive(Debug, Clone)]
 pub struct DefaultDescriptor {
@@ -128,5 +126,26 @@ impl DeferredDescriptor {
     pub fn write(&self, writer: &mut Writer) {
         writer.string(self.name.as_str());
         writer.i16(self.metadata);
+    }
+}
+
+/// ComplexAliasItemDescriptor represents an item descriptor that uses a single name to identify the
+/// item. There is no clear benefit of using this item descriptor and only seem to be used for
+/// specific recipes.
+#[derive(Debug, Clone)]
+pub struct ComplexAliasDescriptor {
+    /// The name of the item, which is a name like 'minecraft:stick'.
+    name: String,
+}
+
+impl ComplexAliasDescriptor {
+    pub fn read(reader: &mut Reader) -> Self {
+        Self {
+            name: reader.string(),
+        }
+    }
+
+    pub fn write(&self, writer: &mut Writer) {
+        writer.string(self.name.as_str());
     }
 }

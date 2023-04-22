@@ -106,6 +106,8 @@ pub struct ClientData {
     pub ui_profile: i32,
 
     pub trusted_skin: bool,
+    /// The usage of this field is currently unknown.
+    pub override_skin: bool,
 }
 
 const DEFAULT_SKIN_GEOMETRY: &[u8] = include_bytes!("default_model.json");
@@ -154,6 +156,7 @@ impl Default for ClientData {
             third_party_name_only: false,
             ui_profile: 0,
             trusted_skin: false,
+            override_skin: false,
         }
     }
 }

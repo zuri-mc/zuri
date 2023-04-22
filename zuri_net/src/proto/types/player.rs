@@ -39,6 +39,7 @@ pub enum PlayerActionType {
     ContinueDestroyBlock,
     StartItemUseOn,
     StopItemUseOn,
+    HandledTeleport,
 }
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]

@@ -61,6 +61,8 @@ pub enum InputFlag {
     PerformItemInteraction,
     PerformBlockActions,
     PerformItemStackRequest,
+    HandledTeleport,
+    Emoting,
 }
 
 impl InputFlag {
@@ -110,6 +112,9 @@ pub struct PlayerAuthInput {
     pub item_stack_request: ItemStackRequestEntry,
     /// A list of block actions that the client has interacted with.
     pub block_actions: Vec<PlayerBlockAction>,
+    /// The direction in which the player moved, as a combination of X/Z values which are created
+    /// using an analogue input.
+    pub analogue_move_vector: Vec2,
 }
 
 impl PacketType for PlayerAuthInput {
@@ -141,6 +146,7 @@ impl PacketType for PlayerAuthInput {
                 .iter()
                 .for_each(|action| action.write(writer));
         }
+        writer.vec2(self.analogue_move_vector);
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -160,6 +166,7 @@ impl PacketType for PlayerAuthInput {
             item_interaction_data: Default::default(),
             item_stack_request: Default::default(), // todo
             block_actions: Vec::new(),
+            analogue_move_vector: Vec2::default(),
         };
         if packet.play_mode == PlayMode::Reality {
             reader.vec3();
@@ -175,6 +182,7 @@ impl PacketType for PlayerAuthInput {
                 .map(|_| PlayerBlockAction::read(reader))
                 .collect();
         }
+        packet.analogue_move_vector = reader.vec2();
         packet
     }
 }

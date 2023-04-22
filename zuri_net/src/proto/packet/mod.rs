@@ -22,6 +22,8 @@ use block_pick_request::*;
 use book_edit::*;
 use boss_event::*;
 use camera::*;
+use camera_instruction::*;
+use camera_presets::*;
 use camera_shake::*;
 use change_dimension::*;
 use change_mob_property::*;
@@ -31,6 +33,7 @@ use client_bound_map_item_data::*;
 use client_cache_blob_status::*;
 use client_cache_miss_response::*;
 use client_cache_status::*;
+use client_cheat_ability::*;
 use client_start_item_cooldown::*;
 use client_to_server_handshake::*;
 use code_builder::*;
@@ -176,6 +179,7 @@ use tick_sync::*;
 use ticking_area_load_status::*;
 use toast_request::*;
 use transfer::*;
+use unlocked_recipes::*;
 use update_abilities::*;
 use update_adventure_settings::*;
 use update_attributes::*;
@@ -215,6 +219,8 @@ pub mod block_pick_request;
 pub mod book_edit;
 pub mod boss_event;
 pub mod camera;
+pub mod camera_instruction;
+pub mod camera_presets;
 pub mod camera_shake;
 pub mod change_dimension;
 pub mod change_mob_property;
@@ -224,6 +230,7 @@ pub mod client_bound_map_item_data;
 pub mod client_cache_blob_status;
 pub mod client_cache_miss_response;
 pub mod client_cache_status;
+pub mod client_cheat_ability;
 pub mod client_start_item_cooldown;
 pub mod client_to_server_handshake;
 pub mod code_builder;
@@ -369,6 +376,7 @@ pub mod tick_sync;
 pub mod ticking_area_load_status;
 pub mod toast_request;
 pub mod transfer;
+pub mod unlocked_recipes;
 pub mod update_abilities;
 pub mod update_adventure_settings;
 pub mod update_attributes;
@@ -573,6 +581,10 @@ encodable_enum!(
         GameTestRequest = 194,
         GameTestResults = 195,
         UpdateClientInputLocks = 196,
+        ClientCheatAbility = 197,
+        CameraPresets = 198,
+        UnlockedRecipes = 199
+        CameraInstruction = 300,
     }
 );
 

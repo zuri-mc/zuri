@@ -21,6 +21,7 @@ pub enum Ability {
     Muted,
     WorldBuilder,
     NoClip,
+    PrivilegedBuilder,
     Count,
 }
 

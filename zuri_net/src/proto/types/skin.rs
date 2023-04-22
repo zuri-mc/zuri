@@ -31,6 +31,10 @@ pub struct Skin {
     pub persona_cape_on_classic_skin: bool,
     pub primary_user: bool,
     pub trusted: bool,
+    /// Specifies if the skin should override the player's skin that is equipped client-side. When
+    /// false, the client will reject the skin and continue to use the skin that the player has
+    /// equipped.
+    pub override_appearance: bool,
 }
 
 #[proto]
