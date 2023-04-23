@@ -155,8 +155,8 @@ impl Default for ClientData {
             third_party_name: String::new(),
             third_party_name_only: false,
             ui_profile: 0,
-            trusted_skin: false,
-            override_skin: false,
+            trusted_skin: true,
+            override_skin: true,
         }
     }
 }
