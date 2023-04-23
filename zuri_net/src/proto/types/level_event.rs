@@ -5,6 +5,7 @@ use zuri_net_derive::proto;
 #[proto(VarI32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum LevelEventType {
+    #[fallback]
     Undefined,
     SoundClick = 1000,
     SoundClickFail = 1001,
