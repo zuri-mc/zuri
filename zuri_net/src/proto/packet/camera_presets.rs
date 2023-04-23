@@ -6,6 +6,6 @@ use crate::proto::io::NBT;
 #[proto]
 #[derive(Debug, Clone)]
 pub struct CameraPresets {
-    /// A compound tag of the presets]to sent. The structure of this tag is currently unknown.
+    /// A compound tag of the presets to sent. The structure of this tag is currently unknown.
     pub data: NBT<NetworkLittleEndian>,
 }
