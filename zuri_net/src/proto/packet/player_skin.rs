@@ -19,4 +19,6 @@ pub struct PlayerSkin {
     pub new_skin_name: String,
     /// No longer has a function. The field can be left empty at all times.
     pub old_skin_name: String,
+    #[value(self.skin.trusted)]
+    pub trusted: bool,
 }
