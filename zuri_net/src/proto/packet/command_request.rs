@@ -16,4 +16,7 @@ pub struct CommandRequest {
     /// Specifies if the command request internal. Setting it to false seems to work and the usage
     /// of this field is not known.
     pub internal: bool,
+    /// The version of the command that is being executed. This field currently has no purpose or
+    /// functionality.
+    pub version: i32,
 }

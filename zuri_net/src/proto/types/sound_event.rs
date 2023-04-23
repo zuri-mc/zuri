@@ -427,4 +427,12 @@ pub enum SoundEvent {
     TrapdoorClose = 455,
     FenceGateOpen = 456,
     FenceGateClose = 457,
+    Insert,
+    Pickup,
+    InsertEnchanted,
+    PickupEnchanted,
+    Brush,
+    BrushCompleted,
+    ShatterDecoratedPot,
+    BreakDecoratedPot,
 }

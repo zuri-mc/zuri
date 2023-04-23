@@ -16,8 +16,8 @@ pub struct LevelChunk {
     /// Specifies the mode in which chunks are sent. If this is anything but legacy, the sub-chunk
     /// request system is used.
     pub sub_chunk_request_mode: SubChunkRequestMode,
-    /// The highest sub-chunk at the position that is not all air. It is only set if the request
-    /// mode is set to limited.
+    /// The highest sub-chunk at the position that is not all air. It is only set if the sub
+    /// chunk count is set to limited.
     pub highest_sub_chunk: u16,
     /// The amount of sub-chunks that are part of the chunk sent. Depending on if the cache is
     /// enabled, a list of blob hashes will be sent, or, if disabled, the sub-chunk data.

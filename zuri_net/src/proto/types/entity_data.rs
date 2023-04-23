@@ -320,4 +320,8 @@ pub enum EntityDataFlag {
     SonicBoom,
     HasDashTimeout,
     PushTowardsClosestSpace,
+    Scenting,
+    Rising,
+    FeelingHappy,
+    Searching,
 }

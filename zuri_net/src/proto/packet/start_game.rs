@@ -154,6 +154,8 @@ pub struct StartGame {
     pub persona_disabled: bool,
     /// Specifies if custom skins are disabled for the current game session.
     pub custom_skins_disabled: bool,
+    /// Specifies if players will be sent a chat message when using certain emotes.
+    pub emote_chat_muted: bool,
     /// The version of the game from which Vanilla features will be used. The exact function this
     /// field isn't clear.
     pub base_game_version: String,
