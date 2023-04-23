@@ -1,6 +1,6 @@
+use crate::proto::io::NBT;
 use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_net_derive::proto;
-use crate::proto::io::NBT;
 
 /// Gives the client a list of custom camera presets.
 #[proto]

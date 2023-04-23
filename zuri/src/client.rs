@@ -176,9 +176,8 @@ fn receive_packets(world: &mut World) {
                 return match err {
                     TryRecvError::Empty => {}
                     TryRecvError::Disconnected => {
-                        world
-                            .remove_non_send_resource::<Receiver<Vec<Packet>>>()
-                            .unwrap();
+                        let _ = world.remove_non_send_resource::<Receiver<Vec<Packet>>>();
+                        info!("Stopped receiving packets: connection closed by server");
                     }
                 }
             }

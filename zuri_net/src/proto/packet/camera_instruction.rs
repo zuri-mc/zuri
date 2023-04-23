@@ -1,6 +1,6 @@
+use crate::proto::io::NBT;
 use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_net_derive::proto;
-use crate::proto::io::NBT;
 
 /// Gives a custom camera specific instructions to operate.
 #[proto]

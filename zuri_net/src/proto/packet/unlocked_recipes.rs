@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
+use zuri_net_derive::proto;
 
 /// Provides the client a list of recipes that have been unlocked, restricting the recipes that
 /// appear in the recipe book.
