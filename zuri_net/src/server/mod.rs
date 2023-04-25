@@ -46,12 +46,10 @@ impl Motd {
             self.max_player_count,
             server_uniq_id,
             self.local_motd,
-            "Creative",
-            1,
+            "Creative", // Seems to have no effect in the client.
+            1,          // Same as above.
             port,
             port,
         )
     }
 }
-
-// Edition (MCPE or MCEE for Education Edition);MOTD line 1;Protocol Version;Version Name;Player Count;Max Player Count;Server Unique ID;MOTD line 2;Game mode;Game mode (numeric);Port (IPv4);Port (IPv6);

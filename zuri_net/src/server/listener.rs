@@ -29,13 +29,17 @@ impl Listener {
 
         let mut listener = RaknetListener::bind(addr).await?;
         listener
-            .set_full_motd(Motd {
-                edition: Edition::Bedrock,
-                local_motd: "Zuri".to_string(),
-                motd: "Zuri Server".to_string(),
-                player_count: 0,
-                max_player_count: 1234,
-            }.serialize(234872937684, 19132)).unwrap(); // todo: get the actual server id
+            .set_full_motd(
+                Motd {
+                    edition: Edition::Bedrock,
+                    local_motd: "Zuri".to_string(),
+                    motd: "Zuri Server".to_string(),
+                    player_count: 0,
+                    max_player_count: 1234,
+                }
+                .serialize(234872937684, 19132),
+            )
+            .unwrap(); // todo: get the actual server id
         listener.listen().await;
 
         tokio::spawn(async move {
@@ -85,8 +89,8 @@ impl Listener {
 mod tests {
     use std::net::{IpAddr, SocketAddr};
 
-    use tokio::{runtime, time};
     use tokio::time::sleep;
+    use tokio::{runtime, time};
 
     use crate::server::listener::Listener;
 
