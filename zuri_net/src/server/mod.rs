@@ -1,6 +1,8 @@
 use crate::proto::{CURRENT_PROTOCOL, CURRENT_VERSION};
 
-pub mod listener;
+pub use listener::Listener;
+
+mod listener;
 
 #[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct Motd {
