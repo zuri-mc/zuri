@@ -7,6 +7,7 @@ pub mod connection;
 pub mod encode;
 pub mod encryption;
 pub mod proto;
+pub mod server;
 
 #[cfg(test)]
 mod tests {

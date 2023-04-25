@@ -2,6 +2,7 @@ use std::any::TypeId;
 use std::collections::VecDeque;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
+use std::net::SocketAddr;
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -41,6 +42,11 @@ impl Connection {
 
             encoder: Mutex::new(Encoder::default()),
         }
+    }
+
+    pub fn peer_addr(&self) -> SocketAddr {
+        // Unwrap can be done safely here: peer_addr() always returns Ok().
+        self.socket.peer_addr().unwrap()
     }
 
     pub async fn close(&self) -> Result<(), ConnError> {
