@@ -131,27 +131,43 @@ pub trait Sequence<T> {
     ) -> T;
 }
 
+/// Keeps track of which packets are currently expected by a [Sequence].
 #[derive(Default, Debug)]
 pub struct ExpectedPackets {
+    /// A queue of expected packet types.
     packets: Mutex<Vec<TypeId>>,
 }
 
 impl ExpectedPackets {
-    // TODO: clean this up itself?
-
+    /// Marks a packet of type `T` as 'expected'.
+    ///
+    /// Packets expected by a sequence will be passed onto
+    /// that sequence instead of [Connection::read_next_batch] or [Connection::read_next_packet].
+    ///
+    /// If multiple instances of the same packet type are expected, this method can be called
+    /// multiple times.
     pub async fn queue<T: TryFrom<Packet> + 'static>(&self) {
         self.packets.lock().await.push(TypeId::of::<T>());
     }
 
-    pub async fn retract<T: TryFrom<Packet> + 'static>(&self) {
+    /// Mark one packets of type `T` as no longer expected.
+    ///
+    /// Returns true if at least one packet of type `T` was expected before calling this method and
+    /// thus was successfully retracted.
+    /// Returns false when no such packet was currently in the expected queue.
+    pub async fn retract<T: TryFrom<Packet> + 'static>(&self) -> bool {
         let mut packets = self.packets.lock().await;
-        let index = packets
+        packets
             .iter()
+            // Find the index of the first match.
             .position(|t| *t == TypeId::of::<T>())
-            .unwrap();
-        packets.remove(index);
+            // Remove the match only if it exists.
+            .map(|index| packets.remove(index))
+            // Return true if an index was found.
+            .is_some()
     }
 
+    /// Returns true if any packets are currently in the expected packets queue.
     pub async fn expecting_any(&self) -> bool {
         !self.packets.lock().await.is_empty()
     }
@@ -159,10 +175,18 @@ impl ExpectedPackets {
     // Internal methods
     // ----------------
 
+    /// Check whether a packet is expected.
+    ///
+    /// The type of packet `pk` is compared against all currently expected packet types, and if at
+    /// least one match is found, true is returned.
     pub(crate) async fn expected(&self, pk: &Packet) -> bool {
         self.packets.lock().await.contains(&pk.inner_type_id())
     }
 
+    /// Remove a single packet type from the expected queue.
+    ///
+    /// This is a 'dynamic' version of [ExpectedPackets::retract] that panics when no packet of
+    /// `pk`'s type is present.
     pub(crate) async fn remove(&self, pk: &Packet) {
         let mut packets = self.packets.lock().await;
         let index = packets
