@@ -79,6 +79,7 @@ impl Connection {
         let (sender, recv) = pk_chan();
         let expected_packets = Arc::new(ExpectedPackets::default());
         *seq = Some((sender, expected_packets.clone()));
+        drop(seq);
 
         // Execute the actual sequence and return the function's return value.
         let v = sequence_executor.execute(recv, &self, expected_packets.as_ref()).await;
@@ -169,6 +170,7 @@ impl Connection {
                 // First check if there is currently a sequence and whether it expects this packet.
                 if let Some(seq) = seq_mu.as_mut() {
                     if seq.1.expected(&packet).await {
+                        seq.1.remove(&packet).await;
                         _ = seq.0.send(packet).await;
                         continue;
                     }
