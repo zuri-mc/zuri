@@ -1,8 +1,7 @@
-use num_derive::{FromPrimitive, ToPrimitive};
 use zuri_net_derive::proto;
 
 #[proto(u8)]
-#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ResourcePackResponse {
     None,
     Refused,
@@ -12,7 +11,7 @@ pub enum ResourcePackResponse {
 }
 
 #[proto(u8)]
-#[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
+#[derive(Debug, Clone)]
 pub enum ResourcePackType {
     Addon,
     Cached,

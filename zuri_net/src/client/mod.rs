@@ -12,7 +12,7 @@ use crate::client::login::LoginSequence;
 use crate::connection::{ConnError, Connection};
 use crate::proto::packet::Packet;
 
-mod auth;
+pub(crate) mod auth;
 pub mod data;
 pub mod login;
 

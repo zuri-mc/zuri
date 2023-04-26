@@ -6,7 +6,7 @@ pub use login::LoginSequence;
 mod listener;
 mod login;
 
-#[derive(Clone, Debug, PartialEq, Eq, Default)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Motd {
     /// The game edition, either education edition or bedrock edition.
     pub edition: Edition,
