@@ -19,10 +19,16 @@ use crate::encryption::Encryption;
 use crate::proto::io::{Reader, Writer};
 use crate::proto::packet::Packet;
 
+/// A minecraft connection, either for a client or server.
 pub struct Connection {
+    /// The underlying RakNet socket for the connection.
     socket: RaknetSocket,
 
+    /// The queue of packets to be sent to the peer.
     buffered_batch: Mutex<Vec<Vec<u8>>>,
+    /// A queue of unhandled packets.
+    ///
+    /// Usually there will be queued packets after receiving a batch of multiple packets.
     queued_packets: Mutex<VecDeque<Packet>>,
 
     signing_key: SigningKey,
@@ -31,41 +37,57 @@ pub struct Connection {
 }
 
 impl Connection {
+    /// Create a new connection from a [RaknetSocket].
+    ///
+    /// This does not automatically perform the minecraft login sequence. The connection will also
+    /// not encrypt/decrypt or compress/decompress packets by default.
     pub fn new(socket: RaknetSocket) -> Self {
         Self {
             socket,
-
             buffered_batch: Mutex::new(Vec::new()),
             queued_packets: Mutex::new(VecDeque::new()),
-
             signing_key: SigningKey::random(&mut rand::thread_rng()),
-
             encoder: Mutex::new(Encoder::default()),
         }
     }
 
+    /// Returns the IP address and port used by the peer that this connection is connected with.
     pub fn peer_addr(&self) -> SocketAddr {
         // Unwrap can be done safely here: peer_addr() always returns Ok().
         self.socket.peer_addr().unwrap()
     }
 
+    /// Returns the local IP and port of the connection used to connect to the peer.
+    pub fn local_addr(&self) -> SocketAddr {
+        // Unwrap can be done safely here: local_addr() always returns Ok().
+        self.socket.local_addr().unwrap()
+    }
+
+    /// Closes the underlying socket.
+    ///
+    /// Dropping the `Connection` has the same effect.
     pub async fn close(&self) -> Result<(), ConnError> {
         self.socket.close().await?;
         Ok(())
     }
 
+    /// Returns the [SigningKey] used by the connection. This is used for encryption.
     pub fn signing_key(&self) -> &SigningKey {
         &self.signing_key
     }
 
+    /// Set the compression method used by this connection to one of the available [Compression]
+    /// methods.
     pub async fn set_compression(&self, compression: Compression) {
         self.encoder.lock().await.set_compression(compression);
     }
 
+    /// Set the encryption settings used by this connection to the provided settings.
     pub async fn set_encryption(&self, encryption: Encryption) {
         self.encoder.lock().await.set_encryption(encryption);
     }
 
+    /// Sends all currently queued packets to the connected peer and empties the packet queue.
     pub async fn flush(&self) -> Result<(), ConnError> {
         let mut batch_mu = self.buffered_batch.lock().await;
         if batch_mu.is_empty() {
@@ -86,6 +108,9 @@ impl Connection {
             .await?)
     }
 
+    /// Mark a packet to be sent to the connected peer.
+    ///
+    /// The packet is first stored in the send queue that, when flushed, is sent to the peer.
     pub async fn write_packet(&self, packet: &Packet) {
         let mut writer = Writer::new(0); // TODO: Shield ID
         packet.write(&mut writer);
@@ -93,6 +118,11 @@ impl Connection {
         self.buffered_batch.lock().await.push(writer.into());
     }
 
+    /// Returns the next packet sent by the peer.
+    ///
+    /// This will first try to read from the queued packets list. If all packets from the previous
+    /// batch are handled, a new batch will be read and all but the first packet of the batch are
+    /// queued. The first packet of the batch is then returned by this method.
     pub async fn read_next_packet(&self) -> Result<Packet, ConnError> {
         loop {
             let mut queue = self.queued_packets.lock().await;
@@ -103,6 +133,7 @@ impl Connection {
         }
     }
 
+    /// Reads an entire incoming packet batch.
     async fn read_next_batch(&self) -> Result<Vec<Packet>, ConnError> {
         let encoded = self.socket.recv().await?;
         let batch = self
