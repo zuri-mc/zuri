@@ -34,3 +34,7 @@ oauth2 = "4.3.0"
 chrono = "0.4.23"
 thiserror = "1.0.40"
 zuri_net_derive = { path = "../zuri_net_derive" }
+
+[[example]]
+name = "server"
+path = "../examples/server.rs"

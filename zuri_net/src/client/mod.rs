@@ -62,7 +62,8 @@ impl<H: Handler + Send + 'static> Client<H> {
             client.conn.clone(),
         ));
 
-        client.conn
+        client
+            .conn
             .exec_sequence(LoginSequence::new(
                 &client.client_data,
                 &client.identity_data,
@@ -90,10 +91,7 @@ impl<H: Handler + Send + 'static> Client<H> {
         self.conn.flush().await
     }
 
-    async fn read_loop(
-        chan: Sender<Packet>,
-        conn: Arc<Connection>,
-    ) {
+    async fn read_loop(chan: Sender<Packet>, conn: Arc<Connection>) {
         loop {
             let result = conn.read_next_packet().await;
 

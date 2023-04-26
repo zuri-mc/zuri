@@ -82,7 +82,9 @@ impl Connection {
         drop(seq);
 
         // Execute the actual sequence and return the function's return value.
-        let v = sequence_executor.execute(recv, &self, expected_packets.as_ref()).await;
+        let v = sequence_executor
+            .execute(recv, &self, expected_packets.as_ref())
+            .await;
         drop(current);
         v
     }

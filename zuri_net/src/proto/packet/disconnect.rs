@@ -12,7 +12,7 @@ pub struct Disconnect {
 
 impl PacketType for Disconnect {
     fn write(&self, writer: &mut Writer) {
-        writer.bool(self.message.is_some());
+        writer.bool(self.message.is_none());
         if self.message.is_some() {
             writer.string(self.message.as_ref().unwrap().as_str());
         }

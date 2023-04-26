@@ -1,4 +1,5 @@
 use std::net::SocketAddr;
+use std::sync::Arc;
 
 use rust_raknet::error::RaknetError;
 use rust_raknet::RaknetListener;
@@ -6,7 +7,7 @@ use tokio::select;
 use tokio::sync::mpsc;
 
 use crate::connection::Connection;
-use crate::server::{Edition, Motd};
+use crate::server::{Edition, LoginSequence, Motd};
 
 /// Server listener that listens to incoming client connections on a certain [SocketAddr]. Incoming
 /// connections can be handled using the [Listener::accept] method. Before connections are passed
@@ -17,7 +18,7 @@ pub struct Listener {
     close_channel: mpsc::Sender<()>,
     /// A channel used to send connections back from the listener routine to whatever called the
     /// [Listener::accept] method.
-    conn_channel: mpsc::Receiver<Result<Connection, RaknetError>>,
+    conn_channel: mpsc::Receiver<Result<Arc<Connection>, RaknetError>>,
 }
 
 impl Listener {
@@ -53,8 +54,15 @@ impl Listener {
                         return;
                     },
                     res = listener.accept() => {
-                        let res: Result<Connection, RaknetError> = res.map(|v| Connection::new(v));
-                        // todo: login sequence
+                        let res: Result<Arc<Connection>, RaknetError> = res.map(|v| Arc::new(Connection::new(v)));
+                        if let Ok(conn) = &res {
+                            let conn = conn.clone();
+                            tokio::spawn(async move {
+                                let conn = conn;
+                                conn.exec_sequence(LoginSequence {}).await;
+                            });
+                        }
+
                         if let Err(conn) = conn_sender.send(res).await {
                             if let Ok(conn) = conn.0 {
                                 _ = conn.close().await;
@@ -73,7 +81,7 @@ impl Listener {
     }
 
     /// Accepts a new incoming minecraft connection.
-    pub async fn accept(&mut self) -> Option<Result<Connection, RaknetError>> {
+    pub async fn accept(&mut self) -> Option<Result<Arc<Connection>, RaknetError>> {
         self.conn_channel.recv().await
     }
 
@@ -82,35 +90,5 @@ impl Listener {
         if self.close_channel.send(()).await.is_err() {
             panic!("The receiver was dropped.");
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::net::{IpAddr, SocketAddr};
-
-    use tokio::time::sleep;
-    use tokio::{runtime, time};
-
-    use crate::server::listener::Listener;
-
-    #[test]
-    fn test_server() {
-        // todo: remove temporary test
-        runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .unwrap()
-            .block_on((|| async {
-                let addr = SocketAddr::new(IpAddr::from([0, 0, 0, 0]), 19132);
-                let mut l = Listener::listen(&addr).await.unwrap();
-                while let Some(conn) = l.accept().await {
-                    match conn {
-                        Ok(conn) => panic!("ok: {}", conn.peer_addr()),
-                        Err(err) => panic!("err: {:?}", err),
-                    };
-                }
-                sleep(time::Duration::from_secs(100)).await;
-            })());
     }
 }
