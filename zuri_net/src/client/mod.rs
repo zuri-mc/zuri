@@ -101,7 +101,7 @@ impl<H: Handler + Send + 'static> Client<H> {
             .send((send, e.clone()))
             .await
             .expect("Could not send sequence to packet receiver");
-        seq.execute(recv, self.conn.clone(), e).await
+        seq.execute(recv, &self.conn.clone(), &e).await
     }
 
     async fn read_loop(

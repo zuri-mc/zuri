@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use async_trait::async_trait;
 use base64ct::{Base64, Base64Unpadded, Encoding};
 use chrono::{Duration, Utc};
@@ -45,11 +43,11 @@ pub struct LoginSequence<'a> {
 
 #[async_trait]
 impl<'a> Sequence<Result<(), ConnError>> for LoginSequence<'a> {
-    async fn execute(
+    async fn execute<'b>(
         self,
         mut reader: PkReceiver,
-        conn: Arc<Connection>,
-        expectancies: Arc<ExpectedPackets>,
+        conn: &'b Connection,
+        expectancies: &'b ExpectedPackets,
     ) -> Result<(), ConnError> {
         // The first bit of the login sequence requires us to request the network settings the
         // server is using from the server. These dictate options for mostly compression, but also

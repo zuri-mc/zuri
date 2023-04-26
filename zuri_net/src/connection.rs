@@ -12,7 +12,7 @@ use rust_raknet::error::RaknetError;
 use rust_raknet::{RaknetSocket, Reliability};
 use tokio::sync::Mutex;
 
-use crate::chan::PkReceiver;
+use crate::chan::{pk_chan, PkReceiver, PkSender};
 use crate::compression::Compression;
 use crate::encode::Encoder;
 use crate::encryption::Encryption;
@@ -34,6 +34,11 @@ pub struct Connection {
     signing_key: SigningKey,
 
     encoder: Mutex<Encoder>,
+
+    sequence: Mutex<Option<(PkSender, Arc<ExpectedPackets>)>>,
+    /// A mutex that will remain locked whenever a sequence is currently on going. Used to ensure
+    /// only one sequence is running at a time.
+    current_sequence_mu: Mutex<()>,
 }
 
 impl Connection {
@@ -48,7 +53,37 @@ impl Connection {
             queued_packets: Mutex::new(VecDeque::new()),
             signing_key: SigningKey::random(&mut rand::thread_rng()),
             encoder: Mutex::new(Encoder::default()),
+            sequence: Mutex::new(None),
+            current_sequence_mu: Mutex::new(()),
         }
+    }
+
+    /// Executes a packet sequence.
+    ///
+    /// For the sequence to actually receive packets, [Connection::read_next_packet] has to be
+    /// called in a loop in a separate task/routine.
+    ///
+    /// This method does not return until the sequence has returned. The returned value of the
+    /// sequence is also returned in this method.
+    /// Only one sequence can be executed at one time. If this method is called in succession, the
+    /// second sequence will wait until the first has completed its execution.
+    ///
+    /// See [Sequence] for more info.
+    pub async fn exec_sequence<T>(&self, sequence_executor: impl Sequence<T>) -> T {
+        let current = self.current_sequence_mu.lock();
+        let mut seq = self.sequence.lock().await;
+        if seq.is_some() {
+            unreachable!("Multiple sequences trying to run at the same time");
+        }
+
+        let (sender, recv) = pk_chan();
+        let expected_packets = Arc::new(ExpectedPackets::default());
+        *seq = Some((sender, expected_packets.clone()));
+
+        // Execute the actual sequence and return the function's return value.
+        let v = sequence_executor.execute(recv, &self, expected_packets.as_ref()).await;
+        drop(current);
+        v
     }
 
     /// Returns the IP address and port used by the peer that this connection is connected with.
@@ -123,12 +158,25 @@ impl Connection {
     /// This will first try to read from the queued packets list. If all packets from the previous
     /// batch are handled, a new batch will be read and all but the first packet of the batch are
     /// queued. The first packet of the batch is then returned by this method.
+    ///
+    /// If there is currently an ongoing [Sequence], any packets expected by that sequence will be
+    /// passed along to it instead of being returned.
     pub async fn read_next_packet(&self) -> Result<Packet, ConnError> {
         loop {
             let mut queue = self.queued_packets.lock().await;
-            if let Some(packet) = queue.pop_front() {
+            let mut seq_mu = self.sequence.lock().await;
+            while let Some(packet) = queue.pop_front() {
+                // First check if there is currently a sequence and whether it expects this packet.
+                if let Some(seq) = seq_mu.as_mut() {
+                    if seq.1.expected(&packet).await {
+                        _ = seq.0.send(packet).await;
+                        continue;
+                    }
+                }
+                // If not, the packet can be returned.
                 return Ok(packet);
             }
+            drop(seq_mu);
             *queue = self.read_next_batch().await?.into();
         }
     }
@@ -152,13 +200,18 @@ impl Connection {
     }
 }
 
+/// A sequence is a function that reads packets in a predefined order to exchange information and/or
+/// negotiate settings with the connected peer.
+///
+/// The client and server login sequences are both examples of a packet sequence that can use this
+/// abstraction.
 #[async_trait]
 pub trait Sequence<T> {
-    async fn execute(
+    async fn execute<'a>(
         self,
         reader: PkReceiver,
-        conn: Arc<Connection>,
-        expecter: Arc<ExpectedPackets>,
+        conn: &'a Connection,
+        expecter: &'a ExpectedPackets,
     ) -> T;
 }
 
