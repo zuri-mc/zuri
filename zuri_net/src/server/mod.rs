@@ -10,10 +10,10 @@ mod login;
 pub struct Motd {
     /// The game edition, either education edition or bedrock edition.
     pub edition: Edition,
-    /// The first line of the MOTD, for publicly accessible servers usually the main MOTD. In
-    /// vanilla, it corresponds to the world name.
+    /// The first line of the MOTD, for publicly accessible servers usually the main MOTD.
     pub motd: String,
-    /// The second line of the MOTD, only visible in the LAN Games list.
+    /// The second line of the MOTD, only visible in the LAN Games list. In vanilla, it corresponds
+    /// to the world name.
     pub local_motd: String,
     /// The amount of players currently connected to the server. For some reason, negative numbers
     /// do also show up in the client.
@@ -33,6 +33,18 @@ pub enum Edition {
     /// Indicates that the server is for Minecraft: Education Edition. Bedrock clients will not be
     /// able to connect to the server.
     Education,
+}
+
+impl Default for Motd {
+    fn default() -> Self {
+        Self {
+            edition: Default::default(),
+            motd: "A minecraft server".to_string(),
+            local_motd: "My World".to_string(),
+            player_count: 0,
+            max_player_count: 1,
+        }
+    }
 }
 
 impl Motd {

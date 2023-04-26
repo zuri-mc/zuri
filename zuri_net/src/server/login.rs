@@ -1,9 +1,9 @@
 use crate::chan::PkReceiver;
 use crate::connection::{ConnError, Connection, ExpectedPackets, Sequence};
+use crate::proto;
 use crate::proto::packet::disconnect::Disconnect;
 use crate::proto::packet::request_network_settings::RequestNetworkSettings;
 use crate::proto::packet::Packet;
-use crate::proto::CURRENT_PROTOCOL;
 use async_trait::async_trait;
 
 pub struct LoginSequence {}
@@ -21,11 +21,12 @@ impl Sequence<Result<(), ConnError>> for LoginSequence {
             expectancies.queue::<RequestNetworkSettings>().await;
             let req_net_set = RequestNetworkSettings::try_from(reader.recv().await).unwrap();
             // Disconnect the player if the protocol does not match.
-            if req_net_set.client_protocol.0 != 123 {
+            if req_net_set.client_protocol.0 != proto::CURRENT_PROTOCOL {
                 conn.write_packet(&Packet::from(Disconnect {
                     message: Some(format!(
                         "Incompatible client version: expected {}, got {}",
-                        CURRENT_PROTOCOL, req_net_set.client_protocol.0
+                        proto::CURRENT_PROTOCOL,
+                        req_net_set.client_protocol.0
                     )),
                 }))
                 .await;
@@ -33,8 +34,6 @@ impl Sequence<Result<(), ConnError>> for LoginSequence {
                 conn.close().await?;
                 return Ok(()); // todo: return something other than this
             }
-
-
         }
 
         Ok(())
