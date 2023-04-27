@@ -1,6 +1,5 @@
-use glam::Vec3;
-use zuri_net_derive::proto;
 use crate::proto::io::UBlockPos;
+use zuri_net_derive::proto;
 
 /// Sent by the server to open a sign for editing. As of 1.19.80, the player can interact with a
 /// sign to edit the text on either side instead of just the front.
