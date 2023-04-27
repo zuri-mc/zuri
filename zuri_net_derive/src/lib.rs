@@ -294,10 +294,11 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                         "skip" => {
                             field.attrs.remove(attr_i);
 
-                            read_body_stream.append_all(quote!(let mut #field_ident = Default::default();));
+                            read_body_stream
+                                .append_all(quote!(let mut #field_ident = Default::default();));
                             read_inner_stream.append_all(quote!(#field_ident,));
                             continue 'field_loop;
-                        },
+                        }
                         _ => continue,
                     }
                 }
