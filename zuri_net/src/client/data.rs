@@ -35,6 +35,8 @@ pub struct ClientData {
 
     pub client_random_id: i64,
 
+    pub compatible_with_client_side_chunk_gen: bool,
+
     pub current_input_mode: i32,
 
     pub default_input_mode: i32,
