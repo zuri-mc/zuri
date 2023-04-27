@@ -231,7 +231,7 @@ pub struct StartGame {
     /// Specifies if the client should use the features registered in the FeatureRegistry packet to
     /// generate terrain client-side to save on bandwidth.
     pub client_side_generation: bool,
-    pub use_block_network_id_hashed: bool,
+    pub use_block_network_id_hashes: bool,
 }
 
 #[proto(i16)]
