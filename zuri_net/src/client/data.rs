@@ -35,6 +35,8 @@ pub struct ClientData {
 
     pub client_random_id: i64,
 
+    pub compatible_with_client_side_chunk_gen: bool,
+
     pub current_input_mode: i32,
 
     pub default_input_mode: i32,
@@ -123,6 +125,7 @@ impl Default for ClientData {
             cape_image_width: 0,
             cape_on_classic_skin: false,
             client_random_id: rand::random(),
+            compatible_with_client_side_chunk_gen: false,
             current_input_mode: 0,
             default_input_mode: 0,
             device_model: String::new(),
