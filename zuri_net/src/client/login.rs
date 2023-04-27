@@ -302,6 +302,7 @@ impl<'a> LoginSequence<'a> {
         conn.write_packet(
             &mut RequestChunkRadius {
                 chunk_radius: 16.into(),
+                max_chunk_radius: 16.into(),
             }
             .into(),
         )

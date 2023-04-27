@@ -69,6 +69,12 @@ pub struct StartGame {
     /// Dictates if the world is in editor mode, a special mode recently introduced adding "powerful
     /// tools for editing worlds, intended for experienced creators."
     pub editor_world: bool,
+    /// Dictates if the world was created as a project in the editor mode. The functionality of this
+    /// field is currently unknown.
+    pub created_in_editor: bool,
+    /// Dictates if the world was exported from editor mode. The functionality of this field is
+    /// currently unknown.
+    pub exported_from_editor: bool,
     /// The time at which the day cycle was locked if the day cycle is disabled using the respective
     /// game rule. The client will maintain this time as long as the day cycle is disabled.
     pub day_cycle_lock_time: VarI32,
@@ -225,6 +231,7 @@ pub struct StartGame {
     /// Specifies if the client should use the features registered in the FeatureRegistry packet to
     /// generate terrain client-side to save on bandwidth.
     pub client_side_generation: bool,
+    pub use_block_network_id_hashed: bool,
 }
 
 #[proto(i16)]

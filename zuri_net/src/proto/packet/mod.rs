@@ -191,6 +191,9 @@ use update_player_game_type::*;
 use update_soft_enum::*;
 use update_sub_chunk_blocks::*;
 use update_trade::*;
+use compressed_biome_definition_list::*;
+use open_sign::*;
+use trim_data::*;
 
 use crate::encodable_enum;
 use crate::proto::io::{Readable, Reader, Writable, Writer};
@@ -388,6 +391,9 @@ pub mod update_player_game_type;
 pub mod update_soft_enum;
 pub mod update_sub_chunk_blocks;
 pub mod update_trade;
+pub mod compressed_biome_definition_list;
+pub mod open_sign;
+pub mod trim_data;
 
 encodable_enum!(
     #[derive(Debug, Clone)]
@@ -585,6 +591,9 @@ encodable_enum!(
         CameraPresets = 198,
         UnlockedRecipes = 199
         CameraInstruction = 300,
+        CompressedBiomeDefinitionList = 301,
+        TrimData = 302,
+        OpenSign = 303,
     }
 );
 
