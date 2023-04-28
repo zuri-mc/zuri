@@ -18,6 +18,7 @@ use crate::proto::io::NBT;
 use crate::proto::packet::chunk_radius_updated::ChunkRadiusUpdated;
 use crate::proto::packet::request_chunk_radius::RequestChunkRadius;
 use crate::proto::packet::resource_pack_client_response::ResourcePackClientResponse;
+use crate::proto::packet::resource_pack_stack::ResourcePackStack;
 use crate::proto::packet::resource_packs_info::ResourcePacksInfo;
 use crate::proto::packet::set_local_player_as_initialised::SetLocalPlayerAsInitialised;
 use crate::proto::packet::start_game::{ChatRestrictionLevel, EducationEditionRegion, GamePublishSetting, SpawnBiomeType, StartGame};
@@ -117,8 +118,22 @@ impl Sequence<Result<(), ConnError>> for LoginSequence {
         conn.flush().await?;
 
         let resp = ResourcePackClientResponse::try_from(reader.recv().await).unwrap();
-        println!("Resource pack response: {:?}", resp);
         if resp.response != ResourcePackResponse::AllPacksDownloaded {
+            todo!()
+        }
+
+        expectancies.queue::<ResourcePackClientResponse>().await;
+        conn.write_packet(&ResourcePackStack {
+            texture_pack_required: false,
+            behaviour_packs: vec![],
+            texture_packs: vec![],
+            base_game_version: proto::CURRENT_VERSION.to_string(),
+            experiments: vec![],
+            experiments_previously_toggled: false,
+        }.into()).await;
+
+        let resp = ResourcePackClientResponse::try_from(reader.recv().await).unwrap();
+        if resp.response != ResourcePackResponse::Completed {
             todo!()
         }
 
@@ -142,6 +157,8 @@ impl Sequence<Result<(), ConnError>> for LoginSequence {
             world_spawn: Default::default(),
             achievements_disabled: true,
             editor_world: false,
+            created_in_editor: false,
+            exported_from_editor: false,
             day_cycle_lock_time: Default::default(),
             education_edition_offer: EducationEditionRegion::RestOfWorld,
             education_features_enabled: false,
@@ -204,6 +221,7 @@ impl Sequence<Result<(), ConnError>> for LoginSequence {
             server_block_state_checksum: 0,
             world_template_id: Default::default(),
             client_side_generation: false,
+            use_block_network_id_hashes: false,
         }))
             .await;
         conn.flush().await?;

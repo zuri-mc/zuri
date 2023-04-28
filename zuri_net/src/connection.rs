@@ -150,6 +150,7 @@ impl Connection {
     ///
     /// The packet is first stored in the send queue that, when flushed, is sent to the peer.
     pub async fn write_packet(&self, packet: &Packet) {
+        println!("[OUT]: {}", packet);
         let mut writer = Writer::new(0); // TODO: Shield ID
         packet.write(&mut writer);
 
@@ -169,6 +170,7 @@ impl Connection {
             let mut queue = self.queued_packets.lock().await;
             let mut seq_mu = self.sequence.lock().await;
             while let Some(packet) = queue.pop_front() {
+                println!("[IN]: {}", packet);
                 // First check if there is currently a sequence and whether it expects this packet.
                 if let Some(seq) = seq_mu.as_mut() {
                     if seq.1.expected(&packet).await {
