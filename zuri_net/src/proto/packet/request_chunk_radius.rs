@@ -10,4 +10,6 @@ use crate::proto::ints::VarI32;
 pub struct RequestChunkRadius {
     /// The requested chunk radius. This value is the value set in the settings of the player.
     pub chunk_radius: VarI32,
+    /// The maximum chunk radius that the player wants to receive.
+    pub max_chunk_radius: VarI32,
 }
