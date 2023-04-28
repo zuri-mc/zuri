@@ -31,5 +31,4 @@ async fn main() {
             Err(err) => panic!("err: {:?}", err),
         };
     }
-    sleep(time::Duration::from_secs(100)).await;
 }

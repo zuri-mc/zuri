@@ -157,6 +157,15 @@ impl Connection {
         self.buffered_batch.lock().await.push(writer.into());
     }
 
+    /// Send raw data to the connected peer.
+    ///
+    /// Like [Connection::write_packet], the data is first buffered and only sent when the
+    /// connection's buffer is flushed.
+    #[allow(unused)]
+    pub(crate) async fn write(&self, buf: Vec<u8>) {
+        self.buffered_batch.lock().await.push(buf);
+    }
+
     /// Returns the next packet sent by the peer.
     ///
     /// This will first try to read from the queued packets list. If all packets from the previous
