@@ -11,11 +11,15 @@ use crate::proto::packet::play_status::{PlayStatus, PlayStatusType};
 use crate::proto::packet::request_network_settings::RequestNetworkSettings;
 use crate::proto::packet::Packet;
 use async_trait::async_trait;
+use base64ct::Encoding;
+use bytes::Bytes;
 use rand::random;
 use uuid::Uuid;
 use zuri_nbt::Value;
 use crate::proto::io::NBT;
+use crate::proto::packet::biome_definition_list::BiomeDefinitionList;
 use crate::proto::packet::chunk_radius_updated::ChunkRadiusUpdated;
+use crate::proto::packet::creative_content::CreativeContent;
 use crate::proto::packet::request_chunk_radius::RequestChunkRadius;
 use crate::proto::packet::resource_pack_client_response::ResourcePackClientResponse;
 use crate::proto::packet::resource_pack_stack::ResourcePackStack;
@@ -23,6 +27,7 @@ use crate::proto::packet::resource_packs_info::ResourcePacksInfo;
 use crate::proto::packet::set_local_player_as_initialised::SetLocalPlayerAsInitialised;
 use crate::proto::packet::start_game::{ChatRestrictionLevel, EducationEditionRegion, GamePublishSetting, SpawnBiomeType, StartGame};
 use crate::proto::types::education::EducationSharedResourceURI;
+use crate::proto::types::game_rule::{GameRule, GameRuleValue};
 use crate::proto::types::item_stack::ItemEntry;
 use crate::proto::types::player::PlayerMovementSettings;
 use crate::proto::types::resource_pack::ResourcePackResponse;
@@ -139,15 +144,15 @@ impl Sequence<Result<(), ConnError>> for LoginSequence {
 
         expectancies.queue::<RequestChunkRadius>().await;
 
-        let rid = 0i64;
+        let rid = 1i64;
         conn.write_packet(&Packet::from(StartGame {
-            entity_unique_id: rid.into(),
-            entity_runtime_id: (rid as u64).into(),
+            entity_unique_id: (1i64).into(),
+            entity_runtime_id: (1u64).into(),
             player_game_mode: GameType::Default,
             player_position: Default::default(),
             pitch: 0.0,
             yaw: 0.0,
-            world_seed: 0,
+            world_seed: 351235,
             spawn_biome_type: SpawnBiomeType::Default,
             user_defined_biome_name: "".to_string(),
             dimension: Dimension::Overworld,
@@ -161,7 +166,7 @@ impl Sequence<Result<(), ConnError>> for LoginSequence {
             exported_from_editor: false,
             day_cycle_lock_time: Default::default(),
             education_edition_offer: EducationEditionRegion::RestOfWorld,
-            education_features_enabled: false,
+            education_features_enabled: true,
             education_product_id: Uuid::from_u128(random()).to_string(),
             rain_level: 0.0,
             lightning_level: 0.0,
@@ -172,7 +177,13 @@ impl Sequence<Result<(), ConnError>> for LoginSequence {
             platform_broadcast_mode: GamePublishSetting::Public,
             commands_enabled: true,
             texture_pack_required: false,
-            game_rules: vec![],
+            game_rules: vec![
+                GameRule {
+                    name: "naturalregeneration".to_string(),
+                    can_be_modified_by_player: false,
+                    value: GameRuleValue::Bool(false),
+                },
+            ],
             experiments: vec![],
             experiments_previously_toggled: false,
             bonus_chest_enabled: false,
@@ -188,7 +199,7 @@ impl Sequence<Result<(), ConnError>> for LoginSequence {
             only_spawn_v1_villagers: false,
             persona_disabled: false,
             custom_skins_disabled: false,
-            emote_chat_muted: false,
+            emote_chat_muted: true,
             base_game_version: proto::CURRENT_VERSION.to_string(),
             limited_world_width: 0,
             limited_world_depth: 0,
@@ -211,11 +222,11 @@ impl Sequence<Result<(), ConnError>> for LoginSequence {
             blocks: vec![],
             items: vec![ItemEntry {
                 name: "minecraft:stick".to_string(),
-                runtime_id: 1,
+                runtime_id: 0,
                 component_based: false,
             }],
             multi_player_correlation_id: Uuid::from_u128(random()).to_string(),
-            server_authoritative_inventory: false,
+            server_authoritative_inventory: true,
             game_version: proto::CURRENT_VERSION.to_string(),
             property_data: NBT::from(Value::Compound(Default::default())),
             server_block_state_checksum: 0,
@@ -233,10 +244,21 @@ impl Sequence<Result<(), ConnError>> for LoginSequence {
         }))
             .await;
         conn.flush().await?;
+        
+        conn.write_packet(&BiomeDefinitionList {
+            serialised_biome_definitions: Bytes::from(base64ct::Base64::decode_vec("CgAKDWJhbWJvb19qdW5nbGUFCGRvd25mYWxsZmZmPwULdGVtcGVyYXR1cmUzM3M/AAoTYmFtYm9vX2p1bmdsZV9oaWxscwUIZG93bmZhbGxmZmY/BQt0ZW1wZXJhdHVyZTMzcz8ACgViZWFjaAUIZG93bmZhbGzNzMw+BQt0ZW1wZXJhdHVyZc3MTD8ACgxiaXJjaF9mb3Jlc3QFCGRvd25mYWxsmpkZPwULdGVtcGVyYXR1cmWamRk/AAoSYmlyY2hfZm9yZXN0X2hpbGxzBQhkb3duZmFsbJqZGT8FC3RlbXBlcmF0dXJlmpkZPwAKGmJpcmNoX2ZvcmVzdF9oaWxsc19tdXRhdGVkBQhkb3duZmFsbM3MTD8FC3RlbXBlcmF0dXJlMzMzPwAKFGJpcmNoX2ZvcmVzdF9tdXRhdGVkBQhkb3duZmFsbM3MTD8FC3RlbXBlcmF0dXJlMzMzPwAKCmNvbGRfYmVhY2gFCGRvd25mYWxsmpmZPgULdGVtcGVyYXR1cmXNzEw9AAoKY29sZF9vY2VhbgUIZG93bmZhbGwAAAA/BQt0ZW1wZXJhdHVyZQAAAD8ACgpjb2xkX3RhaWdhBQhkb3duZmFsbM3MzD4FC3RlbXBlcmF0dXJlAAAAvwAKEGNvbGRfdGFpZ2FfaGlsbHMFCGRvd25mYWxszczMPgULdGVtcGVyYXR1cmUAAAC/AAoSY29sZF90YWlnYV9tdXRhdGVkBQhkb3duZmFsbM3MzD4FC3RlbXBlcmF0dXJlAAAAvwAKD2RlZXBfY29sZF9vY2VhbgUIZG93bmZhbGwAAAA/BQt0ZW1wZXJhdHVyZQAAAD8AChFkZWVwX2Zyb3plbl9vY2VhbgUIZG93bmZhbGwAAAA/BQt0ZW1wZXJhdHVyZQAAAAAAChNkZWVwX2x1a2V3YXJtX29jZWFuBQhkb3duZmFsbAAAAD8FC3RlbXBlcmF0dXJlAAAAPwAKCmRlZXBfb2NlYW4FCGRvd25mYWxsAAAAPwULdGVtcGVyYXR1cmUAAAA/AAoPZGVlcF93YXJtX29jZWFuBQhkb3duZmFsbAAAAD8FC3RlbXBlcmF0dXJlAAAAPwAKBmRlc2VydAUIZG93bmZhbGwAAAAABQt0ZW1wZXJhdHVyZQAAAEAACgxkZXNlcnRfaGlsbHMFCGRvd25mYWxsAAAAAAULdGVtcGVyYXR1cmUAAABAAAoOZGVzZXJ0X211dGF0ZWQFCGRvd25mYWxsAAAAAAULdGVtcGVyYXR1cmUAAABAAAoNZXh0cmVtZV9oaWxscwUIZG93bmZhbGyamZk+BQt0ZW1wZXJhdHVyZc3MTD4AChJleHRyZW1lX2hpbGxzX2VkZ2UFCGRvd25mYWxsmpmZPgULdGVtcGVyYXR1cmXNzEw+AAoVZXh0cmVtZV9oaWxsc19tdXRhdGVkBQhkb3duZmFsbJqZmT4FC3RlbXBlcmF0dXJlzcxMPgAKGGV4dHJlbWVfaGlsbHNfcGx1c190cmVlcwUIZG93bmZhbGyamZk+BQt0ZW1wZXJhdHVyZc3MTD4ACiBleHRyZW1lX2hpbGxzX3BsdXNfdHJlZXNfbXV0YXRlZAUIZG93bmZhbGyamZk+BQt0ZW1wZXJhdHVyZc3MTD4ACg1mbG93ZXJfZm9yZXN0BQhkb3duZmFsbM3MTD8FC3RlbXBlcmF0dXJlMzMzPwAKBmZvcmVzdAUIZG93bmZhbGzNzEw/BQt0ZW1wZXJhdHVyZTMzMz8ACgxmb3Jlc3RfaGlsbHMFCGRvd25mYWxszcxMPwULdGVtcGVyYXR1cmUzMzM/AAoMZnJvemVuX29jZWFuBQhkb3duZmFsbAAAAD8FC3RlbXBlcmF0dXJlAAAAAAAKDGZyb3plbl9yaXZlcgUIZG93bmZhbGwAAAA/BQt0ZW1wZXJhdHVyZQAAAAAACgRoZWxsBQhkb3duZmFsbAAAAAAFC3RlbXBlcmF0dXJlAAAAQAAKDWljZV9tb3VudGFpbnMFCGRvd25mYWxsAAAAPwULdGVtcGVyYXR1cmUAAAAAAAoKaWNlX3BsYWlucwUIZG93bmZhbGwAAAA/BQt0ZW1wZXJhdHVyZQAAAAAAChFpY2VfcGxhaW5zX3NwaWtlcwUIZG93bmZhbGwAAIA/BQt0ZW1wZXJhdHVyZQAAAAAACgZqdW5nbGUFCGRvd25mYWxsZmZmPwULdGVtcGVyYXR1cmUzM3M/AAoLanVuZ2xlX2VkZ2UFCGRvd25mYWxszcxMPwULdGVtcGVyYXR1cmUzM3M/AAoTanVuZ2xlX2VkZ2VfbXV0YXRlZAUIZG93bmZhbGzNzEw/BQt0ZW1wZXJhdHVyZTMzcz8ACgxqdW5nbGVfaGlsbHMFCGRvd25mYWxsZmZmPwULdGVtcGVyYXR1cmUzM3M/AAoOanVuZ2xlX211dGF0ZWQFCGRvd25mYWxsZmZmPwULdGVtcGVyYXR1cmUzM3M/AAoTbGVnYWN5X2Zyb3plbl9vY2VhbgUIZG93bmZhbGwAAAA/BQt0ZW1wZXJhdHVyZQAAAAAACg5sdWtld2FybV9vY2VhbgUIZG93bmZhbGwAAAA/BQt0ZW1wZXJhdHVyZQAAAD8ACgptZWdhX3RhaWdhBQhkb3duZmFsbM3MTD8FC3RlbXBlcmF0dXJlmpmZPgAKEG1lZ2FfdGFpZ2FfaGlsbHMFCGRvd25mYWxszcxMPwULdGVtcGVyYXR1cmWamZk+AAoEbWVzYQUIZG93bmZhbGwAAAAABQt0ZW1wZXJhdHVyZQAAAEAACgptZXNhX2JyeWNlBQhkb3duZmFsbAAAAAAFC3RlbXBlcmF0dXJlAAAAQAAKDG1lc2FfcGxhdGVhdQUIZG93bmZhbGwAAAAABQt0ZW1wZXJhdHVyZQAAAEAAChRtZXNhX3BsYXRlYXVfbXV0YXRlZAUIZG93bmZhbGwAAAAABQt0ZW1wZXJhdHVyZQAAAEAAChJtZXNhX3BsYXRlYXVfc3RvbmUFCGRvd25mYWxsAAAAAAULdGVtcGVyYXR1cmUAAABAAAoabWVzYV9wbGF0ZWF1X3N0b25lX211dGF0ZWQFCGRvd25mYWxsAAAAAAULdGVtcGVyYXR1cmUAAABAAAoPbXVzaHJvb21faXNsYW5kBQhkb3duZmFsbAAAgD8FC3RlbXBlcmF0dXJlZmZmPwAKFW11c2hyb29tX2lzbGFuZF9zaG9yZQUIZG93bmZhbGwAAIA/BQt0ZW1wZXJhdHVyZWZmZj8ACgVvY2VhbgUIZG93bmZhbGwAAAA/BQt0ZW1wZXJhdHVyZQAAAD8ACgZwbGFpbnMFCGRvd25mYWxszczMPgULdGVtcGVyYXR1cmXNzEw/AAobcmVkd29vZF90YWlnYV9oaWxsc19tdXRhdGVkBQhkb3duZmFsbM3MTD8FC3RlbXBlcmF0dXJlmpmZPgAKFXJlZHdvb2RfdGFpZ2FfbXV0YXRlZAUIZG93bmZhbGzNzEw/BQt0ZW1wZXJhdHVyZQAAgD4ACgVyaXZlcgUIZG93bmZhbGwAAAA/BQt0ZW1wZXJhdHVyZQAAAD8ACg1yb29mZWRfZm9yZXN0BQhkb3duZmFsbM3MTD8FC3RlbXBlcmF0dXJlMzMzPwAKFXJvb2ZlZF9mb3Jlc3RfbXV0YXRlZAUIZG93bmZhbGzNzEw/BQt0ZW1wZXJhdHVyZTMzMz8ACgdzYXZhbm5hBQhkb3duZmFsbAAAAAAFC3RlbXBlcmF0dXJlmpmZPwAKD3NhdmFubmFfbXV0YXRlZAUIZG93bmZhbGwAAAA/BQt0ZW1wZXJhdHVyZc3MjD8ACg9zYXZhbm5hX3BsYXRlYXUFCGRvd25mYWxsAAAAAAULdGVtcGVyYXR1cmUAAIA/AAoXc2F2YW5uYV9wbGF0ZWF1X211dGF0ZWQFCGRvd25mYWxsAAAAPwULdGVtcGVyYXR1cmUAAIA/AAoLc3RvbmVfYmVhY2gFCGRvd25mYWxsmpmZPgULdGVtcGVyYXR1cmXNzEw+AAoQc3VuZmxvd2VyX3BsYWlucwUIZG93bmZhbGzNzMw+BQt0ZW1wZXJhdHVyZc3MTD8ACglzd2FtcGxhbmQFCGRvd25mYWxsAAAAPwULdGVtcGVyYXR1cmXNzEw/AAoRc3dhbXBsYW5kX211dGF0ZWQFCGRvd25mYWxsAAAAPwULdGVtcGVyYXR1cmXNzEw/AAoFdGFpZ2EFCGRvd25mYWxszcxMPwULdGVtcGVyYXR1cmUAAIA+AAoLdGFpZ2FfaGlsbHMFCGRvd25mYWxszcxMPwULdGVtcGVyYXR1cmUAAIA+AAoNdGFpZ2FfbXV0YXRlZAUIZG93bmZhbGzNzEw/BQt0ZW1wZXJhdHVyZQAAgD4ACgd0aGVfZW5kBQhkb3duZmFsbAAAAD8FC3RlbXBlcmF0dXJlAAAAPwAKCndhcm1fb2NlYW4FCGRvd25mYWxsAAAAPwULdGVtcGVyYXR1cmUAAAA/AAA=").unwrap()),
+        }.into()).await;
+        conn.flush().await?;
 
         expectancies.queue::<SetLocalPlayerAsInitialised>().await;
         conn.write_packet(&Packet::from(PlayStatus {
             status: PlayStatusType::PlayerSpawn,
+        }))
+            .await;
+        conn.flush().await?;
+
+        conn.write_packet(&Packet::from(CreativeContent {
+            items: vec![],
         }))
             .await;
         conn.flush().await?;
