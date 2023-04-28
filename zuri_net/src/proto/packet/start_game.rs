@@ -238,7 +238,7 @@ pub struct StartGame {
 #[derive(Debug, Clone)]
 pub enum SpawnBiomeType {
     Default,
-    USerDefined,
+    UserDefined,
 }
 
 #[proto(u8)]
