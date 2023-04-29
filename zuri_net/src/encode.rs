@@ -10,7 +10,7 @@ pub struct Encoder {
     encryption: Option<Encryption>,
 }
 
-/// The header used for all compressed 'batches' in Minecraft.
+/// The header used for all 'batches' in Minecraft.
 const PACKET_HEADER: u8 = 0xfe;
 
 /// The maximum amount of packets that can be sent in a single batch.

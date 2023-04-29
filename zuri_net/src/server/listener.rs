@@ -1,12 +1,14 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 
+use crate::compression::Compression;
 use rust_raknet::error::RaknetError;
 use rust_raknet::RaknetListener;
 use tokio::select;
 use tokio::sync::mpsc;
 
 use crate::connection::Connection;
+use crate::server::login::CompressionSettings;
 use crate::server::{Edition, LoginSequence, Motd};
 
 /// Server listener that listens to incoming client connections on a certain [SocketAddr]. Incoming
@@ -59,7 +61,13 @@ impl Listener {
                             let conn = conn.clone();
                             tokio::spawn(async move {
                                 let conn = conn;
-                                conn.exec_sequence(LoginSequence {}).await;
+                                conn.exec_sequence(LoginSequence {
+                                    xbox_auth: false,
+                                    compression: Some(CompressionSettings {
+                                        threshold: u16::MAX,
+                                        algorithm: Compression::Deflate,
+                                    }),
+                                }).await;
                             });
                         }
 

@@ -3,8 +3,9 @@ use std::io::{Read, Write};
 use bytes::Buf;
 use zuri_net_derive::proto;
 
+/// Algorithms that can be used for compressing packet batches.
 #[proto(u16)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Compression {
     Deflate,
     Snappy,
