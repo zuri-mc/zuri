@@ -63,10 +63,7 @@ impl Listener {
                                 let conn = conn;
                                 conn.exec_sequence(LoginSequence {
                                     xbox_auth: false,
-                                    compression: Some(CompressionSettings {
-                                        threshold: u16::MAX,
-                                        algorithm: Compression::Deflate,
-                                    }),
+                                    compression: CompressionSettings::default(),
                                 }).await;
                             });
                         }
