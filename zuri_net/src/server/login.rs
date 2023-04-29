@@ -1,5 +1,4 @@
 use crate::chan::PkReceiver;
-use crate::client::auth;
 use crate::compression::Compression;
 use crate::connection::{ConnError, Connection, ExpectedPackets, Sequence};
 use crate::proto;
@@ -31,6 +30,8 @@ use async_trait::async_trait;
 use base64ct::Encoding;
 use bytes::Bytes;
 use rand::random;
+use thiserror::Error;
+use tokio::time::sleep;
 use uuid::Uuid;
 use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_nbt::Value;
@@ -77,31 +78,48 @@ impl Default for CompressionSettings {
     }
 }
 
+/// An error that occured while the login sequence was being performed.
+#[derive(Error, Debug)]
+pub enum LoginError {
+    #[error("mismatched client and server protocol version: expected {server}, found {client}")]
+    MistmatchedVersion { client: i32, server: i32 },
+    #[error("connection error: {0}")]
+    ConnectionError(#[from] ConnError),
+}
+
 #[async_trait]
-impl Sequence<Result<(), ConnError>> for LoginSequence {
+impl Sequence<Result<(), LoginError>> for LoginSequence {
     async fn execute<'b>(
         self,
         mut reader: PkReceiver,
         conn: &'b Connection,
         expectancies: &'b ExpectedPackets,
-    ) -> Result<(), ConnError> {
+    ) -> Result<(), LoginError> {
         // Phase 1: Network settings.
         {
             expectancies.queue::<RequestNetworkSettings>().await;
             let req_net_set = RequestNetworkSettings::try_from(reader.recv().await).unwrap();
             // Disconnect the player if the protocol does not match.
             if req_net_set.client_protocol.0 != proto::CURRENT_PROTOCOL {
-                conn.write_packet(&Packet::from(Disconnect {
-                    message: Some(format!(
-                        "Incompatible client version: expected {}, got {}.",
-                        proto::CURRENT_PROTOCOL,
-                        req_net_set.client_protocol.0
-                    )),
+                conn.write_packet(&Packet::from(PlayStatus {
+                    status: if req_net_set.client_protocol.0 > proto::CURRENT_PROTOCOL {
+                        PlayStatusType::LoginFailedServer
+                    } else {
+                        PlayStatusType::LoginFailedClient
+                    },
                 }))
                 .await;
+
                 conn.flush().await?;
-                conn.close().await?;
-                return Ok(()); // todo: return something other than this
+                // For some reason, disconnecting immediately does not show the user the
+                // disconnection screen.
+                sleep(tokio::time::Duration::from_millis(50)).await;
+                _ = conn.close().await;
+
+                return Err(LoginError::MistmatchedVersion {
+                    client: req_net_set.client_protocol.0,
+                    server: proto::CURRENT_PROTOCOL,
+                });
             }
 
             expectancies.queue::<Login>().await;
@@ -121,7 +139,7 @@ impl Sequence<Result<(), ConnError>> for LoginSequence {
 
         // Phase 2: Login.
         {
-            let login = Login::try_from(reader.recv().await).unwrap();
+            let _login = Login::try_from(reader.recv().await).unwrap();
             if self.xbox_auth {
                 // todo: verify login request
             }
@@ -140,8 +158,8 @@ impl Sequence<Result<(), ConnError>> for LoginSequence {
         .await;
         conn.flush().await?;
 
-        let cache_status = ClientCacheStatus::try_from(reader.recv().await).unwrap();
-        println!("Client cache: {}", cache_status.enabled);
+        let _cache_status = ClientCacheStatus::try_from(reader.recv().await).unwrap();
+        // todo: handle this
 
         expectancies.queue::<ResourcePackClientResponse>().await;
 

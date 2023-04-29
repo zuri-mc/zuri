@@ -4829,6 +4829,7 @@ dependencies = [
  "glam",
  "jsonwebtoken",
  "libdeflater",
+ "log",
  "num",
  "num-derive",
  "num-traits",

@@ -1,7 +1,6 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use crate::compression::Compression;
 use rust_raknet::error::RaknetError;
 use rust_raknet::RaknetListener;
 use tokio::select;
@@ -61,10 +60,13 @@ impl Listener {
                             let conn = conn.clone();
                             tokio::spawn(async move {
                                 let conn = conn;
-                                conn.exec_sequence(LoginSequence {
+                                let res = conn.exec_sequence(LoginSequence {
                                     xbox_auth: false,
                                     compression: CompressionSettings::default(),
                                 }).await;
+                                if let Err(err) = res {
+                                    log::debug!("login sequence for `{}` failed: {}", conn.peer_addr(), err);
+                                }
                             });
                         }
 
