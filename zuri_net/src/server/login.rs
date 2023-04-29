@@ -24,7 +24,6 @@ use crate::proto::packet::start_game::{
 use crate::proto::packet::Packet;
 use crate::proto::types::education::EducationSharedResourceURI;
 use crate::proto::types::game_rule::{GameRule, GameRuleValue};
-use crate::proto::types::item_stack::ItemEntry;
 use crate::proto::types::player::PlayerMovementSettings;
 use crate::proto::types::resource_pack::ResourcePackResponse;
 use crate::proto::types::world::{Difficulty, Dimension, GameType, Generator, PermissionLevel};
