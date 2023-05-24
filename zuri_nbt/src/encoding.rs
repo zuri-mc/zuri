@@ -3,6 +3,69 @@ use crate::encode::Writer;
 use crate::err::{NbtError, Res};
 use bytes::{Buf, BufMut};
 
+/// An NBT encoding that encodes all basic types using big endian encoding.
+///
+/// This format is most commonly used in Minecraft: Java Edition.
+#[derive(Debug, Default, Clone)]
+pub struct BigEndian;
+
+impl Reader for BigEndian {
+    fn bool(&mut self, buf: &mut impl Buf) -> Res<bool> {
+        Ok(buf.get_u8() != 0)
+    }
+
+    fn u8(&mut self, buf: &mut impl Buf) -> Res<u8> {
+        Ok(buf.get_u8())
+    }
+
+    fn i16(&mut self, buf: &mut impl Buf) -> Res<i16> {
+        Ok(buf.get_i16())
+    }
+
+    fn i32(&mut self, buf: &mut impl Buf) -> Res<i32> {
+        Ok(buf.get_i32())
+    }
+
+    fn i64(&mut self, buf: &mut impl Buf) -> Res<i64> {
+        Ok(buf.get_i64())
+    }
+
+    fn f32(&mut self, buf: &mut impl Buf) -> Res<f32> {
+        Ok(buf.get_f32())
+    }
+
+    fn f64(&mut self, buf: &mut impl Buf) -> Res<f64> {
+        Ok(buf.get_f64())
+    }
+}
+
+impl Writer for BigEndian {
+    fn write_i16(&mut self, buf: &mut impl BufMut, x: i16) -> Res<()> {
+        buf.put_i16(x);
+        Ok(())
+    }
+
+    fn write_i32(&mut self, buf: &mut impl BufMut, x: i32) -> Res<()> {
+        buf.put_i32(x);
+        Ok(())
+    }
+
+    fn write_i64(&mut self, buf: &mut impl BufMut, x: i64) -> Res<()> {
+        buf.put_i64(x);
+        Ok(())
+    }
+
+    fn write_f32(&mut self, buf: &mut impl BufMut, x: f32) -> Res<()> {
+        buf.put_f32(x);
+        Ok(())
+    }
+
+    fn write_f64(&mut self, buf: &mut impl BufMut, x: f64) -> Res<()> {
+        buf.put_f64(x);
+        Ok(())
+    }
+}
+
 #[derive(Debug, Default, Clone)]
 pub struct LittleEndian;
 
