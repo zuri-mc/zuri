@@ -1,26 +1,32 @@
+//! See [Writer].
 use crate::err::{NbtError, Res};
 use bytes::BufMut;
 
+/// A trait that can be implemented to alter how basic NBT types are written.
 pub trait Writer {
-    fn write_bool(&mut self, buf: &mut impl BufMut, x: bool) -> Res<()> {
-        buf.put_u8(x as u8);
-        Ok(())
-    }
+    /// Writes an 8-bit unsigned integer.
     fn write_u8(&mut self, buf: &mut impl BufMut, x: u8) -> Res<()> {
         buf.put_u8(x);
         Ok(())
     }
+    /// Writes a 16-bit signed integer.
     fn write_i16(&mut self, buf: &mut impl BufMut, x: i16) -> Res<()>;
+    /// Writes a 32-bit signed integer.
     fn write_i32(&mut self, buf: &mut impl BufMut, x: i32) -> Res<()>;
+    /// Writes a 64-bit signed integer.
     fn write_i64(&mut self, buf: &mut impl BufMut, x: i64) -> Res<()>;
+    /// Writes a 32-bit floating point number.
     fn write_f32(&mut self, buf: &mut impl BufMut, x: f32) -> Res<()>;
+    /// Writes a 64-bit floating point number.
     fn write_f64(&mut self, buf: &mut impl BufMut, x: f64) -> Res<()>;
 
+    /// Writes the NBT `end` tag, which indicates the end of a compound tag.
     fn write_end(&mut self, buf: &mut impl BufMut) -> Res<()> {
         buf.put_u8(0);
         Ok(())
     }
 
+    /// Writes a variable-length string.
     fn write_string(&mut self, buf: &mut impl BufMut, x: &str) -> Res<()> {
         if x.len() > i16::MAX as usize {
             return Err(NbtError::ParseError("string too large".to_string()));
@@ -33,6 +39,7 @@ pub trait Writer {
         Ok(())
     }
 
+    /// Writes variable-length array of 8-bit unsigned integers.
     fn write_u8_vec(&mut self, buf: &mut impl BufMut, x: &Vec<u8>) -> Res<()> {
         self.write_i32(buf, x.len() as i32)?;
         for v in x {
@@ -41,6 +48,7 @@ pub trait Writer {
         Ok(())
     }
 
+    /// Writes variable-length array of 32-bit signed integers.
     fn write_i32_vec(&mut self, buf: &mut impl BufMut, x: &Vec<i32>) -> Res<()> {
         self.write_i32(buf, x.len() as i32)?;
         for v in x {
@@ -49,6 +57,7 @@ pub trait Writer {
         Ok(())
     }
 
+    /// Writes variable-length array of 64-bit signed integers.
     fn write_i64_vec(&mut self, buf: &mut impl BufMut, x: &Vec<i64>) -> Res<()> {
         self.write_i32(buf, x.len() as i32)?;
         for v in x {

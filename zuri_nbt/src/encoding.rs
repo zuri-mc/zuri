@@ -1,3 +1,9 @@
+//! Contains all the standard NBT encodings.
+//!
+//! These include:
+//!  - [BigEndian]
+//!  - [LittleEndian]
+//!  - [NetworkLittleEndian]
 use crate::decode::Reader;
 use crate::encode::Writer;
 use crate::err::{NbtError, Res};
@@ -9,11 +15,23 @@ use bytes::{Buf, BufMut};
 #[derive(Debug, Default, Clone)]
 pub struct BigEndian;
 
-impl Reader for BigEndian {
-    fn bool(&mut self, buf: &mut impl Buf) -> Res<bool> {
-        Ok(buf.get_u8() != 0)
-    }
+/// An NBT encoding that encodes all basic types using little endian encoding.
+///
+/// This format is most commonly used in Minecraft: Bedrock Edition, and more specifically in
+/// Bedrock Edition world saves.
+///
+/// It is not to be confused with the [NetworkLittleEndian] encoding.
+#[derive(Debug, Default, Clone)]
+pub struct LittleEndian;
 
+/// An NBT encoding that encodes certain integer types using variable-length encoding, while using
+/// fixed-size little endian encoding for all other basic types.
+///
+/// This format is most commonly used for nbt sent in Minecraft: Bedrock Edition's protocol.
+#[derive(Debug, Default, Clone)]
+pub struct NetworkLittleEndian;
+
+impl Reader for BigEndian {
     fn u8(&mut self, buf: &mut impl Buf) -> Res<u8> {
         Ok(buf.get_u8())
     }
@@ -66,17 +84,7 @@ impl Writer for BigEndian {
     }
 }
 
-#[derive(Debug, Default, Clone)]
-pub struct LittleEndian;
-
-#[derive(Debug, Default, Clone)]
-pub struct NetworkLittleEndian;
-
 impl Reader for LittleEndian {
-    fn bool(&mut self, buf: &mut impl Buf) -> Res<bool> {
-        Ok(buf.get_u8() != 0)
-    }
-
     fn u8(&mut self, buf: &mut impl Buf) -> Res<u8> {
         Ok(buf.get_u8())
     }
@@ -130,10 +138,6 @@ impl Writer for LittleEndian {
 }
 
 impl Reader for NetworkLittleEndian {
-    fn bool(&mut self, buf: &mut impl Buf) -> Res<bool> {
-        Ok(buf.get_u8() != 0)
-    }
-
     fn u8(&mut self, buf: &mut impl Buf) -> Res<u8> {
         Ok(buf.get_u8())
     }
@@ -202,11 +206,6 @@ impl Reader for NetworkLittleEndian {
 }
 
 impl Writer for NetworkLittleEndian {
-    fn write_bool(&mut self, buf: &mut impl BufMut, x: bool) -> Res<()> {
-        buf.put_u8(x as u8);
-        Ok(())
-    }
-
     fn write_u8(&mut self, buf: &mut impl BufMut, x: u8) -> Res<()> {
         buf.put_u8(x);
         Ok(())
@@ -268,5 +267,60 @@ impl Writer for NetworkLittleEndian {
             self.write_u8(buf, *b)?;
         }
         Ok(())
+    }
+}
+
+/// Test all encodings with various data.
+#[cfg(test)]
+mod tests {
+    use crate::decode::Reader;
+    use crate::encode::Writer;
+    use crate::encoding::{BigEndian, LittleEndian, NetworkLittleEndian};
+    use crate::Value;
+    use bytes::{Bytes, BytesMut};
+
+    #[test]
+    fn test_big_endian() {
+        test::<BigEndian>();
+    }
+
+    #[test]
+    fn test_little_endian() {
+        test::<LittleEndian>();
+    }
+
+    #[test]
+    fn test_network_little_endian() {
+        test::<NetworkLittleEndian>();
+    }
+
+    fn test<T: Reader + Writer + Sized + Default>() {
+        let nbt = Value::Compound(
+            vec![
+                ("test".to_string(), Value::Long(10)),
+                ("test1".to_string(), Value::Byte(100)),
+                ("test2".to_string(), Value::Short(1)),
+                (
+                    "test3".to_string(),
+                    Value::List(vec![
+                        Value::ByteArray(vec![1, 2, 3]),
+                        Value::ByteArray(vec![4, 5, 6]),
+                    ]),
+                ),
+                (
+                    "test4".to_string(),
+                    Value::List(vec![Value::Byte(1), Value::Byte(3)]),
+                ),
+                ("test5".to_string(), Value::Compound(Default::default())),
+            ]
+            .iter()
+            .cloned()
+            .collect(),
+        );
+        let mut buf_writer = BytesMut::default();
+        nbt.write(&mut buf_writer, &mut T::default()).unwrap();
+
+        let mut buf: Bytes = buf_writer.into();
+        assert_eq!(Value::read(&mut buf, &mut T::default()).unwrap(), nbt);
     }
 }

@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+#![forbid(missing_docs)]
 use std::collections::HashMap;
 use std::fmt::Debug;
 
@@ -11,25 +13,46 @@ use crate::err::{NbtError, Res};
 pub mod decode;
 pub mod encode;
 pub mod encoding;
-mod err;
+pub mod err;
 
+/// An enum representing all possible NBT data.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
+    /// An 8-bit unsigned integer.
     Byte(u8),
+    /// A 16-bit signed integer.
     Short(i16),
+    /// A 32-bit signed integer.
     Int(i32),
+    /// A 64-bit signed integer.
     Long(i64),
+    /// A 32-bit floating point number.
     Float(f32),
+    /// A 64-bit floating point number.
     Double(f64),
+    /// A string of characters.
+    ///
+    /// Should never be larger than [i16::MAX].
     String(String),
+    /// A map containing zero or more key-value pairs.
+    ///
+    /// Each key maps to exactly one [Value] of any type.
     Compound(HashMap<String, Value>),
+    /// A variable-length list [Value]s of the same type.
+    ///
+    /// Lists will fail to encode/decode should it contain values of which the type does not match
+    /// the type of the first element in the list.
     List(Vec<Value>),
+    /// A variable-length array containing 8-bit unsigned integers.
     ByteArray(Vec<u8>),
+    /// A variable-length array containing 32-bit signed integers.
     IntArray(Vec<i32>),
+    /// A variable-length array containing 64-bit signed integers.
     LongArray(Vec<i64>),
 }
 
 impl Value {
+    /// Gets the discriminator of a [Value]'s type used for encoding and decoding.
     fn tag_id(&self) -> u8 {
         match self {
             Value::Byte(_) => 1,
@@ -47,18 +70,22 @@ impl Value {
         }
     }
 
+    /// Attempts to read the data from a buffer into an NBT value using the specified [Reader]
+    /// encoding.
     pub fn read(buf: &mut impl Buf, r: &mut impl Reader) -> Res<Self> {
         let tag_id = r.u8(buf)?;
         r.string(buf)?;
         Self::read_inner(buf, tag_id, r)
     }
 
+    /// Attempts to write the NBT data into a buffer using the specified [Writer] encoding.
     pub fn write(&self, buf: &mut impl BufMut, w: &mut impl Writer) -> Res<()> {
         w.write_u8(buf, self.tag_id())?;
         w.write_string(buf, "")?;
         self.write_inner(buf, w)
     }
 
+    /// Internal function used to read NBT data. Slightly differs from [Self::read].
     fn read_inner(buf: &mut impl Buf, tag_id: u8, r: &mut impl Reader) -> Res<Self> {
         Ok(match tag_id {
             1 => Value::Byte(r.u8(buf)?),
@@ -101,6 +128,7 @@ impl Value {
         })
     }
 
+    /// Internal function used to write NBT data. Slightly differs from [Self::write].
     fn write_inner(&self, buf: &mut impl BufMut, w: &mut impl Writer) -> Res<()> {
         match self {
             Self::Byte(x) => w.write_u8(buf, *x)?,
@@ -147,44 +175,5 @@ impl Value {
 impl Default for Value {
     fn default() -> Self {
         Self::Compound(HashMap::new())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::decode::Reader;
-    use crate::encode::Writer;
-    use crate::encoding::{LittleEndian, NetworkLittleEndian};
-    use crate::Value;
-    use bytes::{Bytes, BytesMut};
-
-    #[test]
-    fn test_little_endian() {
-        test::<LittleEndian>();
-    }
-
-    #[test]
-    fn test_network_little_endian() {
-        test::<NetworkLittleEndian>();
-    }
-
-    fn test<T: Reader + Writer + Sized + Default>() {
-        let nbt = Value::Compound(
-            vec![
-                ("test".to_string(), Value::Long(10)),
-                (
-                    "test".to_string(),
-                    Value::List(vec![Value::Byte(1), Value::Byte(3)]),
-                ),
-            ]
-            .iter()
-            .cloned()
-            .collect(),
-        );
-        let mut buf_writer = BytesMut::default();
-        nbt.write(&mut buf_writer, &mut T::default()).unwrap();
-
-        let mut buf: Bytes = buf_writer.into();
-        assert_eq!(Value::read(&mut buf, &mut T::default()).unwrap(), nbt);
     }
 }

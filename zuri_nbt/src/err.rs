@@ -1,12 +1,18 @@
+//! See [NbtError].
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::string::FromUtf8Error;
 
+/// Wrapper type for results with [NbtError].
 pub type Res<T> = Result<T, NbtError>;
 
+/// An error that can occur when reading or writing NBT from/to a buffer.
 #[derive(Debug)]
 pub enum NbtError {
+    /// Returned when NBT could be read/written but some data is inconsistent with the NBT
+    /// specification.
     ParseError(String),
+    /// Returned in various circumstances when data could not be read or written.
     IoError(Box<dyn Error>),
 }
 
