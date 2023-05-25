@@ -10,10 +10,13 @@ use encode::Writer;
 use crate::decode::Reader;
 use crate::err::{NbtError, Res};
 
+mod conv;
 pub mod decode;
 pub mod encode;
 pub mod encoding;
 pub mod err;
+#[cfg(feature = "serde")]
+pub mod serde;
 
 /// An enum representing all possible NBT data.
 #[derive(Debug, Clone, PartialEq)]
@@ -53,7 +56,7 @@ pub enum Value {
 
 impl Value {
     /// Gets the discriminator of a [Value]'s type used for encoding and decoding.
-    fn tag_id(&self) -> u8 {
+    pub(crate) fn tag_id(&self) -> u8 {
         match self {
             Value::Byte(_) => 1,
             Value::Short(_) => 2,

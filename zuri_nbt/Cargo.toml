@@ -5,3 +5,11 @@ edition = "2021"
 
 [dependencies]
 bytes = "1.3.0"
+serde = { version = "1.0.162", optional = true }
+thiserror = "1.0.40"
+
+[features]
+default = ["serde"]
+
+[dev-dependencies]
+serde = { version = "1.0.162", features = ["derive"] }
