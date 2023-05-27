@@ -1,38 +1,15 @@
-//! todo
-use crate::Value;
-use serde::{ser, Serialize};
 use std::collections::HashMap;
 use std::fmt::Display;
-use serde::ser::{SerializeStruct, SerializeTuple};
-use thiserror::Error;
+use serde::{ser, Serialize};
+use crate::serde::SerializeError;
+use crate::Value;
 
-/// Try to serialize a serde serializable type into NBT data.
-pub fn serialize<T: Serialize>(input: T) -> Result<Value, SerializeError> {
-    input.serialize(Serializer)
-}
-
-/// An error that can occur when serializing a struct into NBT data.
-#[derive(Debug, Error)]
-pub enum SerializeError {
-    /// Error that occurs when two or more elements serialize into a different NBT type in a list
-    /// type such as a [Vec].
-    #[error("list entries must serialize to the same NBT type as first element in list")]
-    MismatchedListType,
-    /// Occurs when trying to serialize a map-like object that has a key that does not serialize to
-    /// a [Value::String].
-    #[error("key must be a string")]
-    NonStringKey,
-    /// Custom error that could be thrown by serde.
-    #[error("{0}")]
-    Custom(String),
-}
-
-struct Serializer;
+pub(super) struct Serializer;
 
 impl ser::Error for SerializeError {
     fn custom<T>(msg: T) -> Self
-    where
-        T: Display,
+        where
+            T: Display,
     {
         Self::Custom(msg.to_string())
     }
@@ -138,8 +115,8 @@ impl ser::Serializer for Serializer {
     }
 
     fn serialize_some<T: ?Sized>(self, value: &T) -> Result<Self::Ok, Self::Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         Ok(wrap_enum("Some", value.serialize(Serializer)?))
     }
@@ -166,8 +143,8 @@ impl ser::Serializer for Serializer {
         _name: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         value.serialize(Serializer)
     }
@@ -179,8 +156,8 @@ impl ser::Serializer for Serializer {
         variant: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         Ok(wrap_enum(variant, value.serialize(Serializer)?))
     }
@@ -222,9 +199,9 @@ impl ser::Serializer for Serializer {
     }
 
     fn collect_seq<I>(self, iter: I) -> Result<Self::Ok, Self::Error>
-    where
-        I: IntoIterator,
-        <I as IntoIterator>::Item: Serialize,
+        where
+            I: IntoIterator,
+            <I as IntoIterator>::Item: Serialize,
     {
         let mut iter = iter.into_iter();
 
@@ -288,7 +265,7 @@ impl ser::Serializer for Serializer {
 
 /// Helper to serialize certain data types into a [Value::Compound].
 #[derive(Default)]
-struct CompoundSerializer {
+pub(super) struct CompoundSerializer {
     v: HashMap<String, Value>,
     index: usize,
 }
@@ -302,8 +279,8 @@ impl ser::SerializeStruct for CompoundSerializer {
         key: &'static str,
         value: &T,
     ) -> Result<(), Self::Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self.v.insert(key.to_string(), value.serialize(Serializer)?);
         Ok(())
@@ -319,15 +296,15 @@ impl ser::SerializeMap for CompoundSerializer {
     type Error = <Serializer as ser::Serializer>::Error;
 
     fn serialize_key<T: ?Sized>(&mut self, _key: &T) -> Result<(), Self::Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         unreachable!()
     }
 
     fn serialize_value<T: ?Sized>(&mut self, _value: &T) -> Result<(), Self::Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         unreachable!()
     }
@@ -337,9 +314,9 @@ impl ser::SerializeMap for CompoundSerializer {
         key: &K,
         value: &V,
     ) -> Result<(), Self::Error>
-    where
-        K: Serialize,
-        V: Serialize,
+        where
+            K: Serialize,
+            V: Serialize,
     {
         let key = if let Value::String(str) = key.serialize(Serializer)? {
             str
@@ -360,8 +337,8 @@ impl ser::SerializeTuple for CompoundSerializer {
     type Error = <Serializer as ser::Serializer>::Error;
 
     fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
-    where
-        T: Serialize,
+        where
+            T: Serialize,
     {
         self.v
             .insert(format!("{}", self.index), value.serialize(Serializer)?);
@@ -379,7 +356,7 @@ impl ser::SerializeTupleStruct for CompoundSerializer {
     type Error = <Serializer as ser::Serializer>::Error;
 
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
-        self.serialize_element(value)
+        <Self as ser::SerializeTuple>::serialize_element(self, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
@@ -388,7 +365,7 @@ impl ser::SerializeTupleStruct for CompoundSerializer {
 }
 
 /// Helper to serialize certain enum variants into a [Value::Compound].
-struct CompoundVariantSerializer {
+pub(super) struct CompoundVariantSerializer {
     inner: CompoundSerializer,
     variant: &'static str,
 }
@@ -408,11 +385,11 @@ impl ser::SerializeTupleVariant for CompoundVariantSerializer {
     type Error = <Serializer as ser::Serializer>::Error;
 
     fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
-        self.inner.serialize_element(value)
+        <CompoundSerializer as ser::SerializeTuple>::serialize_element(&mut self.inner, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(wrap_enum(self.variant, <CompoundSerializer as SerializeTuple>::end(self.inner)?))
+        Ok(wrap_enum(self.variant, <CompoundSerializer as ser::SerializeTuple>::end(self.inner)?))
     }
 }
 
@@ -421,71 +398,10 @@ impl ser::SerializeStructVariant for CompoundVariantSerializer {
     type Error = <Serializer as ser::Serializer>::Error;
 
     fn serialize_field<T: ?Sized>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error> where T: Serialize {
-        self.inner.serialize_field(key, value)
+        <CompoundSerializer as ser::SerializeStruct>::serialize_field(&mut self.inner, key, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(wrap_enum(self.variant, <CompoundSerializer as SerializeTuple>::end(self.inner)?))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::serde::Serializer;
-    use crate::Value;
-    use serde::{Deserialize, Serialize};
-    use std::collections::HashMap;
-
-    #[derive(Serialize, Deserialize)]
-    pub struct ExampleStruct {
-        test: i32,
-        map: HashMap<String, bool>,
-        vec: Vec<i16>,
-        vec2: Vec<i32>,
-        tuple: (String, u8, i64),
-    }
-
-    #[test]
-    fn test_serialize() {
-        // Construct
-        let mut input = ExampleStruct {
-            test: 7,
-            map: HashMap::default(),
-            vec: vec![1, 4, 6, 1],
-            vec2: vec![1, 4, 6, 1],
-            tuple: ("Test".to_string(), 1, 2),
-        };
-        input.map.insert("x".to_string(), true);
-        input.map.insert("y".to_string(), false);
-        input.map.insert("z".to_string(), false);
-
-        let mut output_map = HashMap::new();
-        output_map.insert("x".to_string(), Value::Byte(1));
-        output_map.insert("y".to_string(), Value::Byte(0));
-        output_map.insert("z".to_string(), Value::Byte(0));
-
-        let mut output_tuple = HashMap::new();
-        output_tuple.insert("0".to_string(), Value::String("Test".to_string()
-        ));
-        output_tuple.insert("1".to_string(), Value::Byte(1));
-        output_tuple.insert("2".to_string(), Value::Long(2));
-
-        let mut output = HashMap::new();
-        output.insert("map".to_string(), Value::Compound(output_map));
-        output.insert("tuple".to_string(), Value::Compound(output_tuple));
-        output.insert("test".to_string(), Value::Int(7));
-        output.insert(
-            "vec".to_string(),
-            Value::List(vec![
-                Value::Short(1),
-                Value::Short(4),
-                Value::Short(6),
-                Value::Short(1),
-            ]),
-        );
-        output.insert("vec2".to_string(), Value::IntArray(vec![1, 4, 6, 1]));
-        let output = Value::Compound(output);
-
-        assert_eq!(input.serialize(Serializer).unwrap(), output)
+        Ok(wrap_enum(self.variant, <CompoundSerializer as ser::SerializeTuple>::end(self.inner)?))
     }
 }
