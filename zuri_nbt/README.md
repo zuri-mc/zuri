@@ -7,6 +7,11 @@ of things. This crate mainly focuses on Minecraft: Bedrock Edition, and supports
 **little endian** and **network little endian** encoding. **Big endian**, which is more commonly
 used in Minecraft: Java Edition, is also supported, however.
 
+## Feature flags
+A checkmark in front of a feature indicates that it is enabled by default.
+
+ - [x] `serde` - Allows rust types to be serialized and deserialized into NBT using [serde](https://serde.rs/).
+
 ## Examples
 
 NBT data can be constructed and written as follows:
