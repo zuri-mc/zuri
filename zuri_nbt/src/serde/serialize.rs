@@ -1,19 +1,9 @@
-use std::collections::HashMap;
-use std::fmt::Display;
-use serde::{ser, Serialize};
 use crate::serde::SerializeError;
 use crate::Value;
+use serde::{ser, Serialize};
+use std::collections::HashMap;
 
 pub(super) struct Serializer;
-
-impl ser::Error for SerializeError {
-    fn custom<T>(msg: T) -> Self
-        where
-            T: Display,
-    {
-        Self::Custom(msg.to_string())
-    }
-}
 
 fn wrap_enum(variant: &str, value: Value) -> Value {
     let mut map = HashMap::new();
@@ -115,8 +105,8 @@ impl ser::Serializer for Serializer {
     }
 
     fn serialize_some<T: ?Sized>(self, value: &T) -> Result<Self::Ok, Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         Ok(wrap_enum("Some", value.serialize(Serializer)?))
     }
@@ -143,8 +133,8 @@ impl ser::Serializer for Serializer {
         _name: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         value.serialize(Serializer)
     }
@@ -156,8 +146,8 @@ impl ser::Serializer for Serializer {
         variant: &'static str,
         value: &T,
     ) -> Result<Self::Ok, Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         Ok(wrap_enum(variant, value.serialize(Serializer)?))
     }
@@ -199,9 +189,9 @@ impl ser::Serializer for Serializer {
     }
 
     fn collect_seq<I>(self, iter: I) -> Result<Self::Ok, Self::Error>
-        where
-            I: IntoIterator,
-            <I as IntoIterator>::Item: Serialize,
+    where
+        I: IntoIterator,
+        <I as IntoIterator>::Item: Serialize,
     {
         let mut iter = iter.into_iter();
 
@@ -279,8 +269,8 @@ impl ser::SerializeStruct for CompoundSerializer {
         key: &'static str,
         value: &T,
     ) -> Result<(), Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self.v.insert(key.to_string(), value.serialize(Serializer)?);
         Ok(())
@@ -296,15 +286,15 @@ impl ser::SerializeMap for CompoundSerializer {
     type Error = <Serializer as ser::Serializer>::Error;
 
     fn serialize_key<T: ?Sized>(&mut self, _key: &T) -> Result<(), Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         unreachable!()
     }
 
     fn serialize_value<T: ?Sized>(&mut self, _value: &T) -> Result<(), Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         unreachable!()
     }
@@ -314,9 +304,9 @@ impl ser::SerializeMap for CompoundSerializer {
         key: &K,
         value: &V,
     ) -> Result<(), Self::Error>
-        where
-            K: Serialize,
-            V: Serialize,
+    where
+        K: Serialize,
+        V: Serialize,
     {
         let key = if let Value::String(str) = key.serialize(Serializer)? {
             str
@@ -337,8 +327,8 @@ impl ser::SerializeTuple for CompoundSerializer {
     type Error = <Serializer as ser::Serializer>::Error;
 
     fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
-        where
-            T: Serialize,
+    where
+        T: Serialize,
     {
         self.v
             .insert(format!("{}", self.index), value.serialize(Serializer)?);
@@ -355,7 +345,10 @@ impl ser::SerializeTupleStruct for CompoundSerializer {
     type Ok = <Serializer as ser::Serializer>::Ok;
     type Error = <Serializer as ser::Serializer>::Error;
 
-    fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
+    fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
+    where
+        T: Serialize,
+    {
         <Self as ser::SerializeTuple>::serialize_element(self, value)
     }
 
@@ -384,12 +377,18 @@ impl ser::SerializeTupleVariant for CompoundVariantSerializer {
     type Ok = <Serializer as ser::Serializer>::Ok;
     type Error = <Serializer as ser::Serializer>::Error;
 
-    fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error> where T: Serialize {
+    fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<(), Self::Error>
+    where
+        T: Serialize,
+    {
         <CompoundSerializer as ser::SerializeTuple>::serialize_element(&mut self.inner, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(wrap_enum(self.variant, <CompoundSerializer as ser::SerializeTuple>::end(self.inner)?))
+        Ok(wrap_enum(
+            self.variant,
+            <CompoundSerializer as ser::SerializeTuple>::end(self.inner)?,
+        ))
     }
 }
 
@@ -397,11 +396,21 @@ impl ser::SerializeStructVariant for CompoundVariantSerializer {
     type Ok = <Serializer as ser::Serializer>::Ok;
     type Error = <Serializer as ser::Serializer>::Error;
 
-    fn serialize_field<T: ?Sized>(&mut self, key: &'static str, value: &T) -> Result<(), Self::Error> where T: Serialize {
+    fn serialize_field<T: ?Sized>(
+        &mut self,
+        key: &'static str,
+        value: &T,
+    ) -> Result<(), Self::Error>
+    where
+        T: Serialize,
+    {
         <CompoundSerializer as ser::SerializeStruct>::serialize_field(&mut self.inner, key, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(wrap_enum(self.variant, <CompoundSerializer as ser::SerializeTuple>::end(self.inner)?))
+        Ok(wrap_enum(
+            self.variant,
+            <CompoundSerializer as ser::SerializeTuple>::end(self.inner)?,
+        ))
     }
 }
