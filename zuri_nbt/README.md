@@ -20,14 +20,14 @@ NBT data can be constructed and written as follows:
 use std::collections::HashMap;
 use bytes::BytesMut;
 use zuri_nbt::encoding::LittleEndian;
-use zuri_nbt::Value;
+use zuri_nbt::NBTTag;
 
 let mut nbt = HashMap::new();
-nbt.insert("name".to_string(), Value::String("Zuri".to_string()));
-nbt.insert("age".to_string(), Value::Int(18));
+nbt.insert("name".to_string(), NBTTag::String("Zuri".to_string().into()));
+nbt.insert("age".to_string(), NBTTag::Int(18.into()));
 
 let mut buf = BytesMut::new();
-Value::Compound(nbt).write(&mut buf, &mut LittleEndian)
+NBTTag::Compound(nbt.into()).write(&mut buf, &mut LittleEndian)
     .expect("Something went wrong while writing nbt");
  ```
 
@@ -36,7 +36,7 @@ Reading NBT data can be done as follows:
  ```rust
 use bytes::Bytes;
 use zuri_nbt::encoding::LittleEndian;
-use zuri_nbt::Value;
+use zuri_nbt::NBTTag;
 
 let mut buf = Bytes::from([
     0x08, 0x00, 0x00, 0x0c,
@@ -46,7 +46,7 @@ let mut buf = Bytes::from([
     0x21, 0x00, 0x00, 0x00,
 ].as_ref());
 
-let value = Value::read(&mut buf, &mut LittleEndian)
+let value = NBTTag::read(&mut buf, &mut LittleEndian)
     .expect("Something went wrong while reading nbt");
-assert_eq!(value, Value::String("Hello World!".to_string()));
+assert_eq!(value, NBTTag::String("Hello World!".to_string().into()));
  ```

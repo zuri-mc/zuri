@@ -276,8 +276,9 @@ mod tests {
     use crate::decode::Reader;
     use crate::encode::Writer;
     use crate::encoding::{BigEndian, LittleEndian, NetworkLittleEndian};
-    use crate::Value;
+    use crate::NBTTag;
     use bytes::{Bytes, BytesMut};
+    use std::collections::HashMap;
 
     #[test]
     fn test_big_endian() {
@@ -295,32 +296,36 @@ mod tests {
     }
 
     fn test<T: Reader + Writer + Sized + Default>() {
-        let nbt = Value::Compound(
+        let nbt = NBTTag::Compound(
             vec![
-                ("test".to_string(), Value::Long(10)),
-                ("test1".to_string(), Value::Byte(100)),
-                ("test2".to_string(), Value::Short(1)),
+                ("test".to_string(), NBTTag::Long(10.into())),
+                ("test1".to_string(), NBTTag::Byte(100.into())),
+                ("test2".to_string(), NBTTag::Short(1.into())),
                 (
                     "test3".to_string(),
-                    Value::List(vec![
-                        Value::ByteArray(vec![1, 2, 3]),
-                        Value::ByteArray(vec![4, 5, 6]),
-                    ]),
+                    NBTTag::List(
+                        vec![
+                            NBTTag::ByteArray(vec![1, 2, 3].into()),
+                            NBTTag::ByteArray(vec![4, 5, 6].into()),
+                        ]
+                        .into(),
+                    ),
                 ),
                 (
                     "test4".to_string(),
-                    Value::List(vec![Value::Byte(1), Value::Byte(3)]),
+                    NBTTag::List(vec![NBTTag::Byte(1.into()), NBTTag::Byte(3.into())].into()),
                 ),
-                ("test5".to_string(), Value::Compound(Default::default())),
+                ("test5".to_string(), NBTTag::Compound(Default::default())),
             ]
             .iter()
             .cloned()
-            .collect(),
+            .collect::<HashMap<String, NBTTag>>()
+            .into(),
         );
         let mut buf_writer = BytesMut::default();
         nbt.write(&mut buf_writer, &mut T::default()).unwrap();
 
         let mut buf: Bytes = buf_writer.into();
-        assert_eq!(Value::read(&mut buf, &mut T::default()).unwrap(), nbt);
+        assert_eq!(NBTTag::read(&mut buf, &mut T::default()).unwrap(), nbt);
     }
 }

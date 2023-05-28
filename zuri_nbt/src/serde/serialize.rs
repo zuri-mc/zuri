@@ -1,19 +1,22 @@
 use crate::serde::SerializeError;
-use crate::Value;
+use crate::{tag, NBTTag};
 use serde::{ser, Serialize};
 use std::collections::HashMap;
 
 pub(super) struct Serializer;
 
-fn wrap_enum(variant: &str, value: Value) -> Value {
+fn wrap_enum(variant: &str, value: NBTTag) -> NBTTag {
     let mut map = HashMap::new();
-    map.insert("variant".to_string(), Value::String(variant.to_string()));
+    map.insert(
+        "variant".to_string(),
+        NBTTag::String(variant.to_string().into()),
+    );
     map.insert("value".to_string(), value);
-    Value::Compound(map)
+    NBTTag::Compound(map.into())
 }
 
 impl ser::Serializer for Serializer {
-    type Ok = Value;
+    type Ok = NBTTag;
     type Error = SerializeError;
 
     type SerializeMap = CompoundSerializer;
@@ -25,55 +28,55 @@ impl ser::Serializer for Serializer {
     type SerializeStructVariant = CompoundVariantSerializer;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Byte(v as u8))
+        Ok(NBTTag::Byte((v as u8).into()))
     }
 
     fn serialize_i8(self, v: i8) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Byte(v as u8))
+        Ok(NBTTag::Byte((v as u8).into()))
     }
 
     fn serialize_i16(self, v: i16) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Short(v))
+        Ok(NBTTag::Short(v.into()))
     }
 
     fn serialize_i32(self, v: i32) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Int(v))
+        Ok(NBTTag::Int(v.into()))
     }
 
     fn serialize_i64(self, v: i64) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Long(v))
+        Ok(NBTTag::Long(v.into()))
     }
 
     fn serialize_u8(self, v: u8) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Byte(v))
+        Ok(NBTTag::Byte(v.into()))
     }
 
     fn serialize_u16(self, v: u16) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Short(v as i16))
+        Ok(NBTTag::Short((v as i16).into()))
     }
 
     fn serialize_u32(self, v: u32) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Int(v as i32))
+        Ok(NBTTag::Int((v as i32).into()))
     }
 
     fn serialize_u64(self, v: u64) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Long(v as i64))
+        Ok(NBTTag::Long((v as i64).into()))
     }
 
     fn serialize_char(self, v: char) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Int(v as i32))
+        Ok(NBTTag::Int((v as i32).into()))
     }
 
     fn serialize_f32(self, v: f32) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Float(v))
+        Ok(NBTTag::Float(v.into()))
     }
 
     fn serialize_f64(self, v: f64) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Double(v))
+        Ok(NBTTag::Double(v.into()))
     }
 
     fn serialize_bytes(self, v: &[u8]) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::ByteArray(v.to_vec()))
+        Ok(NBTTag::ByteArray(v.to_vec().into()))
     }
 
     fn serialize_struct(
@@ -89,19 +92,19 @@ impl ser::Serializer for Serializer {
     }
 
     fn serialize_i128(self, v: i128) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::ByteArray((v as u128).to_le_bytes().to_vec()))
+        Ok(NBTTag::ByteArray((v as u128).to_le_bytes().to_vec().into()))
     }
 
     fn serialize_u128(self, v: u128) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::ByteArray(v.to_le_bytes().to_vec()))
+        Ok(NBTTag::ByteArray(v.to_le_bytes().to_vec().into()))
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::String(v.to_string()))
+        Ok(NBTTag::String(v.to_string().into()))
     }
 
     fn serialize_none(self) -> Result<Self::Ok, Self::Error> {
-        Ok(wrap_enum("None", Value::Compound(Default::default())))
+        Ok(wrap_enum("None", NBTTag::Compound(Default::default())))
     }
 
     fn serialize_some<T: ?Sized>(self, value: &T) -> Result<Self::Ok, Self::Error>
@@ -112,11 +115,11 @@ impl ser::Serializer for Serializer {
     }
 
     fn serialize_unit(self) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Compound(Default::default()))
+        Ok(NBTTag::Compound(Default::default()))
     }
 
     fn serialize_unit_struct(self, _name: &'static str) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Compound(Default::default()))
+        Ok(NBTTag::Compound(Default::default()))
     }
 
     fn serialize_unit_variant(
@@ -125,7 +128,7 @@ impl ser::Serializer for Serializer {
         _variant_index: u32,
         variant: &'static str,
     ) -> Result<Self::Ok, Self::Error> {
-        Ok(wrap_enum(variant, Value::Compound(Default::default())))
+        Ok(wrap_enum(variant, NBTTag::Compound(Default::default())))
     }
 
     fn serialize_newtype_struct<T: ?Sized>(
@@ -197,43 +200,46 @@ impl ser::Serializer for Serializer {
 
         let first = iter.next();
         if first.is_none() {
-            return Ok(Value::List(vec![]));
+            return Ok(NBTTag::List(vec![].into()));
         }
 
-        let first: Value = first.unwrap().serialize(Serializer)?;
+        let first: NBTTag = first.unwrap().serialize(Serializer)?;
         match first {
-            Value::Byte(v) => {
-                let mut list = vec![v];
+            NBTTag::Byte(v) => {
+                let mut list = vec![v.0];
                 for item in iter {
                     list.push(
-                        <Value as TryInto<u8>>::try_into(item.serialize(Serializer)?)
-                            .map_err(|_| SerializeError::MismatchedListType)?,
+                        <NBTTag as TryInto<tag::Byte>>::try_into(item.serialize(Serializer)?)
+                            .map_err(|_| SerializeError::MismatchedListType)?
+                            .0,
                     )
                 }
 
-                Ok(Value::ByteArray(list))
+                Ok(NBTTag::ByteArray(list.into()))
             }
-            Value::Int(v) => {
-                let mut list = vec![v];
+            NBTTag::Int(v) => {
+                let mut list = vec![v.0];
                 for item in iter {
                     list.push(
-                        <Value as TryInto<i32>>::try_into(item.serialize(Serializer)?)
-                            .map_err(|_| SerializeError::MismatchedListType)?,
+                        <NBTTag as TryInto<tag::Int>>::try_into(item.serialize(Serializer)?)
+                            .map_err(|_| SerializeError::MismatchedListType)?
+                            .0,
                     )
                 }
 
-                Ok(Value::IntArray(list))
+                Ok(NBTTag::IntArray(list.into()))
             }
-            Value::Long(v) => {
-                let mut list = vec![v];
+            NBTTag::Long(v) => {
+                let mut list = vec![v.0];
                 for item in iter {
                     list.push(
-                        <Value as TryInto<i64>>::try_into(item.serialize(Serializer)?)
-                            .map_err(|_| SerializeError::MismatchedListType)?,
+                        <NBTTag as TryInto<tag::Long>>::try_into(item.serialize(Serializer)?)
+                            .map_err(|_| SerializeError::MismatchedListType)?
+                            .0,
                     )
                 }
 
-                Ok(Value::LongArray(list))
+                Ok(NBTTag::LongArray(list.into()))
             }
             v @ _ => {
                 let tag_id = v.tag_id();
@@ -247,16 +253,16 @@ impl ser::Serializer for Serializer {
 
                     list.push(new_value);
                 }
-                Ok(Value::List(list))
+                Ok(NBTTag::List(list.into()))
             }
         }
     }
 }
 
-/// Helper to serialize certain data types into a [Value::Compound].
+/// Helper to serialize certain data types into a [NBTTag::Compound].
 #[derive(Default)]
 pub(super) struct CompoundSerializer {
-    v: HashMap<String, Value>,
+    v: HashMap<String, NBTTag>,
     index: usize,
 }
 
@@ -277,7 +283,7 @@ impl ser::SerializeStruct for CompoundSerializer {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Compound(self.v))
+        Ok(NBTTag::Compound(self.v.into()))
     }
 }
 
@@ -308,17 +314,17 @@ impl ser::SerializeMap for CompoundSerializer {
         K: Serialize,
         V: Serialize,
     {
-        let key = if let Value::String(str) = key.serialize(Serializer)? {
+        let key = if let NBTTag::String(str) = key.serialize(Serializer)? {
             str
         } else {
             return Err(SerializeError::NonStringKey);
         };
-        self.v.insert(key, value.serialize(Serializer)?);
+        self.v.insert(key.0, value.serialize(Serializer)?);
         Ok(())
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Compound(self.v))
+        Ok(NBTTag::Compound(self.v.into()))
     }
 }
 
@@ -337,7 +343,7 @@ impl ser::SerializeTuple for CompoundSerializer {
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        Ok(Value::Compound(self.v))
+        Ok(NBTTag::Compound(self.v.into()))
     }
 }
 
@@ -357,7 +363,7 @@ impl ser::SerializeTupleStruct for CompoundSerializer {
     }
 }
 
-/// Helper to serialize certain enum variants into a [Value::Compound].
+/// Helper to serialize certain enum variants into a [NBTTag::Compound].
 pub(super) struct CompoundVariantSerializer {
     inner: CompoundSerializer,
     variant: &'static str,

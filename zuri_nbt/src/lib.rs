@@ -17,59 +17,60 @@ pub mod encoding;
 pub mod err;
 #[cfg(feature = "serde")]
 pub mod serde;
+pub mod tag;
 
 /// An enum representing all possible NBT data.
 #[derive(Debug, Clone, PartialEq)]
-pub enum Value {
+pub enum NBTTag {
     /// An 8-bit unsigned integer.
-    Byte(u8),
+    Byte(tag::Byte),
     /// A 16-bit signed integer.
-    Short(i16),
+    Short(tag::Short),
     /// A 32-bit signed integer.
-    Int(i32),
+    Int(tag::Int),
     /// A 64-bit signed integer.
-    Long(i64),
+    Long(tag::Long),
     /// A 32-bit floating point number.
-    Float(f32),
+    Float(tag::Float),
     /// A 64-bit floating point number.
-    Double(f64),
+    Double(tag::Double),
     /// A string of characters.
     ///
     /// Should never be larger than [i16::MAX].
-    String(String),
+    String(tag::String),
     /// A map containing zero or more key-value pairs.
     ///
-    /// Each key maps to exactly one [Value] of any type.
-    Compound(HashMap<String, Value>),
-    /// A variable-length list [Value]s of the same type.
+    /// Each key maps to exactly one [NBTTag] of any type.
+    Compound(tag::Compound),
+    /// A variable-length list [NBTTag]s of the same type.
     ///
     /// Lists will fail to encode/decode should it contain values of which the type does not match
     /// the type of the first element in the list.
-    List(Vec<Value>),
+    List(tag::List),
     /// A variable-length array containing 8-bit unsigned integers.
-    ByteArray(Vec<u8>),
+    ByteArray(tag::ByteArray),
     /// A variable-length array containing 32-bit signed integers.
-    IntArray(Vec<i32>),
+    IntArray(tag::IntArray),
     /// A variable-length array containing 64-bit signed integers.
-    LongArray(Vec<i64>),
+    LongArray(tag::LongArray),
 }
 
-impl Value {
-    /// Gets the discriminator of a [Value]'s type used for encoding and decoding.
+impl NBTTag {
+    /// Gets the discriminator of a [NBTTag]'s type used for encoding and decoding.
     pub(crate) fn tag_id(&self) -> u8 {
         match self {
-            Value::Byte(_) => 1,
-            Value::Short(_) => 2,
-            Value::Int(_) => 3,
-            Value::Long(_) => 4,
-            Value::Float(_) => 5,
-            Value::Double(_) => 6,
-            Value::String(_) => 8,
-            Value::Compound(_) => 10,
-            Value::List(_) => 9,
-            Value::ByteArray(_) => 7,
-            Value::IntArray(_) => 11,
-            Value::LongArray(_) => 12,
+            NBTTag::Byte(_) => 1,
+            NBTTag::Short(_) => 2,
+            NBTTag::Int(_) => 3,
+            NBTTag::Long(_) => 4,
+            NBTTag::Float(_) => 5,
+            NBTTag::Double(_) => 6,
+            NBTTag::String(_) => 8,
+            NBTTag::Compound(_) => 10,
+            NBTTag::List(_) => 9,
+            NBTTag::ByteArray(_) => 7,
+            NBTTag::IntArray(_) => 11,
+            NBTTag::LongArray(_) => 12,
         }
     }
 
@@ -91,13 +92,13 @@ impl Value {
     /// Internal function used to read NBT data. Slightly differs from [Self::read].
     fn read_inner(buf: &mut impl Buf, tag_id: u8, r: &mut impl Reader) -> Res<Self> {
         Ok(match tag_id {
-            1 => Value::Byte(r.u8(buf)?),
-            2 => Value::Short(r.i16(buf)?),
-            3 => Value::Int(r.i32(buf)?),
-            4 => Value::Long(r.i64(buf)?),
-            5 => Value::Float(r.f32(buf)?),
-            6 => Value::Double(r.f64(buf)?),
-            8 => Value::String(r.string(buf)?),
+            1 => NBTTag::Byte(r.u8(buf)?.into()),
+            2 => NBTTag::Short(r.i16(buf)?.into()),
+            3 => NBTTag::Int(r.i32(buf)?.into()),
+            4 => NBTTag::Long(r.i64(buf)?.into()),
+            5 => NBTTag::Float(r.f32(buf)?.into()),
+            6 => NBTTag::Double(r.f64(buf)?.into()),
+            8 => NBTTag::String(r.string(buf)?.into()),
             10 => {
                 let mut map = HashMap::new();
                 loop {
@@ -108,7 +109,7 @@ impl Value {
                     let name = r.string(buf)?;
                     map.insert(name, Self::read_inner(buf, content_type, r)?);
                 }
-                Value::Compound(map)
+                NBTTag::Compound(map.into())
             }
             9 => {
                 let content_type = r.u8(buf)?;
@@ -122,11 +123,11 @@ impl Value {
                 for _ in 0..len {
                     vec.push(Self::read_inner(buf, content_type, r)?);
                 }
-                Value::List(vec)
+                NBTTag::List(vec.into())
             }
-            7 => Value::ByteArray(r.u8_vec(buf)?),
-            11 => Value::IntArray(r.i32_vec(buf)?),
-            12 => Value::LongArray(r.i64_vec(buf)?),
+            7 => NBTTag::ByteArray(r.u8_vec(buf)?.into()),
+            11 => NBTTag::IntArray(r.i32_vec(buf)?.into()),
+            12 => NBTTag::LongArray(r.i64_vec(buf)?.into()),
             _ => panic!("Unknown tag type {}", tag_id),
         })
     }
@@ -134,15 +135,15 @@ impl Value {
     /// Internal function used to write NBT data. Slightly differs from [Self::write].
     fn write_inner(&self, buf: &mut impl BufMut, w: &mut impl Writer) -> Res<()> {
         match self {
-            Self::Byte(x) => w.write_u8(buf, *x)?,
-            Self::Short(x) => w.write_i16(buf, *x)?,
-            Self::Int(x) => w.write_i32(buf, *x)?,
-            Self::Long(x) => w.write_i64(buf, *x)?,
-            Self::Float(x) => w.write_f32(buf, *x)?,
-            Self::Double(x) => w.write_f64(buf, *x)?,
-            Self::String(x) => w.write_string(buf, x.as_str())?,
+            Self::Byte(x) => w.write_u8(buf, x.0)?,
+            Self::Short(x) => w.write_i16(buf, x.0)?,
+            Self::Int(x) => w.write_i32(buf, x.0)?,
+            Self::Long(x) => w.write_i64(buf, x.0)?,
+            Self::Float(x) => w.write_f32(buf, x.0)?,
+            Self::Double(x) => w.write_f64(buf, x.0)?,
+            Self::String(x) => w.write_string(buf, x.0.as_str())?,
             Self::Compound(x) => {
-                for (name, val) in x {
+                for (name, val) in &x.0 {
                     w.write_u8(buf, val.tag_id())?;
                     w.write_string(buf, name)?;
                     val.write_inner(buf, w)?;
@@ -150,15 +151,15 @@ impl Value {
                 w.write_end(buf)?;
             }
             Self::List(x) => {
-                let first_id = if x.is_empty() {
-                    Value::Byte(0).tag_id()
+                let first_id = if x.0.is_empty() {
+                    NBTTag::Byte(0.into()).tag_id()
                 } else {
-                    x[0].tag_id()
+                    x.0[0].tag_id()
                 };
 
                 w.write_u8(buf, first_id)?;
                 w.write_i32(buf, x.len() as i32)?;
-                for v in x {
+                for v in &x.0 {
                     if v.tag_id() != first_id {
                         return Err(NbtError::ParseError(
                             "list elements must be of same type".to_string(),
@@ -167,16 +168,16 @@ impl Value {
                     v.write_inner(buf, w)?;
                 }
             }
-            Self::ByteArray(x) => w.write_u8_vec(buf, x)?,
-            Self::IntArray(x) => w.write_i32_vec(buf, x)?,
-            Self::LongArray(x) => w.write_i64_vec(buf, x)?,
+            Self::ByteArray(x) => w.write_u8_vec(buf, &x.0)?,
+            Self::IntArray(x) => w.write_i32_vec(buf, &x.0)?,
+            Self::LongArray(x) => w.write_i64_vec(buf, &x.0)?,
         };
         Ok(())
     }
 }
 
-impl Default for Value {
+impl Default for NBTTag {
     fn default() -> Self {
-        Self::Compound(HashMap::new())
+        Self::Compound(HashMap::new().into())
     }
 }

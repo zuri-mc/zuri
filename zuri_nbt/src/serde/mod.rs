@@ -7,7 +7,7 @@
 //! ```no_run
 //! # use serde::{Deserialize, Serialize};
 //! # use zuri_nbt::serde::{deserialize, serialize};
-//! # use zuri_nbt::Value;
+//! # use zuri_nbt::NBTTag;
 //! # #[derive(Default)]
 //! #[derive(Deserialize, Serialize)]
 //! struct MyStruct {
@@ -16,7 +16,7 @@
 //! }
 //!
 //! // Deserializing NBT into MyStruct
-//! # let nbt = Value::default();
+//! # let nbt = NBTTag::default();
 //! let my_struct: MyStruct = deserialize(&nbt).expect("Could not deserialize");
 //!
 //! // Serializing MyStruct into NBT
@@ -29,13 +29,13 @@ mod serialize;
 use crate::err::ErrorPath;
 use crate::serde::deserialize::Deserializer;
 use crate::serde::serialize::Serializer;
-use crate::Value;
+use crate::NBTTag;
 use serde::{de, ser, Deserialize, Serialize};
 use std::fmt::Display;
 use thiserror::Error;
 
 /// Try to serialize a serde serializable type into NBT data.
-pub fn serialize<T: Serialize>(input: &T) -> Result<Value, SerializeError> {
+pub fn serialize<T: Serialize>(input: &T) -> Result<NBTTag, SerializeError> {
     input.serialize(Serializer)
 }
 
@@ -47,7 +47,7 @@ pub enum SerializeError {
     #[error("list entries must serialize to the same NBT type as first element in list")]
     MismatchedListType,
     /// Occurs when trying to serialize a map-like object that has a key that does not serialize to
-    /// a [Value::String].
+    /// a [NBTTag::String].
     #[error("key must be a string")]
     NonStringKey,
     /// Custom error that could be thrown by serde.
@@ -57,7 +57,7 @@ pub enum SerializeError {
 
 /// Deserialize NBT data into a data type.
 pub fn deserialize<'de, T: Deserialize<'de>>(
-    input: &'de Value,
+    input: &'de NBTTag,
 ) -> Result<T, ErrorPath<'de, DeserializeError>> {
     T::deserialize(Deserializer::<'de>::new(input))
 }
@@ -130,7 +130,7 @@ impl ser::Error for SerializeError {
 #[cfg(test)]
 mod tests {
     use crate::serde::{deserialize, serialize};
-    use crate::Value;
+    use crate::NBTTag;
     use serde::{Deserialize, Serialize};
     use std::collections::HashMap;
 
@@ -173,55 +173,85 @@ mod tests {
         input.map.insert("z".to_string(), false);
 
         let mut output_map = HashMap::new();
-        output_map.insert("x".to_string(), Value::Byte(1));
-        output_map.insert("y".to_string(), Value::Byte(0));
-        output_map.insert("z".to_string(), Value::Byte(0));
+        output_map.insert("x".to_string(), NBTTag::Byte(1.into()));
+        output_map.insert("y".to_string(), NBTTag::Byte(0.into()));
+        output_map.insert("z".to_string(), NBTTag::Byte(0.into()));
 
         let mut output_tuple = HashMap::new();
-        output_tuple.insert("0".to_string(), Value::String("Test".to_string()));
-        output_tuple.insert("1".to_string(), Value::Byte(1));
-        output_tuple.insert("2".to_string(), Value::Long(2));
+        output_tuple.insert("0".to_string(), NBTTag::String("Test".to_string().into()));
+        output_tuple.insert("1".to_string(), NBTTag::Byte(1.into()));
+        output_tuple.insert("2".to_string(), NBTTag::Long(2.into()));
 
         let mut output_option0 = HashMap::new();
-        output_option0.insert("variant".to_string(), Value::String("Some".to_string()));
-        output_option0.insert("value".to_string(), Value::String("hi".to_string()));
+        output_option0.insert(
+            "variant".to_string(),
+            NBTTag::String("Some".to_string().into()),
+        );
+        output_option0.insert("value".to_string(), NBTTag::String("hi".to_string().into()));
 
         let mut output_option1 = HashMap::new();
-        output_option1.insert("variant".to_string(), Value::String("None".to_string()));
-        output_option1.insert("value".to_string(), Value::Compound(Default::default()));
+        output_option1.insert(
+            "variant".to_string(),
+            NBTTag::String("None".to_string().into()),
+        );
+        output_option1.insert("value".to_string(), NBTTag::Compound(Default::default()));
 
         let mut output_enum0 = HashMap::new();
-        output_enum0.insert("variant".to_string(), Value::String("Unit".to_string()));
-        output_enum0.insert("value".to_string(), Value::Compound(Default::default()));
+        output_enum0.insert(
+            "variant".to_string(),
+            NBTTag::String("Unit".to_string().into()),
+        );
+        output_enum0.insert("value".to_string(), NBTTag::Compound(Default::default()));
 
         let mut output_enum1_tuple = HashMap::new();
-        output_enum1_tuple.insert("0".to_string(), Value::Byte(1));
-        output_enum1_tuple.insert("1".to_string(), Value::Byte(2));
+        output_enum1_tuple.insert("0".to_string(), NBTTag::Byte(1.into()));
+        output_enum1_tuple.insert("1".to_string(), NBTTag::Byte(2.into()));
 
         let mut output_enum1 = HashMap::new();
-        output_enum1.insert("variant".to_string(), Value::String("Tuple".to_string()));
-        output_enum1.insert("value".to_string(), Value::Compound(output_enum1_tuple));
+        output_enum1.insert(
+            "variant".to_string(),
+            NBTTag::String("Tuple".to_string().into()),
+        );
+        output_enum1.insert(
+            "value".to_string(),
+            NBTTag::Compound(output_enum1_tuple.into()),
+        );
 
         let mut output = HashMap::new();
-        output.insert("enum0".to_string(), Value::Compound(output_enum0));
-        output.insert("enum1".to_string(), Value::Compound(output_enum1));
-        output.insert("option0".to_string(), Value::Compound(output_option0));
-        output.insert("option1".to_string(), Value::Compound(output_option1));
-        output.insert("map".to_string(), Value::Compound(output_map));
-        output.insert("tuple".to_string(), Value::Compound(output_tuple));
-        output.insert("test".to_string(), Value::Int(7));
-        output.insert("vec0".to_string(), Value::ByteArray(vec![1, 4, 6, 1]));
+        output.insert("enum0".to_string(), NBTTag::Compound(output_enum0.into()));
+        output.insert("enum1".to_string(), NBTTag::Compound(output_enum1.into()));
+        output.insert(
+            "option0".to_string(),
+            NBTTag::Compound(output_option0.into()),
+        );
+        output.insert(
+            "option1".to_string(),
+            NBTTag::Compound(output_option1.into()),
+        );
+        output.insert("map".to_string(), NBTTag::Compound(output_map.into()));
+        output.insert("tuple".to_string(), NBTTag::Compound(output_tuple.into()));
+        output.insert("test".to_string(), NBTTag::Int(7.into()));
+        output.insert(
+            "vec0".to_string(),
+            NBTTag::ByteArray(vec![1, 4, 6, 1].into()),
+        );
         output.insert(
             "vec1".to_string(),
-            Value::List(vec![
-                Value::Short(1),
-                Value::Short(4),
-                Value::Short(6),
-                Value::Short(1),
-            ]),
+            NBTTag::List(
+                vec![
+                    NBTTag::Short(1.into()),
+                    NBTTag::Short(4.into()),
+                    NBTTag::Short(6.into()),
+                    NBTTag::Short(1.into()),
+                ]
+                .into(),
+            ),
         );
-        output.insert("vec2".to_string(), Value::IntArray(vec![1, 4, 6, 1]));
-        let output = Value::Compound(output);
+        output.insert(
+            "vec2".to_string(),
+            NBTTag::IntArray(vec![1, 4, 6, 1].into()),
+        );
+        let output = NBTTag::Compound(output.into());
 
         let deserialized = deserialize::<ExampleStruct>(&output)
             .unwrap_or_else(|err| panic!("Could not deserialize: {}", err));

@@ -6,7 +6,7 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use uuid::Uuid;
 
 use zuri_nbt::encoding::NetworkLittleEndian;
-use zuri_nbt::{decode, encode, Value};
+use zuri_nbt::{decode, encode, NBTTag};
 
 use crate::proto::types::entity_data::{EntityDataEntry, EntityDataType};
 
@@ -190,7 +190,7 @@ impl Writer {
         self.buf.put(x.to_bytes_le().as_ref());
     }
 
-    pub fn nbt<T: encode::Writer + Sized>(&mut self, val: &Value, mut writer: T) {
+    pub fn nbt<T: encode::Writer + Sized>(&mut self, val: &NBTTag, mut writer: T) {
         val.write(&mut self.buf, &mut writer).unwrap();
     }
 
@@ -576,8 +576,8 @@ impl Reader {
         Uuid::from_slice_le(&b).unwrap()
     }
 
-    pub fn nbt<T: decode::Reader + Sized>(&mut self, mut reader: T) -> Value {
-        Value::read(&mut self.buf, &mut reader).unwrap()
+    pub fn nbt<T: decode::Reader + Sized>(&mut self, mut reader: T) -> NBTTag {
+        NBTTag::read(&mut self.buf, &mut reader).unwrap()
     }
 
     pub fn optional<T: Readable<T>>(&mut self) -> Option<T> {
@@ -778,12 +778,12 @@ pub trait EnumReadable<T, D> {
 
 #[derive(Clone, Debug)]
 pub struct NBT<E: decode::Reader + encode::Writer> {
-    val: Value,
+    val: NBTTag,
     encoding: E,
 }
 
 impl<E: decode::Reader + encode::Writer + Default> NBT<E> {
-    fn new(val: Value) -> Self {
+    fn new(val: NBTTag) -> Self {
         Self {
             val,
             encoding: E::default(),
@@ -793,7 +793,7 @@ impl<E: decode::Reader + encode::Writer + Default> NBT<E> {
 
 impl<E: decode::Reader + encode::Writer> NBT<E> {
     #![allow(unused)]
-    fn new_with_encoder(val: Value, encoder: E) -> Self {
+    fn new_with_encoder(val: NBTTag, encoder: E) -> Self {
         Self {
             val,
             encoding: encoder,
@@ -801,14 +801,14 @@ impl<E: decode::Reader + encode::Writer> NBT<E> {
     }
 }
 
-impl<E: decode::Reader + encode::Writer> Into<Value> for NBT<E> {
-    fn into(self) -> Value {
+impl<E: decode::Reader + encode::Writer> Into<NBTTag> for NBT<E> {
+    fn into(self) -> NBTTag {
         self.val
     }
 }
 
-impl<E: decode::Reader + encode::Writer + Default> From<Value> for NBT<E> {
-    fn from(value: Value) -> Self {
+impl<E: decode::Reader + encode::Writer + Default> From<NBTTag> for NBT<E> {
+    fn from(value: NBTTag) -> Self {
         NBT::new(value)
     }
 }
