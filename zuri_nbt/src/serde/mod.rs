@@ -1,4 +1,28 @@
-//! todo
+//! Enables the serialization and deserialization of rust types into NBT data through the
+//! [serialize] and [deserialize] functions respectively.
+//!
+//! ## Example
+//! To be able to deserialize and serialize your types, you will need to derive
+//! [Deserialize](Deserialize) and [Serialize](Serialize) respectively.
+//! ```no_run
+//! # use serde::{Deserialize, Serialize};
+//! # use zuri_nbt::serde::{deserialize, serialize};
+//! # use zuri_nbt::Value;
+//! # #[derive(Default)]
+//! #[derive(Deserialize, Serialize)]
+//! struct MyStruct {
+//!     some_field: String,
+//!     other_field: Option<u8>,
+//! }
+//!
+//! // Deserializing NBT into MyStruct
+//! # let nbt = Value::default();
+//! let my_struct: MyStruct = deserialize(&nbt).expect("Could not deserialize");
+//!
+//! // Serializing MyStruct into NBT
+//! # let my_struct = MyStruct::default();
+//! let nbt = serialize(&my_struct).expect("Could not serialize");
+//! ```
 mod deserialize;
 mod serialize;
 
