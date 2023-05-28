@@ -28,7 +28,7 @@ nbt.insert("age".to_string(), Value::Int(18));
 
 let mut buf = BytesMut::new();
 Value::Compound(nbt).write(&mut buf, &mut LittleEndian)
-    .expect("Something went wrong while writing nbt:");
+    .expect("Something went wrong while writing nbt");
  ```
 
 Reading NBT data can be done as follows:
@@ -47,6 +47,6 @@ let mut buf = Bytes::from([
 ].as_ref());
 
 let value = Value::read(&mut buf, &mut LittleEndian)
-    .expect("Something went wrong while reading nbt:");
+    .expect("Something went wrong while reading nbt");
 assert_eq!(value, Value::String("Hello World!".to_string()));
  ```
