@@ -148,8 +148,10 @@ impl<'a> Display for Path<'a> {
 /// A single part of an [Path].
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum PathPart<'a> {
-    /// The path part is a field in a struct or tuple or a key of a map.
+    /// The path part is a field in a struct or a key of a map.
     Field(&'a str),
+    /// THe path part is a field of a tuple.
+    TupleField(usize),
     /// The path part is a sequence element.
     Element(usize),
 }
@@ -163,6 +165,7 @@ impl<'a> Display for PathPart<'a> {
                 f.write_str(&v.to_string())?;
                 f.write_str("]")
             }
+            PathPart::TupleField(v) => f.write_str(&v.to_string()),
         }
     }
 }

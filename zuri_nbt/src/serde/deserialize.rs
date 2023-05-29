@@ -496,9 +496,15 @@ impl<'de> de::SeqAccess<'de> for TupleAccess<'de> {
         T: DeserializeSeed<'de>,
     {
         if let Some(next) = self.map.get_key_value(&self.next.to_string()) {
+            let num = self.next;
             self.next += 1;
 
-            Ok(Some(seed.deserialize(Deserializer::new(next.1))?))
+            Ok(Some(seed.deserialize(Deserializer::new(next.1)).map_err(
+                |mut err| {
+                    err.path.0.push_front(PathPart::TupleField(num));
+                    err
+                },
+            )?))
         } else {
             Ok(None)
         }
