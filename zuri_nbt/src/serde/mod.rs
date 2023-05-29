@@ -130,7 +130,7 @@ impl ser::Error for SerializeError {
 #[cfg(test)]
 mod tests {
     use crate::serde::{deserialize, serialize};
-    use crate::NBTTag;
+    use crate::{tag, NBTTag};
     use serde::{Deserialize, Serialize};
     use std::collections::HashMap;
 
@@ -172,72 +172,61 @@ mod tests {
         input.map.insert("y".to_string(), false);
         input.map.insert("z".to_string(), false);
 
-        let mut output_map = HashMap::new();
-        output_map.insert("x".to_string(), NBTTag::Byte(1.into()));
-        output_map.insert("y".to_string(), NBTTag::Byte(0.into()));
-        output_map.insert("z".to_string(), NBTTag::Byte(0.into()));
-
-        let mut output_tuple = HashMap::new();
-        output_tuple.insert("0".to_string(), NBTTag::String("Test".to_string().into()));
-        output_tuple.insert("1".to_string(), NBTTag::Byte(1.into()));
-        output_tuple.insert("2".to_string(), NBTTag::Long(2.into()));
-
-        let mut output_option0 = HashMap::new();
-        output_option0.insert(
-            "variant".to_string(),
-            NBTTag::String("Some".to_string().into()),
-        );
-        output_option0.insert("value".to_string(), NBTTag::String("hi".to_string().into()));
-
-        let mut output_option1 = HashMap::new();
-        output_option1.insert(
-            "variant".to_string(),
-            NBTTag::String("None".to_string().into()),
-        );
-        output_option1.insert("value".to_string(), NBTTag::Compound(Default::default()));
-
-        let mut output_enum0 = HashMap::new();
-        output_enum0.insert(
-            "variant".to_string(),
-            NBTTag::String("Unit".to_string().into()),
-        );
-        output_enum0.insert("value".to_string(), NBTTag::Compound(Default::default()));
-
-        let mut output_enum1_tuple = HashMap::new();
-        output_enum1_tuple.insert("0".to_string(), NBTTag::Byte(1.into()));
-        output_enum1_tuple.insert("1".to_string(), NBTTag::Byte(2.into()));
-
-        let mut output_enum1 = HashMap::new();
-        output_enum1.insert(
-            "variant".to_string(),
-            NBTTag::String("Tuple".to_string().into()),
-        );
-        output_enum1.insert(
-            "value".to_string(),
-            NBTTag::Compound(output_enum1_tuple.into()),
-        );
-
-        let mut output = HashMap::new();
-        output.insert("enum0".to_string(), NBTTag::Compound(output_enum0.into()));
-        output.insert("enum1".to_string(), NBTTag::Compound(output_enum1.into()));
-        output.insert(
-            "option0".to_string(),
-            NBTTag::Compound(output_option0.into()),
-        );
-        output.insert(
-            "option1".to_string(),
-            NBTTag::Compound(output_option1.into()),
-        );
-        output.insert("map".to_string(), NBTTag::Compound(output_map.into()));
-        output.insert("tuple".to_string(), NBTTag::Compound(output_tuple.into()));
-        output.insert("test".to_string(), NBTTag::Int(7.into()));
-        output.insert(
-            "vec0".to_string(),
-            NBTTag::ByteArray(vec![1, 4, 6, 1].into()),
-        );
-        output.insert(
-            "vec1".to_string(),
-            NBTTag::List(
+        let output = tag::Compound::builder()
+            .with::<tag::Compound>(
+                "enum0",
+                tag::Compound::builder()
+                    .with::<tag::String>("variant", "Unit".to_string().into())
+                    .with("value", tag::Compound::default())
+                    .build(),
+            )
+            .with::<tag::Compound>(
+                "enum1",
+                tag::Compound::builder()
+                    .with::<tag::String>("variant", "Tuple".to_string().into())
+                    .with::<tag::Compound>(
+                        "value",
+                        tag::Compound::builder()
+                            .with::<tag::Byte>("0", 1.into())
+                            .with::<tag::Byte>("1", 2.into())
+                            .build(),
+                    )
+                    .build(),
+            )
+            .with::<tag::Compound>(
+                "option0",
+                tag::Compound::builder()
+                    .with::<tag::String>("variant", "Some".to_string().into())
+                    .with::<tag::String>("value", "hi".to_string().into())
+                    .build(),
+            )
+            .with::<tag::Compound>(
+                "option1",
+                tag::Compound::builder()
+                    .with::<tag::String>("variant", "None".to_string().into())
+                    .with::<tag::Compound>("value", tag::Compound::default())
+                    .build(),
+            )
+            .with::<tag::Compound>(
+                "map",
+                tag::Compound::builder()
+                    .with::<tag::Byte>("x", 1.into())
+                    .with::<tag::Byte>("y", 0.into())
+                    .with::<tag::Byte>("z", 0.into())
+                    .build(),
+            )
+            .with::<tag::Compound>(
+                "tuple",
+                tag::Compound::builder()
+                    .with::<tag::String>("0", "Test".to_string().into())
+                    .with::<tag::Byte>("1", 1.into())
+                    .with::<tag::Long>("2", 2.into())
+                    .build(),
+            )
+            .with::<tag::Int>("test", 7.into())
+            .with::<tag::ByteArray>("vec0", vec![1, 4, 6, 1].into())
+            .with::<tag::List>(
+                "vec1",
                 vec![
                     NBTTag::Short(1.into()),
                     NBTTag::Short(4.into()),
@@ -245,12 +234,9 @@ mod tests {
                     NBTTag::Short(1.into()),
                 ]
                 .into(),
-            ),
-        );
-        output.insert(
-            "vec2".to_string(),
-            NBTTag::IntArray(vec![1, 4, 6, 1].into()),
-        );
+            )
+            .with::<tag::IntArray>("vec2", vec![1, 4, 6, 1].into())
+            .build();
         let output = NBTTag::Compound(output.into());
 
         let deserialized = deserialize::<ExampleStruct>(&output)
