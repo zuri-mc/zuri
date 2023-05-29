@@ -276,9 +276,8 @@ mod tests {
     use crate::decode::Reader;
     use crate::encode::Writer;
     use crate::encoding::{BigEndian, LittleEndian, NetworkLittleEndian};
-    use crate::NBTTag;
+    use crate::{tag, NBTTag};
     use bytes::{Bytes, BytesMut};
-    use std::collections::HashMap;
 
     #[test]
     fn test_big_endian() {
@@ -296,32 +295,24 @@ mod tests {
     }
 
     fn test<T: Reader + Writer + Sized + Default>() {
-        let nbt = NBTTag::Compound(
-            vec![
-                ("test".to_string(), NBTTag::Long(10.into())),
-                ("test1".to_string(), NBTTag::Byte(100.into())),
-                ("test2".to_string(), NBTTag::Short(1.into())),
-                (
-                    "test3".to_string(),
-                    NBTTag::List(
-                        vec![
-                            NBTTag::ByteArray(vec![1, 2, 3].into()),
-                            NBTTag::ByteArray(vec![4, 5, 6].into()),
-                        ]
-                        .into(),
-                    ),
-                ),
-                (
-                    "test4".to_string(),
-                    NBTTag::List(vec![NBTTag::Byte(1.into()), NBTTag::Byte(3.into())].into()),
-                ),
-                ("test5".to_string(), NBTTag::Compound(Default::default())),
-            ]
-            .iter()
-            .cloned()
-            .collect::<HashMap<String, NBTTag>>()
-            .into(),
-        );
+        let nbt = tag::Compound::builder()
+            .with("test", tag::Long(10))
+            .with("test1", tag::Byte(100))
+            .with("test2", tag::Short(1))
+            .with(
+                "test3",
+                tag::List(vec![
+                    NBTTag::ByteArray(vec![1, 2, 3].into()),
+                    NBTTag::ByteArray(vec![4, 5, 6].into()),
+                ]),
+            )
+            .with(
+                "test4",
+                tag::List(vec![NBTTag::Byte(1.into()), NBTTag::Byte(3.into())].into()),
+            )
+            .with("test5", tag::Compound::default())
+            .build();
+        let nbt = NBTTag::Compound(nbt);
         let mut buf_writer = BytesMut::default();
         nbt.write(&mut buf_writer, &mut T::default()).unwrap();
 
