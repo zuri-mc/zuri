@@ -35,7 +35,7 @@ use std::fmt::Display;
 use thiserror::Error;
 
 /// Try to serialize a serde serializable type into NBT data.
-pub fn serialize<T: Serialize>(input: &T) -> Result<NBTTag, SerializeError> {
+pub fn serialize<T: Serialize>(input: &T) -> Result<NBTTag, ErrorPath<'static, SerializeError>> {
     input.serialize(Serializer)
 }
 

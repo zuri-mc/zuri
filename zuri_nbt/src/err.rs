@@ -67,6 +67,12 @@ impl<'a, I> ErrorPath<'a, I> {
     pub fn new_with_path(inner: I, path: Path<'a>) -> Self {
         Self { inner, path }
     }
+
+    /// Prepend the path in the wrapper with a new [PathPart].
+    pub fn prepend(mut self, part: PathPart<'a>) -> Self {
+        self.path.0.push_front(part);
+        self
+    }
 }
 
 impl<'a, I: Error + 'static> Error for ErrorPath<'a, I> {
@@ -123,6 +129,13 @@ impl<'a, I: Eq> Eq for ErrorPath<'a, I> {}
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
 pub struct Path<'a>(pub LinkedList<PathPart<'a>>);
 
+impl<'a> Path<'a> {
+    /// Create a path from a single [PathPart].
+    pub fn from_single(part: PathPart<'a>) -> Self {
+        Self(LinkedList::from([part]))
+    }
+}
+
 impl<'a> Display for Path<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         if self.0.is_empty() {
@@ -148,7 +161,9 @@ impl<'a> Display for Path<'a> {
 /// A single part of an [Path].
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum PathPart<'a> {
-    /// The path part is a field in a struct or a key of a map.
+    /// The path part is a map key.
+    MapKey(String),
+    /// The path part is a field in a struct.
     Field(&'a str),
     /// THe path part is a field of a tuple.
     TupleField(usize),
@@ -159,6 +174,7 @@ pub enum PathPart<'a> {
 impl<'a> Display for PathPart<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            PathPart::MapKey(v) => f.write_str(v),
             PathPart::Field(v) => f.write_str(*v),
             PathPart::Element(v) => {
                 f.write_str("[")?;
