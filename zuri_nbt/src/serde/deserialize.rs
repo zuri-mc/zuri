@@ -475,8 +475,14 @@ impl<'de, I: Iterator<Item = &'de NBTTag>> de::SeqAccess<'de> for ListAccess<'de
         T: DeserializeSeed<'de>,
     {
         if let Some(next) = self.iter.next() {
+            let elem = self.elems;
             self.elems += 1;
-            Ok(Some(seed.deserialize(Deserializer::new(next))?))
+            Ok(Some(seed.deserialize(Deserializer::new(next)).map_err(
+                |mut err| {
+                    err.path.0.push_front(PathPart::Element(elem));
+                    err
+                },
+            )?))
         } else {
             Ok(None)
         }
