@@ -18,7 +18,7 @@ fn wrap_enum(variant: &str, value: NBTTag) -> NBTTag {
 
 impl ser::Serializer for Serializer {
     type Ok = NBTTag;
-    type Error = ErrorPath<'static, SerializeError>;
+    type Error = ErrorPath<SerializeError>;
 
     type SerializeMap = CompoundSerializer;
     type SerializeStruct = CompoundSerializer;
@@ -301,7 +301,7 @@ impl ser::SerializeStruct for CompoundSerializer {
             key.to_string(),
             value
                 .serialize(Serializer)
-                .map_err(|err| err.prepend(PathPart::Field(key)))?,
+                .map_err(|err| err.prepend(PathPart::Field(key.to_string())))?,
         );
         Ok(())
     }

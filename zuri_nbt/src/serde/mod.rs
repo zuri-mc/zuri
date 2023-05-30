@@ -35,7 +35,7 @@ use std::fmt::Display;
 use thiserror::Error;
 
 /// Try to serialize a serde serializable type into NBT data.
-pub fn serialize<T: Serialize>(input: &T) -> Result<NBTTag, ErrorPath<'static, SerializeError>> {
+pub fn serialize<T: Serialize>(input: &T) -> Result<NBTTag, ErrorPath<SerializeError>> {
     input.serialize(Serializer)
 }
 
@@ -58,7 +58,7 @@ pub enum SerializeError {
 /// Deserialize NBT data into a data type.
 pub fn deserialize<'de, T: Deserialize<'de>>(
     input: &'de NBTTag,
-) -> Result<T, ErrorPath<'de, DeserializeError>> {
+) -> Result<T, ErrorPath<DeserializeError>> {
     T::deserialize(Deserializer::<'de>::new(input))
 }
 
@@ -85,7 +85,7 @@ pub enum DeserializeError {
     Custom(String),
 }
 
-impl<'a, I: ser::Error + 'static> ser::Error for ErrorPath<'a, I> {
+impl<I: ser::Error + 'static> ser::Error for ErrorPath<I> {
     fn custom<T>(msg: T) -> Self
     where
         T: Display,
@@ -97,7 +97,7 @@ impl<'a, I: ser::Error + 'static> ser::Error for ErrorPath<'a, I> {
     }
 }
 
-impl<'a, I: de::Error + 'static> de::Error for ErrorPath<'a, I> {
+impl<I: de::Error + 'static> de::Error for ErrorPath<I> {
     fn custom<T>(msg: T) -> Self
     where
         T: Display,

@@ -1,20 +1,21 @@
 #![doc = include_str!("../README.md")]
-#![forbid(missing_docs)]
+#![deny(missing_docs)]
 use std::collections::HashMap;
 use std::fmt::Debug;
 
 use bytes::{Buf, BufMut};
+use strum_macros::{Display, IntoStaticStr};
 
 use encode::Writer;
 
 use crate::decode::Reader;
-use crate::err::{NbtError, Res};
+use crate::err::{ErrorPath, Path, PathPart, ReadError, WriteError};
 
-mod conv;
 pub mod decode;
 pub mod encode;
 pub mod encoding;
 pub mod err;
+mod r#impl;
 #[cfg(feature = "serde")]
 pub mod serde;
 pub mod tag;
@@ -55,42 +56,60 @@ pub enum NBTTag {
     LongArray(tag::LongArray),
 }
 
+/// An enum representing all possible NBT tag types.
+#[allow(missing_docs)]
+#[derive(Copy, Clone, Debug, Display, IntoStaticStr)]
+pub enum NBTTagType {
+    Byte,
+    Short,
+    Int,
+    Long,
+    Float,
+    Double,
+    String,
+    Compound,
+    List,
+    ByteArray,
+    IntArray,
+    LongArray,
+}
+
 impl NBTTag {
-    /// Gets the discriminator of a [NBTTag]'s type used for encoding and decoding.
-    pub(crate) fn tag_id(&self) -> u8 {
+    /// Returns the [NBTTagType] associated with the tag variant contained in the enum.
+    pub fn tag_type(&self) -> NBTTagType {
         match self {
-            NBTTag::Byte(_) => 1,
-            NBTTag::Short(_) => 2,
-            NBTTag::Int(_) => 3,
-            NBTTag::Long(_) => 4,
-            NBTTag::Float(_) => 5,
-            NBTTag::Double(_) => 6,
-            NBTTag::String(_) => 8,
-            NBTTag::Compound(_) => 10,
-            NBTTag::List(_) => 9,
-            NBTTag::ByteArray(_) => 7,
-            NBTTag::IntArray(_) => 11,
-            NBTTag::LongArray(_) => 12,
+            NBTTag::Byte(v) => v.tag_type(),
+            NBTTag::Short(v) => v.tag_type(),
+            NBTTag::Int(v) => v.tag_type(),
+            NBTTag::Long(v) => v.tag_type(),
+            NBTTag::Float(v) => v.tag_type(),
+            NBTTag::Double(v) => v.tag_type(),
+            NBTTag::String(v) => v.tag_type(),
+            NBTTag::Compound(v) => v.tag_type(),
+            NBTTag::List(v) => v.tag_type(),
+            NBTTag::ByteArray(v) => v.tag_type(),
+            NBTTag::IntArray(v) => v.tag_type(),
+            NBTTag::LongArray(v) => v.tag_type(),
         }
     }
 
     /// Attempts to read the data from a buffer into an NBT value using the specified [Reader]
     /// encoding.
-    pub fn read(buf: &mut impl Buf, r: &mut impl Reader) -> Res<Self> {
+    pub fn read(buf: &mut impl Buf, r: &mut impl Reader) -> decode::Res<Self> {
         let tag_id = r.u8(buf)?;
         r.string(buf)?;
         Self::read_inner(buf, tag_id, r)
     }
 
     /// Attempts to write the NBT data into a buffer using the specified [Writer] encoding.
-    pub fn write(&self, buf: &mut impl BufMut, w: &mut impl Writer) -> Res<()> {
+    pub fn write(&self, buf: &mut impl BufMut, w: &mut impl Writer) -> encode::Res {
         w.write_u8(buf, self.tag_id())?;
         w.write_string(buf, "")?;
         self.write_inner(buf, w)
     }
 
     /// Internal function used to read NBT data. Slightly differs from [Self::read].
-    fn read_inner(buf: &mut impl Buf, tag_id: u8, r: &mut impl Reader) -> Res<Self> {
+    fn read_inner(buf: &mut impl Buf, tag_id: u8, r: &mut impl Reader) -> decode::Res<Self> {
         Ok(match tag_id {
             1 => NBTTag::Byte(r.u8(buf)?.into()),
             2 => NBTTag::Short(r.i16(buf)?.into()),
@@ -107,7 +126,9 @@ impl NBTTag {
                         break;
                     }
                     let name = r.string(buf)?;
-                    map.insert(name, Self::read_inner(buf, content_type, r)?);
+                    let value = Self::read_inner(buf, content_type, r)
+                        .map_err(|err| err.prepend(PathPart::MapKey(name.clone())))?;
+                    map.insert(name, value);
                 }
                 NBTTag::Compound(map.into())
             }
@@ -115,13 +136,17 @@ impl NBTTag {
                 let content_type = r.u8(buf)?;
                 let len = r.i32(buf)?;
                 if len < 0 {
-                    return Err(NbtError::ParseError(
-                        "list length must be greater than or equal to 0".to_string(),
-                    ));
+                    return Err(ErrorPath::new(ReadError::SeqLengthViolation(
+                        i32::MAX as usize,
+                        len as usize,
+                    )));
                 }
                 let mut vec = Vec::with_capacity(len as usize);
-                for _ in 0..len {
-                    vec.push(Self::read_inner(buf, content_type, r)?);
+                for i in 0..len {
+                    vec.push(
+                        Self::read_inner(buf, content_type, r)
+                            .map_err(|err| err.prepend(PathPart::Element(i as usize)))?,
+                    );
                 }
                 NBTTag::List(vec.into())
             }
@@ -133,7 +158,7 @@ impl NBTTag {
     }
 
     /// Internal function used to write NBT data. Slightly differs from [Self::write].
-    fn write_inner(&self, buf: &mut impl BufMut, w: &mut impl Writer) -> Res<()> {
+    fn write_inner(&self, buf: &mut impl BufMut, w: &mut impl Writer) -> encode::Res {
         match self {
             Self::Byte(x) => w.write_u8(buf, x.0)?,
             Self::Short(x) => w.write_i16(buf, x.0)?,
@@ -159,10 +184,14 @@ impl NBTTag {
 
                 w.write_u8(buf, first_id)?;
                 w.write_i32(buf, x.len() as i32)?;
-                for v in &x.0 {
+                for (i, v) in x.0.iter().enumerate() {
                     if v.tag_id() != first_id {
-                        return Err(NbtError::ParseError(
-                            "list elements must be of same type".to_string(),
+                        return Err(ErrorPath::new_with_path(
+                            WriteError::UnexpectedTag(
+                                x[0].tag_type().to_string(),
+                                v.tag_type().to_string(),
+                            ),
+                            Path::from_single(PathPart::Element(i)),
                         ));
                     }
                     v.write_inner(buf, w)?;
@@ -173,6 +202,24 @@ impl NBTTag {
             Self::LongArray(x) => w.write_i64_vec(buf, &x.0)?,
         };
         Ok(())
+    }
+
+    /// Gets the discriminator of a [NBTTag]'s type used for encoding and decoding.
+    pub(crate) fn tag_id(&self) -> u8 {
+        match self {
+            NBTTag::Byte(_) => 1,
+            NBTTag::Short(_) => 2,
+            NBTTag::Int(_) => 3,
+            NBTTag::Long(_) => 4,
+            NBTTag::Float(_) => 5,
+            NBTTag::Double(_) => 6,
+            NBTTag::String(_) => 8,
+            NBTTag::Compound(_) => 10,
+            NBTTag::List(_) => 9,
+            NBTTag::ByteArray(_) => 7,
+            NBTTag::IntArray(_) => 11,
+            NBTTag::LongArray(_) => 12,
+        }
     }
 }
 

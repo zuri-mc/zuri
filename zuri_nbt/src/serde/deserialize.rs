@@ -16,7 +16,7 @@ impl<'de> Deserializer<'de> {
 }
 
 impl<'de> de::Deserializer<'de> for Deserializer<'de> {
-    type Error = ErrorPath<'de, DeserializeError>;
+    type Error = ErrorPath<DeserializeError>;
 
     fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
@@ -403,7 +403,7 @@ impl<'de> de::Deserializer<'de> for Deserializer<'de> {
 }
 
 impl<'de> de::VariantAccess<'de> for Deserializer<'de> {
-    type Error = ErrorPath<'de, DeserializeError>;
+    type Error = ErrorPath<DeserializeError>;
 
     fn unit_variant(self) -> Result<(), Self::Error> {
         Ok(())
@@ -440,7 +440,7 @@ struct EnumAccess<'de> {
 }
 
 impl<'de> de::EnumAccess<'de> for EnumAccess<'de> {
-    type Error = ErrorPath<'de, DeserializeError>;
+    type Error = ErrorPath<DeserializeError>;
     type Variant = Deserializer<'de>;
 
     fn variant_seed<V>(self, seed: V) -> Result<(V::Value, Self::Variant), Self::Error>
@@ -468,7 +468,7 @@ struct ListAccess<'de, I: Iterator<Item = &'de NBTTag>> {
 }
 
 impl<'de, I: Iterator<Item = &'de NBTTag>> de::SeqAccess<'de> for ListAccess<'de, I> {
-    type Error = ErrorPath<'de, DeserializeError>;
+    type Error = ErrorPath<DeserializeError>;
 
     fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>
     where
@@ -495,7 +495,7 @@ struct TupleAccess<'de> {
 }
 
 impl<'de> de::SeqAccess<'de> for TupleAccess<'de> {
-    type Error = ErrorPath<'de, DeserializeError>;
+    type Error = ErrorPath<DeserializeError>;
 
     fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>, Self::Error>
     where
@@ -523,7 +523,7 @@ struct CompoundAccess<'de> {
 }
 
 impl<'de> de::MapAccess<'de> for CompoundAccess<'de> {
-    type Error = ErrorPath<'de, DeserializeError>;
+    type Error = ErrorPath<DeserializeError>;
 
     fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>, Self::Error>
     where
@@ -536,7 +536,7 @@ impl<'de> de::MapAccess<'de> for CompoundAccess<'de> {
                     k.as_str(),
                 ))
                 .map_err(|mut err| {
-                    err.path.0.push_front(PathPart::Field(k));
+                    err.path.0.push_front(PathPart::Field(k.to_string()));
                     err
                 })?,
             ));
@@ -555,7 +555,7 @@ impl<'de> de::MapAccess<'de> for CompoundAccess<'de> {
         let (k, v) = self.next_value.unwrap();
 
         let res = Ok(seed.deserialize(Deserializer::new(v)).map_err(|mut err| {
-            err.path.0.push_front(PathPart::Field(k));
+            err.path.0.push_front(PathPart::Field(k.to_string()));
             err
         })?);
         self.next_value = None;
@@ -578,11 +578,11 @@ impl<'de> de::MapAccess<'de> for CompoundAccess<'de> {
                         k.as_str(),
                     ))
                     .map_err(|mut err| {
-                        err.path.0.push_front(PathPart::Field(k));
+                        err.path.0.push_front(PathPart::Field(k.to_string()));
                         err
                     })?,
                 vseed.deserialize(Deserializer::new(v)).map_err(|mut err| {
-                    err.path.0.push_front(PathPart::Field(k));
+                    err.path.0.push_front(PathPart::Field(k.to_string()));
                     err
                 })?,
             )));
