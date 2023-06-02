@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use zuri_nbt::{encoding::NetworkLittleEndian, Value};
+use zuri_nbt::{encoding::NetworkLittleEndian, NBTTag};
 use zuri_net_derive::proto;
 
 use crate::encodable_enum;
@@ -95,7 +95,7 @@ pub enum ItemStackResponseStatus {
 #[derive(Debug, Clone)]
 pub struct ItemComponentEntry {
     pub name: String,
-    pub data: Value,
+    pub data: NBTTag,
 }
 
 impl ItemComponentEntry {

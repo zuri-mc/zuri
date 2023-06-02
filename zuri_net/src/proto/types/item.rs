@@ -1,7 +1,7 @@
 use bytes::BytesMut;
 use num_derive::{FromPrimitive, ToPrimitive};
 
-use zuri_nbt::{encoding::LittleEndian, Value};
+use zuri_nbt::{encoding::LittleEndian, NBTTag};
 use zuri_net_derive::proto;
 
 use crate::proto::io::{Readable, Reader, Writable, Writer};
@@ -65,7 +65,7 @@ impl Writable for ItemInstance {
         writer.var_i32(self.stack.block_runtime_id);
 
         let mut extra_data = Writer::default();
-        if let Value::Compound(m) = &self.stack.nbt_data {
+        if let NBTTag::Compound(m) = &self.stack.nbt_data {
             if !m.is_empty() {
                 extra_data.i16(-1);
                 extra_data.u8(1);
@@ -152,7 +152,7 @@ pub struct ItemStack {
     pub metadata_value: u32,
     pub block_runtime_id: i32,
     pub count: u16,
-    pub nbt_data: Value,
+    pub nbt_data: NBTTag,
     pub can_be_placed_on: Vec<String>,
     pub can_break: Vec<String>,
     pub has_network_id: bool,
@@ -171,7 +171,7 @@ impl Writable for ItemStack {
         writer.var_i32(self.block_runtime_id);
 
         let mut extra_data = Writer::default();
-        if let Value::Compound(m) = &self.nbt_data {
+        if let NBTTag::Compound(m) = &self.nbt_data {
             if !m.is_empty() {
                 extra_data.i16(-1);
                 extra_data.u8(1);
