@@ -346,23 +346,16 @@ mod tests {
 
     fn test<T: Reader + Writer + Sized + Default>() {
         let nbt = tag::Compound::builder()
-            .with("test", tag::Long(10))
-            .with("test1", tag::Byte(100))
-            .with("test2", tag::Short(1))
-            .with(
+            .with_long("test", 10)
+            .with_byte("test1", 100)
+            .with_short("test2", 1)
+            .with_list(
                 "test3",
-                tag::List(vec![
-                    NBTTag::ByteArray(vec![1, 2, 3].into()),
-                    NBTTag::ByteArray(vec![4, 5, 6].into()),
-                ]),
+                vec![tag::ByteArray(vec![1, 2, 3]), tag::ByteArray(vec![4, 5, 6])],
             )
-            .with(
-                "test4",
-                tag::List(vec![NBTTag::Byte(1.into()), NBTTag::Byte(3.into())].into()),
-            )
-            .with("test5", tag::Compound::default())
-            .build();
-        let nbt = NBTTag::Compound(nbt);
+            .with_list("test4", vec![tag::Byte(1), tag::Byte(3)])
+            .with("test5", tag::Compound::default());
+        let nbt = NBTTag::Compound(nbt.build());
         let mut buf_writer = BytesMut::default();
         nbt.write(&mut buf_writer, &mut T::default()).unwrap();
 
