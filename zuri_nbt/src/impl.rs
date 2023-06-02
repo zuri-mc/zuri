@@ -91,11 +91,43 @@ impl_newtype_conv!(
     (f64, tag::Double),
     (String, tag::String),
     (HashMap<String, NBTTag>, tag::Compound),
-    (Vec<NBTTag>, tag::List),
     (Vec<u8>, tag::ByteArray),
     (Vec<i32>, tag::IntArray),
     (Vec<i64>, tag::LongArray),
 );
+
+/// Special case: converting `&str` to a [tag::String] requires a clone.
+impl From<&str> for tag::String {
+    fn from(value: &str) -> Self {
+        tag::String(value.to_string())
+    }
+}
+
+impl<T: Into<NBTTag>> From<Vec<T>> for tag::List {
+    fn from(value: Vec<T>) -> Self {
+        tag::List(value.into_iter().map(|v| v.into()).collect())
+    }
+}
+
+impl From<tag::List> for Vec<NBTTag> {
+    fn from(value: tag::List) -> Self {
+        value.0
+    }
+}
+
+impl Deref for tag::List {
+    type Target = Vec<NBTTag>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for tag::List {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
 
 macro_rules! impl_tagtype {
     ($typ:ty, $enum_variant:path, $enum_variant2:path) => {

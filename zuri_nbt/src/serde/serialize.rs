@@ -201,7 +201,7 @@ impl ser::Serializer for Serializer {
 
         let first = iter.next();
         if first.is_none() {
-            return Ok(NBTTag::List(vec![].into()));
+            return Ok(NBTTag::List(Default::default()));
         }
 
         let first: NBTTag = first.unwrap().serialize(Serializer)?;

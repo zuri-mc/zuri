@@ -173,71 +173,55 @@ mod tests {
         input.map.insert("z".to_string(), false);
 
         let output = tag::Compound::builder()
-            .with::<tag::Compound>(
+            .with_compound(
                 "enum0",
                 tag::Compound::builder()
-                    .with::<tag::String>("variant", "Unit".to_string().into())
-                    .with("value", tag::Compound::default())
-                    .build(),
+                    .with_string("variant", "Unit")
+                    .with_compound("value", tag::Compound::default()),
             )
-            .with::<tag::Compound>(
+            .with_compound(
                 "enum1",
                 tag::Compound::builder()
-                    .with::<tag::String>("variant", "Tuple".to_string().into())
-                    .with::<tag::Compound>(
+                    .with_string("variant", "Tuple")
+                    .with_compound(
                         "value",
-                        tag::Compound::builder()
-                            .with::<tag::Byte>("0", 1.into())
-                            .with::<tag::Byte>("1", 2.into())
-                            .build(),
-                    )
-                    .build(),
+                        tag::Compound::builder().with_byte("0", 1).with_byte("1", 2),
+                    ),
             )
-            .with::<tag::Compound>(
+            .with_compound(
                 "option0",
                 tag::Compound::builder()
-                    .with::<tag::String>("variant", "Some".to_string().into())
-                    .with::<tag::String>("value", "hi".to_string().into())
-                    .build(),
+                    .with_string("variant", "Some")
+                    .with_string("value", "hi"),
             )
-            .with::<tag::Compound>(
+            .with_compound(
                 "option1",
                 tag::Compound::builder()
-                    .with::<tag::String>("variant", "None".to_string().into())
-                    .with::<tag::Compound>("value", tag::Compound::default())
-                    .build(),
+                    .with_string("variant", "None")
+                    .with_compound("value", tag::Compound::default()),
             )
-            .with::<tag::Compound>(
+            .with_compound(
                 "map",
                 tag::Compound::builder()
-                    .with::<tag::Byte>("x", 1.into())
-                    .with::<tag::Byte>("y", 0.into())
-                    .with::<tag::Byte>("z", 0.into())
-                    .build(),
+                    .with_byte("x", 1)
+                    .with_byte("y", 0)
+                    .with_byte("z", 0),
             )
-            .with::<tag::Compound>(
+            .with_compound(
                 "tuple",
                 tag::Compound::builder()
-                    .with::<tag::String>("0", "Test".to_string().into())
-                    .with::<tag::Byte>("1", 1.into())
-                    .with::<tag::Long>("2", 2.into())
-                    .build(),
+                    .with_string("0", "Test")
+                    .with_byte("1", 1)
+                    .with_long("2", 2),
             )
-            .with::<tag::Int>("test", 7.into())
-            .with::<tag::ByteArray>("vec0", vec![1, 4, 6, 1].into())
-            .with::<tag::List>(
+            .with_int("test", 7)
+            .with_byte_array("vec0", vec![1, 4, 6, 1])
+            .with_list(
                 "vec1",
-                vec![
-                    NBTTag::Short(1.into()),
-                    NBTTag::Short(4.into()),
-                    NBTTag::Short(6.into()),
-                    NBTTag::Short(1.into()),
-                ]
-                .into(),
+                vec![tag::Short(1), tag::Short(4), tag::Short(6), tag::Short(1)],
             )
-            .with::<tag::IntArray>("vec2", vec![1, 4, 6, 1].into())
-            .build();
-        let output = NBTTag::Compound(output.into());
+            .with_int_array("vec2", vec![1, 4, 6, 1]);
+        let output = NBTTag::Compound(output.build());
 
         let deserialized = deserialize::<ExampleStruct>(&output)
             .unwrap_or_else(|err| panic!("Could not deserialize: {}", err));

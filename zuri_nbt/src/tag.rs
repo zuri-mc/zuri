@@ -1,6 +1,7 @@
 //! Contains all NBT tags.
-use crate::NBTTag;
 use std::collections::HashMap;
+
+use crate::NBTTag;
 
 /// An 8-bit unsigned integer.
 #[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
@@ -59,13 +60,22 @@ pub struct LongArray(pub Vec<i64>);
 
 /// Contains utilities for the [Compound] NBT tag.
 pub mod compound {
-    use crate::NBTTag;
+    use crate::{tag, NBTTag};
 
     /// Allows for a more ergonomic way of creating NBT compound tags.
     #[must_use]
     #[derive(Debug, Default)]
     pub struct Builder {
         value: super::Compound,
+    }
+
+    impl super::Compound {
+        /// Returns a new builder object to create a compound tag.
+        pub fn builder() -> Builder {
+            Builder {
+                value: Default::default(),
+            }
+        }
     }
 
     impl Builder {
@@ -86,14 +96,95 @@ pub mod compound {
             self.value.0.insert(key.into(), value.into());
             self
         }
+
+        /// Inserts a [tag::Byte] into the builder under the provided key.
+        ///
+        /// Panics when inserting with a key that already exists.
+        pub fn with_byte(self, key: impl Into<String>, v: impl Into<tag::Byte>) -> Self {
+            self.with(key, v.into())
+        }
+
+        /// Inserts a [tag::Short] into the builder under the provided key.
+        ///
+        /// Panics when inserting with a key that already exists.
+        pub fn with_short(self, key: impl Into<String>, v: impl Into<tag::Short>) -> Self {
+            self.with(key, v.into())
+        }
+
+        /// Inserts a [tag::Int] into the builder under the provided key.
+        ///
+        /// Panics when inserting with a key that already exists.
+        pub fn with_int(self, key: impl Into<String>, v: impl Into<tag::Int>) -> Self {
+            self.with(key, v.into())
+        }
+
+        /// Inserts a [tag::Long] into the builder under the provided key.
+        ///
+        /// Panics when inserting with a key that already exists.
+        pub fn with_long(self, key: impl Into<String>, v: impl Into<tag::Long>) -> Self {
+            self.with(key, v.into())
+        }
+
+        /// Inserts a [tag::Float] into the builder under the provided key.
+        ///
+        /// Panics when inserting with a key that already exists.
+        pub fn with_float(self, key: impl Into<String>, v: impl Into<tag::Float>) -> Self {
+            self.with(key, v.into())
+        }
+
+        /// Inserts a [tag::Double] into the builder under the provided key.
+        ///
+        /// Panics when inserting with a key that already exists.
+        pub fn with_double(self, key: impl Into<String>, v: impl Into<tag::Double>) -> Self {
+            self.with(key, v.into())
+        }
+
+        /// Inserts a [tag::String] into the builder under the provided key.
+        ///
+        /// Panics when inserting with a key that already exists.
+        pub fn with_string(self, key: impl Into<String>, v: impl Into<tag::String>) -> Self {
+            self.with(key, v.into())
+        }
+
+        /// Inserts a [tag::Compound] into the builder under the provided key.
+        ///
+        /// Panics when inserting with a key that already exists.
+        pub fn with_compound(self, key: impl Into<String>, v: impl Into<tag::Compound>) -> Self {
+            self.with(key, v.into())
+        }
+
+        /// Inserts a [tag::List] into the builder under the provided key.
+        ///
+        /// Panics when inserting with a key that already exists.
+        pub fn with_list(self, key: impl Into<String>, v: impl Into<tag::List>) -> Self {
+            self.with(key, v.into())
+        }
+
+        /// Inserts a [tag::ByteArray] into the builder under the provided key.
+        ///
+        /// Panics when inserting with a key that already exists.
+        pub fn with_byte_array(self, key: impl Into<String>, v: impl Into<tag::ByteArray>) -> Self {
+            self.with(key, v.into())
+        }
+
+        /// Inserts a [tag::IntArray] into the builder under the provided key.
+        ///
+        /// Panics when inserting with a key that already exists.
+        pub fn with_int_array(self, key: impl Into<String>, v: impl Into<tag::IntArray>) -> Self {
+            self.with(key, v.into())
+        }
+
+        /// Inserts a [tag::LongArray] into the builder under the provided key.
+        ///
+        /// Panics when inserting with a key that already exists.
+        pub fn with_long_array(self, key: impl Into<String>, v: impl Into<tag::LongArray>) -> Self {
+            self.with(key, v.into())
+        }
     }
 
-    impl super::Compound {
-        /// Returns a new builder object to create a compound tag.
-        pub fn builder() -> Builder {
-            Builder {
-                value: Default::default(),
-            }
+    impl Into<tag::Compound> for Builder {
+        fn into(self) -> tag::Compound {
+            self.build()
         }
     }
 }
