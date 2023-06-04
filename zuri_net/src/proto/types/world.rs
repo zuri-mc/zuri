@@ -3,7 +3,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use num_traits::{FromPrimitive, ToPrimitive};
 
 use zuri_nbt::encoding::NetworkLittleEndian;
-use zuri_nbt::Value;
+use zuri_nbt::NBTTag;
 use zuri_net_derive::proto;
 
 use crate::proto::ints::{VarI32, VarI64, VarU32, VarU64};
@@ -108,7 +108,7 @@ pub enum UpdateBlockTransition {
 #[derive(Debug, Clone)]
 pub struct BlockEntry {
     pub name: String,
-    pub properties: Value,
+    pub properties: NBTTag,
 }
 
 impl BlockEntry {
