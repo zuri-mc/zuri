@@ -34,6 +34,7 @@ encodable_enum!(
         //CodeBuilderScoreboard = 27, todo
         //StriderRiddenInLavaInOverworld = 28, todo
         SneakCloseToSculkSensor = 29,
+        CarefulRestoration = 30,
     }
 );
 
@@ -524,6 +525,17 @@ impl PortalUsed {
 pub struct SneakCloseToSculkSensor {}
 
 impl SneakCloseToSculkSensor {
+    pub fn read(_reader: &mut Reader) -> Self {
+        Self {}
+    }
+
+    pub fn write(&self, _: &mut Writer) {}
+}
+
+#[derive(Debug, Clone)]
+pub struct CarefulRestoration;
+
+impl CarefulRestoration {
     pub fn read(_reader: &mut Reader) -> Self {
         Self {}
     }

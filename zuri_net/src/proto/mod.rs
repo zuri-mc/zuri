@@ -4,5 +4,5 @@ mod r#macro;
 pub mod packet;
 pub mod types;
 
-pub const CURRENT_PROTOCOL: i32 = 582;
-pub const CURRENT_VERSION: &str = "1.19.80";
+pub const CURRENT_PROTOCOL: i32 = 589;
+pub const CURRENT_VERSION: &str = "1.20.0";

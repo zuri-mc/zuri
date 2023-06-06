@@ -231,7 +231,12 @@ pub struct StartGame {
     /// Specifies if the client should use the features registered in the FeatureRegistry packet to
     /// generate terrain client-side to save on bandwidth.
     pub client_side_generation: bool,
+    /// Whether the client should use the hash of a block's name as its network ID rather than its
+    /// index in the expected block palette. This is useful for servers that wish to support
+    /// multiple protocol versions and custom blocks, but it will result in extra bytes being
+    /// written for every block in a sub chunk palette.
     pub use_block_network_id_hashes: bool,
+    pub server_authorative_sound: bool,
 }
 
 #[proto(i16)]
