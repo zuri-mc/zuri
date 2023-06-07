@@ -1,5 +1,4 @@
 use crate::proto::ints::VarU64;
-use crate::proto::io::{Readable, Writable};
 use crate::proto::types::event::EventType;
 use zuri_net_derive::proto;
 

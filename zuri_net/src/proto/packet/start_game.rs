@@ -236,6 +236,7 @@ pub struct StartGame {
     /// multiple protocol versions and custom blocks, but it will result in extra bytes being
     /// written for every block in a sub chunk palette.
     pub use_block_network_id_hashes: bool,
+    /// The use for this field is currently unknown.
     pub server_authorative_sound: bool,
 }
 
