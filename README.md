@@ -1,6 +1,6 @@
 # Zuri
 The original idea behind zuri is to create a minecraft-compatible client in rust that is able to connect to any
-**Minecraft: Bedrock Edition** server and that works accross macOS, Windows and Linux. To accomplish this, another goal
+**Minecraft: Bedrock Edition** server and that works across macOS, Windows and Linux. To accomplish this, another goal
 is to maintain high-quality crates related to MCBE which can also be found in this repository.
 
 Zuri has a discord server: [https://discord.gg/nCcxasYzbX](). Feel free to come ask questions!

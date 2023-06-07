@@ -435,4 +435,8 @@ pub enum SoundEvent {
     BrushCompleted,
     ShatterDecoratedPot,
     BreakDecoratedPot,
+    SnifferEggCrack,
+    SnifferEggHatched,
+    WaxedSignInteractFail,
+    RecordRelic,
 }
