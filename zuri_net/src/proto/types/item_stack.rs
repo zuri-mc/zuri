@@ -7,7 +7,7 @@ use zuri_nbt::{encoding::NetworkLittleEndian, NBTTag};
 use zuri_net_derive::proto;
 
 use crate::encodable_enum;
-use crate::proto::ints::VarU32;
+use crate::proto::ints::{VarI32, VarU32};
 use crate::proto::io::{Readable, Reader, Writable, Writer};
 use crate::proto::types::item::ItemStack;
 use crate::proto::types::item_descriptor::ItemDescriptorCount;
@@ -68,8 +68,10 @@ impl Default for StackRequestAction {
     }
 }
 
-#[derive(Debug, FromPrimitive, ToPrimitive)]
+#[proto(i32)]
+#[derive(Debug, Copy, Clone, Default)]
 pub enum FilterCause {
+    #[default]
     ServerChatPublic,
     ServerChatWhisper,
     SignText,
@@ -81,9 +83,9 @@ pub enum FilterCause {
     LeaveEventText,
     SlashCommandChat,
     CartographyText,
-    SlashCommandNonChat,
-    ScoreboardText,
-    TickingAreaText,
+    KickCommand,
+    TitleCommand,
+    SummonCommand,
 }
 
 #[derive(Debug, Clone, PartialEq, FromPrimitive, ToPrimitive)]
@@ -188,38 +190,15 @@ impl ItemEntry {
     }
 }
 
+#[proto]
 #[derive(Debug, Clone, Default)]
 pub struct ItemStackRequestEntry {
-    pub request_id: i32,
+    pub request_id: VarI32,
+    #[len_type(VarU32)]
     pub actions: Vec<StackRequestAction>,
+    #[len_type(VarU32)]
     pub filter_strings: Vec<String>,
-    pub filter_cause: i32,
-}
-
-impl ItemStackRequestEntry {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_i32(self.request_id);
-        writer.var_u32(self.actions.len() as u32);
-        self.actions.iter().for_each(|action| {
-            action.write(writer);
-        });
-        writer.var_u32(self.filter_strings.len() as u32);
-        self.filter_strings
-            .iter()
-            .for_each(|filter_string| writer.string(filter_string.as_str()));
-        writer.i32(self.filter_cause);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            request_id: reader.var_i32(),
-            actions: (0..reader.var_u32())
-                .map(|_| StackRequestAction::read(reader))
-                .collect(),
-            filter_strings: (0..reader.var_u32()).map(|_| reader.string()).collect(),
-            filter_cause: reader.i32(),
-        }
-    }
+    pub filter_cause: FilterCause,
 }
 
 #[derive(Debug, Clone)]
