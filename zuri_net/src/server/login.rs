@@ -285,6 +285,7 @@ impl Sequence<Result<(), LoginError>> for LoginSequence {
             world_template_id: Default::default(),
             client_side_generation: false,
             use_block_network_id_hashes: false,
+            server_authorative_sound: false,
         }))
         .await;
         conn.flush().await?;
