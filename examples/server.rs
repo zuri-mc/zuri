@@ -1,13 +1,24 @@
 use std::net::{IpAddr, SocketAddr};
 use tokio::time;
 use tokio::time::sleep;
-use zuri_net::server::Listener;
+use zuri_net::server::{Edition, Listener, Motd};
 
 #[tokio::main]
 async fn main() {
     // todo: remove temporary test
     let addr = SocketAddr::new(IpAddr::from([0, 0, 0, 0]), 19132);
-    let mut l = Listener::listen(&addr).await.unwrap();
+    let l = Listener::listen(
+        &addr,
+        &Motd {
+            edition: Edition::Bedrock,
+            local_motd: "Zuri".to_string(),
+            motd: "Zuri Server".to_string(),
+            player_count: 0,
+            max_player_count: 1234,
+        },
+    )
+    .await
+    .unwrap();
     while let Some(conn) = l.accept().await {
         match conn {
             Ok(conn) => {
