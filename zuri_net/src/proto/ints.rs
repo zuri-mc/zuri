@@ -209,9 +209,9 @@ impl From<i32> for I32BE {
     }
 }
 
-impl Into<i32> for I32BE {
-    fn into(self) -> i32 {
-        self.0
+impl From<I32BE> for i32 {
+    fn from(value: I32BE) -> Self {
+        value.0
     }
 }
 

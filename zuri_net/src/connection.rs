@@ -69,8 +69,8 @@ impl Connection {
             .encoder
             .lock()
             .await
-            .encode(&mut *batch_mu)
-            .map_err(|s| ConnError::EncodeError(s))?;
+            .encode(&mut batch_mu)
+            .map_err(ConnError::EncodeError)?;
         batch_mu.clear();
         drop(batch_mu);
 
@@ -98,13 +98,13 @@ impl Connection {
     }
 
     async fn read_next_batch(&self) -> Result<Vec<Packet>, ConnError> {
-        let encoded = self.socket.recv().await?;
+        let mut encoded = self.socket.recv().await?;
         let batch = self
             .encoder
             .lock()
             .await
-            .decode(&mut encoded.into())
-            .map_err(|e| ConnError::DecodeError(e))?;
+            .decode(&mut encoded)
+            .map_err(ConnError::DecodeError)?;
 
         let mut packets = Vec::with_capacity(batch.len());
         for buf in batch {

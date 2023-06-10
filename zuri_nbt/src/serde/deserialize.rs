@@ -559,7 +559,7 @@ impl<'de> de::MapAccess<'de> for CompoundAccess<'de> {
             err
         })?);
         self.next_value = None;
-        return res;
+        res
     }
 
     fn next_entry_seed<K, V>(

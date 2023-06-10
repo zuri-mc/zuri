@@ -28,7 +28,7 @@ impl Encoder {
     pub fn encode(&mut self, batch: &mut Vec<Vec<u8>>) -> Result<Vec<u8>, String> {
         let mut batch_writer = Writer::new(0);
         for packet in batch {
-            batch_writer.byte_slice(&packet);
+            batch_writer.byte_slice(packet);
         }
 
         let mut batch: Vec<u8> = batch_writer.into();
@@ -45,7 +45,7 @@ impl Encoder {
 
     pub fn decode(&mut self, batch: &mut Vec<u8>) -> Result<Vec<Vec<u8>>, String> {
         if batch.is_empty() {
-            return Err(format!("expected populated batch, got empty batch"));
+            return Err("expected populated batch, got empty batch".to_string());
         }
         if batch[0] != PACKET_HEADER {
             return Err(format!(
@@ -64,7 +64,7 @@ impl Encoder {
 
         let mut packets = Vec::new();
         let mut batch_reader = Reader::from_buf(Bytes::from(batch.clone()), 0);
-        while batch_reader.len() > 0 {
+        while !batch_reader.is_empty() {
             packets.push(batch_reader.byte_slice().to_vec());
         }
 

@@ -64,6 +64,7 @@ struct ClientWaiter {
 }
 
 /// Temporary system responsible for starting the thread which handles the login sequence.
+#[allow(clippy::unnecessary_to_owned)] // `verification_uri` doesnt actually implement display.
 fn init_client(world: &mut World) {
     let address = env::var("zuri_ip").unwrap_or("127.0.0.1:19132".into());
 
@@ -181,6 +182,7 @@ fn receive_packets(world: &mut World) {
                     }
                 }
             }
+            #[allow(clippy::match_single_binding)]
             Ok(pk) => match pk {
                 _ => {
                     warn!("Unhandled packet {pk}");

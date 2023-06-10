@@ -93,7 +93,7 @@ impl Chunk {
                         normals.push([0., -1., 0.]);
 
                         // Down 1
-                        triangles.push(start_index + 0);
+                        triangles.push(start_index);
                         triangles.push(start_index + 1);
                         triangles.push(start_index + 2);
                         // Down 2
@@ -122,7 +122,7 @@ impl Chunk {
                         // Up 1
                         triangles.push(start_index + 2);
                         triangles.push(start_index + 1);
-                        triangles.push(start_index + 0);
+                        triangles.push(start_index);
                         // Up 2
                         triangles.push(start_index + 3);
                         triangles.push(start_index + 1);
@@ -148,7 +148,7 @@ impl Chunk {
 
                         triangles.push(start_index + 2);
                         triangles.push(start_index + 1);
-                        triangles.push(start_index + 0);
+                        triangles.push(start_index);
 
                         triangles.push(start_index + 3);
                         triangles.push(start_index + 1);
@@ -171,7 +171,7 @@ impl Chunk {
                         normals.push([0., 0., 1.0]);
                         normals.push([0., 0., 1.0]);
                         normals.push([0., 0., 1.0]);
-                        triangles.push(start_index + 0);
+                        triangles.push(start_index);
                         triangles.push(start_index + 1);
                         triangles.push(start_index + 2);
 
@@ -199,7 +199,7 @@ impl Chunk {
 
                         triangles.push(start_index + 2);
                         triangles.push(start_index + 1);
-                        triangles.push(start_index + 0);
+                        triangles.push(start_index);
 
                         triangles.push(start_index + 3);
                         triangles.push(start_index + 1);
@@ -223,7 +223,7 @@ impl Chunk {
                         normals.push([-1., 0., 0.]);
                         normals.push([-1., 0., 0.]);
 
-                        triangles.push(start_index + 0);
+                        triangles.push(start_index);
                         triangles.push(start_index + 1);
                         triangles.push(start_index + 2);
 
@@ -255,7 +255,7 @@ impl Chunk {
         }
         !self.at(ChunkPos::new(
             (x as i8 + x_off) as u8,
-            (y + y_off) as i16,
+            y + y_off,
             (z as i8 + z_off) as u8,
         ))
     }

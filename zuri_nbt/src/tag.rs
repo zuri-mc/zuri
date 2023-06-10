@@ -93,7 +93,7 @@ pub mod compound {
             if let Some(val) = self.value.0.get(&key) {
                 panic!("trying to overwrite key `{key}` that has value: {val:?}",);
             }
-            self.value.0.insert(key.into(), value.into());
+            self.value.0.insert(key, value.into());
             self
         }
 
@@ -182,9 +182,9 @@ pub mod compound {
         }
     }
 
-    impl Into<tag::Compound> for Builder {
-        fn into(self) -> tag::Compound {
-            self.build()
+    impl From<Builder> for tag::Compound {
+        fn from(value: Builder) -> Self {
+            value.build()
         }
     }
 }

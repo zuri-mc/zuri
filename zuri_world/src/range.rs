@@ -39,8 +39,8 @@ impl YRange {
     }
 }
 
-impl Into<Range<i16>> for YRange {
-    fn into(self) -> Range<i16> {
-        self.min..self.max
+impl From<YRange> for Range<i16> {
+    fn from(value: YRange) -> Self {
+        value.min()..value.max()
     }
 }

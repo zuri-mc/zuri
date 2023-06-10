@@ -123,7 +123,7 @@ fn obtain_xbl_token(
     let token_request = LiveTokenRequest {
         access_token: format!("t={}", live_token.access_token().secret()),
         app_id: "0000000048183522".into(),
-        proof_key: ProofKey::new(&key),
+        proof_key: ProofKey::new(key),
         relying_party,
         sandbox: "RETAIL".into(),
         site_name: "user.auth.xboxlive.com".into(),
@@ -179,7 +179,7 @@ fn obtain_device_token(key: &SecretKey) -> String {
             auth_method: "ProofOfPossession".into(),
             device_type: "Android".into(),
             id: format!("{{{}}}", Uuid::new_v4()),
-            proof_key: ProofKey::new(&key),
+            proof_key: ProofKey::new(key),
             version: "10".into(),
         },
     };
@@ -249,19 +249,19 @@ fn sign(request: &ureq::Request, body: &Vec<u8>, signing_key: SigningKey) -> Str
 
     // The HTTP method along with a null terminator.
     digest.update(request.method().as_bytes());
-    digest.update(&[0]);
+    digest.update([0]);
 
     // The relative path of the request along with a null terminator.
     digest.update(request.request_url().unwrap().path());
-    digest.update(&[0]);
+    digest.update([0]);
 
     // The authorization header of the request along with a null terminator.
     digest.update(request.header("authorization").unwrap_or("").as_bytes());
-    digest.update(&[0]);
+    digest.update([0]);
 
     // The body of the request along with a null terminator.
     digest.update(body);
-    digest.update(&[0]);
+    digest.update([0]);
 
     // Sign the digest using the given ECDSA P256 signing key.
     let signature = signing_key.sign_prehash(&digest.finalize()).unwrap();

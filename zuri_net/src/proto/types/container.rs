@@ -127,14 +127,14 @@ pub enum ContainerType {
 #[derive(Debug, Clone)]
 pub struct ContainerDataKey(pub i32);
 
-impl Into<ContainerDataKey> for ContainerDataFurnace {
-    fn into(self) -> ContainerDataKey {
-        ContainerDataKey(self.to_i32().unwrap())
+impl From<ContainerDataFurnace> for ContainerDataKey {
+    fn from(value: ContainerDataFurnace) -> Self {
+        Self(value.to_i32().unwrap())
     }
 }
 
-impl Into<ContainerDataKey> for ContainerDataBrewingStand {
-    fn into(self) -> ContainerDataKey {
-        ContainerDataKey(self.to_i32().unwrap())
+impl From<ContainerDataBrewingStand> for ContainerDataKey {
+    fn from(value: ContainerDataBrewingStand) -> Self {
+        Self(value.to_i32().unwrap())
     }
 }

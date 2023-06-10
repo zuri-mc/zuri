@@ -17,9 +17,9 @@ impl From<Vec3> for BlockPos {
     }
 }
 
-impl Into<Vec3> for BlockPos {
-    fn into(self) -> Vec3 {
-        Vec3::new(self.x as f32, self.y as f32, self.z as f32)
+impl From<BlockPos> for Vec3 {
+    fn from(value: BlockPos) -> Self {
+        Vec3::new(value.x as f32, value.y as f32, value.z as f32)
     }
 }
 

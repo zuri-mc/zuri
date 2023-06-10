@@ -183,9 +183,9 @@ impl Reader for NetworkLittleEndian {
                 return Ok(if v & 1 != 0 { -x } else { x });
             }
         }
-        return Err(ErrorPath::new(ReadError::Custom(
+        Err(ErrorPath::new(ReadError::Custom(
             "varint overflows integer".to_string(),
-        )));
+        )))
     }
 
     fn i64(&mut self, buf: &mut impl Buf) -> decode::Res<i64> {
@@ -202,9 +202,9 @@ impl Reader for NetworkLittleEndian {
                 return Ok(if v & 1 != 0 { -x } else { x });
             }
         }
-        return Err(ErrorPath::new(ReadError::Custom(
+        Err(ErrorPath::new(ReadError::Custom(
             "varint overflows integer".to_string(),
-        )));
+        )))
     }
 
     fn f32(&mut self, buf: &mut impl Buf) -> decode::Res<f32> {
@@ -248,7 +248,7 @@ impl Reader for NetworkLittleEndian {
             );
         }
 
-        Ok(String::from_utf8(str_buf).map_err(|err| ErrorPath::new(ReadError::from(err)))?)
+        String::from_utf8(str_buf).map_err(|err| ErrorPath::new(ReadError::from(err)))
     }
 }
 

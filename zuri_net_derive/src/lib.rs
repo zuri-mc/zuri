@@ -312,7 +312,7 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
 
                 if let Type::Path(path) = field_type {
                     let last = path.path.segments.last().unwrap();
-                    if last.ident.to_string() == "Vec" {
+                    if last.ident == "Vec" {
                         let len_var_name = format_ident!("_{}_len", field_ident);
 
                         // In this case, the vector's length has not yet been written, so we should
@@ -366,8 +366,7 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                     error_stream.append_all(quote_spanned!(vec_type.unwrap().0=> compile_error!("the `len_type` attribute is only allowed on vectors");));
                 }
 
-                if enum_type.is_some() {
-                    let et = enum_type.unwrap().1;
+                if let Some((_, et)) = enum_type {
                     write_stream.append_all(quote!(<#field_type as crate::proto::io::EnumWritable<#et>>::write(&self.#field_ident, writer);));
                     read_body_stream.append_all(quote!(let mut #field_ident = <#field_type as crate::proto::io::EnumReadable<#field_type, #et>>::read(reader);));
                 } else {

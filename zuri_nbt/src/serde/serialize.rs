@@ -257,7 +257,7 @@ impl ser::Serializer for Serializer {
 
                 Ok(NBTTag::LongArray(list.into()))
             }
-            v @ _ => {
+            v => {
                 let tag_id = v.tag_id();
 
                 let mut list = vec![v];

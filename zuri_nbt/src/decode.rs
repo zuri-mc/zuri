@@ -58,7 +58,7 @@ pub trait Reader {
             );
         }
 
-        Ok(String::from_utf8(str_buf).map_err(|err| ErrorPath::new(ReadError::from(err)))?)
+        String::from_utf8(str_buf).map_err(|err| ErrorPath::new(ReadError::from(err)))
     }
 
     /// Reads variable-length array of 8-bit unsigned integers.

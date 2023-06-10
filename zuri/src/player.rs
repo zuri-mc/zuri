@@ -15,6 +15,7 @@ impl Plugin for LocalPlayerPlugin {
 #[derive(Component)]
 pub struct Local;
 
+#[allow(clippy::type_complexity)]
 fn move_system(
     time: Res<Time>,
     input: Res<ClientInput>,
@@ -43,6 +44,7 @@ fn move_system(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn camera_sync_system(
     player_query: Query<(&Transform, &Head), (With<Local>, Without<Camera3d>)>,
     mut cam_query: Query<&mut Transform, With<Camera3d>>,
