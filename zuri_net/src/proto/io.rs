@@ -140,8 +140,10 @@ impl Writer {
         self.buf.put_f32_le(x)
     }
 
+    const BYTE_F32_DIV: f32 = 360.0 / 256.0;
+
     pub fn byte_f32(&mut self, x: f32) {
-        self.u8((x / (360.0 / 256.0)) as u8)
+        self.u8((x / Self::BYTE_F32_DIV) as u8)
     }
 
     pub fn bool(&mut self, x: bool) {
@@ -509,8 +511,10 @@ impl Reader {
         self.buf.get_f32_le()
     }
 
+    const BYTE_F32_MUL: f32 = 360. / 256.;
+
     pub fn byte_f32(&mut self) -> f32 {
-        (self.u8() as f32) * (360. / 256.)
+        (self.u8() as f32) * Self::BYTE_F32_MUL
     }
 
     pub fn bool(&mut self) -> bool {
