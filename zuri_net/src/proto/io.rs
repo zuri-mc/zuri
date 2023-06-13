@@ -10,6 +10,10 @@ use zuri_nbt::{decode, encode, NBTTag};
 
 use crate::proto::types::entity_data::{EntityDataEntry, EntityDataType};
 
+const BYTE_F32_FACTOR:f32 = 1.40625;
+
+
+
 #[derive(Default)]
 pub struct Writer {
     buf: BytesMut,
@@ -140,10 +144,8 @@ impl Writer {
         self.buf.put_f32_le(x)
     }
 
-    const BYTE_F32_DIV: f32 = 360.0 / 256.0;
-
     pub fn byte_f32(&mut self, x: f32) {
-        self.u8((x / Self::BYTE_F32_DIV) as u8)
+        self.u8((x / BYTE_F32_FACTOR) as u8)
     }
 
     pub fn bool(&mut self, x: bool) {
@@ -511,10 +513,9 @@ impl Reader {
         self.buf.get_f32_le()
     }
 
-    const BYTE_F32_MUL: f32 = 360. / 256.;
 
     pub fn byte_f32(&mut self) -> f32 {
-        (self.u8() as f32) * Self::BYTE_F32_MUL
+        (self.u8() as f32) * BYTE_F32_FACTOR
     }
 
     pub fn bool(&mut self) -> bool {
