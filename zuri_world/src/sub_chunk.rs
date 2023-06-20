@@ -2,6 +2,8 @@ use crate::paletted_storage::{Palette, PalettedStorage};
 use crate::pos::SubChunkIndex;
 use zuri_net::proto::io::Reader;
 
+pub const SUBCHUNK_SIZE: u16 = 16;
+
 /// A 16x16x16 area that makes up part of a world chunk.
 /// It consists of `L` layers which are used for things like waterlogged blocks.
 #[derive(Clone)]

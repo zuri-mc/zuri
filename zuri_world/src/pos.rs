@@ -1,3 +1,4 @@
+use crate::sub_chunk::SUBCHUNK_SIZE;
 use bevy::prelude::*;
 
 /// A block position relative to the origin of a chunk. The x and z coordinates are always
@@ -34,9 +35,9 @@ impl From<IVec3> for ChunkIndex {
     #[inline]
     fn from(value: IVec3) -> Self {
         Self {
-            x: (value.x.rem_euclid(16)) as u8,
+            x: (value.x.rem_euclid(SUBCHUNK_SIZE as i32)) as u8,
             y: value.y as i16,
-            z: (value.z.rem_euclid(16)) as u8,
+            z: (value.z.rem_euclid(SUBCHUNK_SIZE as i32)) as u8,
         }
     }
 }
@@ -76,9 +77,9 @@ impl From<IVec3> for SubChunkIndex {
     #[inline]
     fn from(value: IVec3) -> Self {
         Self {
-            x: (value.x.rem_euclid(16)) as u8,
-            y: (value.y.rem_euclid(16)) as u8,
-            z: (value.z.rem_euclid(16)) as u8,
+            x: (value.x.rem_euclid(SUBCHUNK_SIZE as i32)) as u8,
+            y: (value.y.rem_euclid(SUBCHUNK_SIZE as i32)) as u8,
+            z: (value.z.rem_euclid(SUBCHUNK_SIZE as i32)) as u8,
         }
     }
 }
@@ -88,7 +89,7 @@ impl From<ChunkIndex> for SubChunkIndex {
     fn from(value: ChunkIndex) -> Self {
         Self {
             x: value.x,
-            y: (value.y.rem_euclid(16)) as u8,
+            y: (value.y.rem_euclid(SUBCHUNK_SIZE as i16)) as u8,
             z: value.z,
         }
     }

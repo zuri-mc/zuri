@@ -172,12 +172,16 @@ fn send_packets(mut packets: ResMut<Events<Packet>>, chan: Option<NonSend<Sender
 /// Receives the packets read by the packet reader thread and sends them as an event so it can be
 /// handled by the ECS. Should run on the main thread due to tokio.
 fn receive_packets(world: &mut World) {
-    let mut opt_chan = world.get_non_send_resource_mut::<Receiver<Packet>>();
-    if opt_chan.is_none() {
+    if world.get_non_send_resource::<Receiver<Packet>>().is_none() {
         return;
     }
     loop {
-        match opt_chan.as_mut().unwrap().try_recv() {
+        match world
+            .get_non_send_resource_mut::<Receiver<Packet>>()
+            .as_mut()
+            .unwrap()
+            .try_recv()
+        {
             Err(err) => {
                 return match err {
                     TryRecvError::Empty => {}

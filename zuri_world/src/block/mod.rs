@@ -1,16 +1,14 @@
-use bevy::app::AppLabel;
 use std::any::TypeId;
 use std::borrow::Borrow;
 use std::collections::{BTreeMap, HashMap};
 use std::fmt::{Display, Formatter, Write};
 use std::hash::{Hash, Hasher};
-use std::ops::{Deref, Index};
+use std::ops::Deref;
 
 use bevy::prelude::{Mesh, Resource};
 use bevy::render::mesh::PrimitiveTopology;
 use bevy_render::mesh::Indices;
 use bevy_render::render_resource::encase::private::RuntimeSizedArray;
-use json::JsonValue;
 
 pub use builder::BlockMapBuilder;
 
@@ -287,7 +285,7 @@ impl<'a> Iterator for BlockTypeIterator<'a> {
             .properties
             .iter()
             .cloned()
-            .map(|(value, value_count)| value)
+            .map(|(value, _value_count)| value)
             .collect();
         for (i, (value, value_count)) in self.properties.iter_mut().enumerate().rev() {
             *value += 1;

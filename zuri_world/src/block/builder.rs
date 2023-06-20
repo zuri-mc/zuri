@@ -29,7 +29,7 @@ impl BlockMapBuilder {
     /// Add a new block type to the builder.
     ///
     /// Panics if the builder already has a block with the same unique identifier as the new block.
-    pub fn with_block(mut self, mut b: BlockType) -> Self {
+    pub fn with_block(mut self, b: BlockType) -> Self {
         if self.blocks.contains(b.identifier.as_ref()) {
             panic!(
                 "Identifier `{}` is already present in builder",

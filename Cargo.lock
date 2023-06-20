@@ -4818,6 +4818,7 @@ dependencies = [
  "tokio",
  "uuid",
  "zuri_math",
+ "zuri_nbt",
  "zuri_net",
  "zuri_world",
  "zuri_xbox",
@@ -4849,7 +4850,6 @@ dependencies = [
  "aes-ctr",
  "async-trait",
  "base64ct",
- "bevy",
  "bytes",
  "chrono",
  "cipher 0.4.3",
@@ -4892,6 +4892,12 @@ name = "zuri_world"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_render",
+ "downcast-rs",
+ "fnv",
+ "json",
+ "zuri_nbt",
+ "zuri_net",
 ]
 
 [[package]]
