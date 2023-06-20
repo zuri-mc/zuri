@@ -4912,6 +4912,7 @@ dependencies = [
  "bevy_render",
  "downcast-rs",
  "fnv",
+ "json",
  "zuri_nbt",
  "zuri_net",
 ]

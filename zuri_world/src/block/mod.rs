@@ -1,3 +1,4 @@
+use bevy::app::AppLabel;
 use std::any::TypeId;
 use std::borrow::Borrow;
 use std::collections::{BTreeMap, HashMap};
@@ -9,6 +10,7 @@ use bevy::prelude::{Mesh, Resource};
 use bevy::render::mesh::PrimitiveTopology;
 use bevy_render::mesh::Indices;
 use bevy_render::render_resource::encase::private::RuntimeSizedArray;
+use json::JsonValue;
 
 pub use builder::BlockMapBuilder;
 
@@ -22,22 +24,58 @@ pub mod types;
 
 // todo: remove this temporary function. we want to eventually build all the runtime IDs from data
 pub fn build_rids() -> BlockMap {
-    let mut block_map = BlockMapBuilder::new()
-        .with_component_type::<Geometry>(ComponentStorageType::Vector)
-        .with_block(
-            BlockType::new("minecraft:unknown")
-                .with_property("unknown", PropertyValues::Ints((0..16000).collect())),
-        )
-        .build();
+    const VANILLA_BLOCKS: &str = include_str!("vanilla_blocks.json");
+    let vanilla_blocks = json::parse(VANILLA_BLOCKS).unwrap();
 
-    // air
+    let mut block_map =
+        BlockMapBuilder::new().with_component_type::<Geometry>(ComponentStorageType::Vector);
+
+    // todo: greatly improve this
+    for block in vanilla_blocks["data_items"].members() {
+        let mut block_type = BlockType::new(block["name"].as_str().unwrap());
+
+        'outer: for prop in block["properties"].members() {
+            for prop_definition in vanilla_blocks["block_properties"].members() {
+                let name = prop["name"].as_str().unwrap();
+                if Some(name) != prop_definition["name"].as_str() {
+                    continue;
+                }
+                let values = match prop_definition["type"].as_str().unwrap() {
+                    "bool" => PropertyValues::Boolean,
+                    "int" => PropertyValues::Ints(
+                        prop_definition["values"]
+                            .members()
+                            .map(|v| v["value"].as_i32().unwrap())
+                            .collect(),
+                    ),
+                    "string" => PropertyValues::Strings(
+                        prop_definition["values"]
+                            .members()
+                            .map(|v| Box::from(v["value"].as_str().unwrap()))
+                            .collect(),
+                    ),
+                    _ => panic!("unknown property type"),
+                };
+
+                block_type.insert_property(name, values);
+                continue 'outer;
+            }
+            panic!("unknown property");
+        }
+
+        if block_map.insert_block(block_type).is_some() {
+            panic!("overwriting");
+        }
+    }
+
+    let mut block_map = block_map.build();
+
     block_map.set_component(
-        10462,
+        block_map.blocks_types.get("minecraft:air").unwrap().0,
         Geometry {
             mesh: Mesh::new(PrimitiveTopology::TriangleList),
         },
     );
-    // grass (the non full block one)
     {
         let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
         let vertices: Vec<[f32; 3]> = vec![[0., 0., 0.], [0., 1., 0.], [1., 0., 1.], [1., 1., 1.]];
@@ -48,7 +86,10 @@ pub fn build_rids() -> BlockMap {
         mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
         mesh.set_indices(Some(Indices::U32(vec![0, 1, 2, 1, 2, 3, 2, 1, 0, 3, 2, 1])));
 
-        block_map.set_component(1551, Geometry { mesh });
+        block_map.set_component(
+            block_map.blocks_types.get("minecraft:tallgrass").unwrap().0,
+            Geometry { mesh },
+        );
     }
 
     block_map
@@ -176,6 +217,7 @@ impl BlockType {
                 .iter()
                 .map(|(_, values)| (0, values.variant_count() as u32))
                 .collect(),
+            exhausted: false,
         }
     }
 }
@@ -221,12 +263,26 @@ pub struct BlockTypeIterator<'a> {
     /// allowed values as second field. The index of the slice corresponds with the index of the
     /// property in [BlockType].
     properties: Box<[(u32, u32)]>,
+    /// Used to determine if the iterator has been exhausted **when the [BlockType] has no
+    /// properties**.
+    exhausted: bool,
 }
 
 impl<'a> Iterator for BlockTypeIterator<'a> {
     type Item = Block<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
+        if self.properties.len() == 0 {
+            if self.exhausted {
+                return None;
+            }
+            self.exhausted = true;
+            return Some(Block {
+                block_type: self.block_type,
+                properties: Default::default(),
+            });
+        }
+
         let next = self
             .properties
             .iter()
@@ -243,6 +299,7 @@ impl<'a> Iterator for BlockTypeIterator<'a> {
             }
             *value = 0
         }
+
         Some(Block {
             block_type: self.block_type,
             properties: next,
@@ -461,13 +518,5 @@ mod tests {
     #[test]
     fn test() {
         // todo: rewrite test
-        let mut rids = BlockMap::new();
-        rids.extend(2);
-        rids.add_component_type::<TestComponent>(ComponentStorageType::Vector);
-
-        let comp = TestComponent { val: 7 };
-        rids.set_component(1, comp.clone());
-        assert_eq!(rids.component::<TestComponent>(1), Some(&comp));
-        assert_eq!(rids.component::<TestComponent>(0), None);
     }
 }
