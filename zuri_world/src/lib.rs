@@ -8,7 +8,7 @@ pub mod chunk;
 mod paletted_storage;
 pub mod pos;
 pub mod range;
-pub mod sub_chunk;
+mod subchunk;
 mod system;
 
 pub struct WorldPlugin;

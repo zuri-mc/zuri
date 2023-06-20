@@ -31,7 +31,7 @@ pub fn request_minecraft_chain(
         .set("user-agent", "MCPE/Android")
         .set("client-version", &client_version)
         .set("authorization", &xbl_token.to_string())
-        .send_json(&chain_request)
+        .send_json(chain_request)
         .unwrap()
         .into_string()
         .unwrap()

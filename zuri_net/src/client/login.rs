@@ -93,7 +93,7 @@ impl<'a> Sequence<Result<(), ConnError>> for LoginSequence<'a> {
         // Notify the server of our client cache status. Nintendo Switch clients don't properly
         // support this for whatever reason, so servers have to account for it.
         conn.write_packet(
-            &mut ClientCacheStatus {
+            &ClientCacheStatus {
                 enabled: self.cache_chunks,
             }
             .into(),
@@ -135,7 +135,7 @@ impl<'a> Sequence<Result<(), ConnError>> for LoginSequence<'a> {
 
         // Notify the server that we're initialized.
         conn.write_packet(
-            &mut SetLocalPlayerAsInitialised {
+            &SetLocalPlayerAsInitialised {
                 entity_runtime_id: rid.into(),
             }
             .into(),
@@ -169,7 +169,7 @@ impl<'a> LoginSequence<'a> {
         conn: &Connection,
     ) -> Result<(), ConnError> {
         conn.write_packet(
-            &mut RequestNetworkSettings {
+            &RequestNetworkSettings {
                 client_protocol: CURRENT_PROTOCOL.into(),
             }
             .into(),
@@ -210,13 +210,13 @@ impl<'a> LoginSequence<'a> {
 
         let mut digest = Sha256::new();
         digest.update(&salt);
-        digest.update(&unsalted_secret.raw_secret_bytes());
+        digest.update(unsalted_secret.raw_secret_bytes());
 
         let shared_secret = digest.finalize().to_vec();
 
         conn.set_encryption(Encryption::new(shared_secret)).await;
 
-        conn.write_packet(&mut ClientToServerHandshake.into()).await;
+        conn.write_packet(&ClientToServerHandshake.into()).await;
         conn.flush().await?;
 
         Ok(())
@@ -240,7 +240,7 @@ impl<'a> LoginSequence<'a> {
         };
 
         conn.write_packet(
-            &mut Login {
+            &Login {
                 client_protocol: CURRENT_PROTOCOL.into(),
                 connection_request: request.encode().into(),
             }
@@ -262,7 +262,7 @@ impl<'a> LoginSequence<'a> {
         // TODO: Implement proper resource pack downloading
 
         conn.write_packet(
-            &mut ResourcePackClientResponse {
+            &ResourcePackClientResponse {
                 response: ResourcePackResponse::AllPacksDownloaded,
                 packs_to_download: Vec::new(),
             }
@@ -274,7 +274,7 @@ impl<'a> LoginSequence<'a> {
         ResourcePackStack::try_from(reader.recv().await).unwrap();
 
         conn.write_packet(
-            &mut ResourcePackClientResponse {
+            &ResourcePackClientResponse {
                 response: ResourcePackResponse::Completed,
                 packs_to_download: Vec::new(),
             }
@@ -300,8 +300,9 @@ impl<'a> LoginSequence<'a> {
         // We need to request a sample radius of chunks around the player in order for the server
         // to allow us to spawn in. This is a bit of a hack, but it's necessary.
         conn.write_packet(
-            &mut RequestChunkRadius {
+            &RequestChunkRadius {
                 chunk_radius: 16.into(),
+                max_chunk_radius: 16.into(),
             }
             .into(),
         )
@@ -334,7 +335,7 @@ impl<'a> LoginSequence<'a> {
                 expiration: (now + Duration::hours(6)).timestamp() as u64,
                 not_before: (now - Duration::hours(6)).timestamp() as u64,
                 identity_data: self.identity_data.clone(),
-                identity_public_key: identity_public_key.clone(),
+                identity_public_key,
             },
             &encoding_key,
         )
@@ -367,7 +368,7 @@ impl<'a> LoginSequence<'a> {
         );
 
         let mut header = jsonwebtoken::Header::new(Algorithm::ES384);
-        header.x5u = Some(identity_public_key.clone());
+        header.x5u = Some(identity_public_key);
         header.typ = None;
 
         let now = Utc::now();

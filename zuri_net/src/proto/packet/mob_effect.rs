@@ -62,4 +62,5 @@ pub enum MobEffectType {
     Levitation,
     FatalPoison,
     ConduitPower,
+    SlowFalling,
 }

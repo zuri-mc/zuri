@@ -18,8 +18,7 @@ impl PkReceiver {
     #[must_use]
     pub async fn recv(&mut self) -> Packet {
         self.s.send(()).await.unwrap();
-        let pk = self.r.recv().await.unwrap();
-        pk
+        self.r.recv().await.unwrap()
     }
 }
 

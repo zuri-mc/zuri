@@ -170,7 +170,6 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                 let field_ident = field.ident.as_ref().unwrap();
                 let field_type = &field.ty;
 
-                let mut skip = false;
                 // If this is Some, this indicates that the current field has a `len_type`
                 // attribute. The second value inside the option will then contain the argument
                 // provided in the attribute. The first value is a span of the entire attribute,
@@ -204,93 +203,103 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                     }
 
                     let path = attr.path.to_token_stream().to_string();
-                    if path == "skip" {
-                        skip = true;
-                        attr_remove_queue.push(attr_i);
-                        read_inner_stream.append_all(quote!(#field_ident: #field_type::default(),));
-                    }
-                    if path == "len_for" {
-                        // Get the vec name with delimiters `(` and `)`
-                        match parse_attribute_ident(attr.tokens.clone()) {
-                            Err(t) => error_stream.append_all(t),
-                            Ok(vec_name) => {
-                                let len_var_name = format_ident!("_{}_len", vec_name);
-                                if vector_size_map.contains(vec_name.to_string().as_str()) {
-                                    let err =
-                                        format!("duplicate `len_for` for vector `{}`", vec_name);
-                                    error_stream.append_all(
-                                        quote_spanned!(vec_name.span()=> compile_error!(#err);),
-                                    );
+                    match path.as_str() {
+                        "len_for" => {
+                            // Get the vec name with delimiters `(` and `)`
+                            match parse_attribute_ident(attr.tokens.clone()) {
+                                Err(t) => error_stream.append_all(t),
+                                Ok(vec_name) => {
+                                    let len_var_name = format_ident!("_{}_len", vec_name);
+                                    if vector_size_map.contains(vec_name.to_string().as_str()) {
+                                        let err = format!(
+                                            "duplicate `len_for` for vector `{}`",
+                                            vec_name
+                                        );
+                                        error_stream.append_all(
+                                            quote_spanned!(vec_name.span()=> compile_error!(#err);),
+                                        );
+                                    }
+
+                                    write_stream.append_all(quote!(<#field_type>::try_from(self.#vec_name.len()).unwrap().write(writer);));
+                                    read_body_stream.append_all(quote!(let #len_var_name = usize::try_from(<#field_type>::read(reader)).unwrap();));
+                                    vector_size_map.insert(vec_name.to_string());
+
+                                    removal_queue.push(field_i);
+                                    continue 'field_loop;
                                 }
-
-                                write_stream.append_all(quote!(<#field_type>::try_from(self.#vec_name.len()).unwrap().write(writer);));
-                                read_body_stream.append_all(quote!(let #len_var_name = usize::try_from(<#field_type>::read(reader)).unwrap();));
-                                vector_size_map.insert(vec_name.to_string());
-
-                                removal_queue.push(field_i);
+                            };
+                        }
+                        "len_type" => {
+                            if vector_size_map.contains(field_ident.to_string().as_str()) {
+                                let err = format!("Cannot combine `len_type` specifier with `len_for` for the same vector `{}`", field_ident.to_string());
+                                error_stream.append_all(
+                                    quote_spanned!(attr.span()=> compile_error!(#err);),
+                                );
                                 continue 'field_loop;
                             }
-                        };
-                    }
-                    if path == "len_type" {
-                        if vector_size_map.contains(field_ident.to_string().as_str()) {
-                            let err = format!("Cannot combine `len_type` specifier with `len_for` for the same vector `{}`", field_ident.to_string());
-                            error_stream
-                                .append_all(quote_spanned!(attr.span()=> compile_error!(#err);));
-                            continue 'field_loop;
-                        }
-                        if !attr_remove_queue.is_empty() {
-                            let err = format!(
-                                "Found more than one `len_type` specifier for vector `{}`",
-                                field_ident.to_string()
-                            );
-                            error_stream
-                                .append_all(quote_spanned!(attr.span()=> compile_error!(#err);));
-                        }
+                            if !attr_remove_queue.is_empty() {
+                                let err = format!(
+                                    "Found more than one `len_type` specifier for vector `{}`",
+                                    field_ident.to_string()
+                                );
+                                error_stream.append_all(
+                                    quote_spanned!(attr.span()=> compile_error!(#err);),
+                                );
+                            }
 
-                        match parse_attribute_ident(attr.tokens.clone()) {
-                            Err(t) => error_stream.append_all(t),
-                            Ok(type_name) => {
-                                vec_type = Some((attr.span(), type_name));
-                                attr_remove_queue.push(attr_i);
+                            match parse_attribute_ident(attr.tokens.clone()) {
+                                Err(t) => error_stream.append_all(t),
+                                Ok(type_name) => {
+                                    vec_type = Some((attr.span(), type_name));
+                                    attr_remove_queue.push(attr_i);
+                                }
                             }
                         }
-                    }
-                    if path == "enum_header" {
-                        match parse_attribute_ident(attr.tokens.clone()) {
+                        "enum_header" => match parse_attribute_ident(attr.tokens.clone()) {
                             Err(t) => error_stream.append_all(t),
                             Ok(type_name) => {
                                 enum_type = Some((attr.span(), type_name));
                                 attr_remove_queue.push(attr_i);
                             }
-                        }
-                    }
-                    if path == "value" || path == "overwrite" {
-                        if attr.tokens.is_empty() {
-                            error_stream.append_all(quote_spanned!(attr.span()=> compile_error!("expression expected");));
-                        }
-                        removal_queue.push(field_i);
-
-                        let tokens = match syn::parse2::<proc_macro2::Group>(attr.tokens.clone()) {
-                            Ok(g) => g,
-                            Err(err) => {
-                                let err_msg = err.to_compile_error();
-                                error_stream.append_all(quote_spanned!(err.span()=> #err_msg));
-                                continue 'field_loop;
+                        },
+                        "value" | "overwrite" => {
+                            if attr.tokens.is_empty() {
+                                error_stream.append_all(quote_spanned!(attr.span()=> compile_error!("expression expected");));
                             }
+                            removal_queue.push(field_i);
+
+                            let tokens =
+                                match syn::parse2::<proc_macro2::Group>(attr.tokens.clone()) {
+                                    Ok(g) => g,
+                                    Err(err) => {
+                                        let err_msg = err.to_compile_error();
+                                        error_stream
+                                            .append_all(quote_spanned!(err.span()=> #err_msg));
+                                        continue 'field_loop;
+                                    }
+                                }
+                                .stream();
+                            if path == "overwrite" {
+                                write_stream.append_all(quote!(eq::<#field_type>(self.#tokens);));
+                                write_stream.append_all(quote!(self.#tokens.write(writer);));
+                                read_body_stream
+                                    .append_all(quote!(#tokens = <#field_type>::read(reader);));
+                            } else {
+                                write_stream.append_all(quote!(eq::<#field_type>(#tokens);));
+                                write_stream.append_all(quote!(#tokens.write(writer);));
+                                read_body_stream.append_all(quote!(<#field_type>::read(reader);));
+                            }
+                            continue 'field_loop;
                         }
-                        .stream();
-                        if path == "overwrite" {
-                            write_stream.append_all(quote!(eq::<#field_type>(self.#tokens);));
-                            write_stream.append_all(quote!(self.#tokens.write(writer);));
+                        "skip" => {
+                            field.attrs.remove(attr_i);
+
                             read_body_stream
-                                .append_all(quote!(#tokens = <#field_type>::read(reader);));
-                        } else {
-                            write_stream.append_all(quote!(eq::<#field_type>(#tokens);));
-                            write_stream.append_all(quote!(#tokens.write(writer);));
-                            read_body_stream.append_all(quote!(<#field_type>::read(reader);));
+                                .append_all(quote!(let mut #field_ident = Default::default();));
+                            read_inner_stream.append_all(quote!(#field_ident,));
+                            continue 'field_loop;
                         }
-                        continue 'field_loop;
+                        _ => continue,
                     }
                 }
                 // Remove all the attributes that should be removed. First we make sure that all
@@ -300,13 +309,10 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                 for to_remove in attr_remove_queue.iter().rev() {
                     field.attrs.remove(*to_remove);
                 }
-                if skip {
-                    continue 'field_loop;
-                }
 
                 if let Type::Path(path) = field_type {
                     let last = path.path.segments.last().unwrap();
-                    if last.ident.to_string() == "Vec" {
+                    if last.ident == "Vec" {
                         let len_var_name = format_ident!("_{}_len", field_ident);
 
                         // In this case, the vector's length has not yet been written, so we should
@@ -360,8 +366,7 @@ pub fn proto(_attr: TokenStream, _item: TokenStream) -> TokenStream {
                     error_stream.append_all(quote_spanned!(vec_type.unwrap().0=> compile_error!("the `len_type` attribute is only allowed on vectors");));
                 }
 
-                if enum_type.is_some() {
-                    let et = enum_type.unwrap().1;
+                if let Some((_, et)) = enum_type {
                     write_stream.append_all(quote!(<#field_type as crate::proto::io::EnumWritable<#et>>::write(&self.#field_ident, writer);));
                     read_body_stream.append_all(quote!(let mut #field_ident = <#field_type as crate::proto::io::EnumReadable<#field_type, #et>>::read(reader);));
                 } else {

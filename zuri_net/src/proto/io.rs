@@ -6,7 +6,7 @@ use num_traits::{FromPrimitive, ToPrimitive};
 use uuid::Uuid;
 
 use zuri_nbt::encoding::NetworkLittleEndian;
-use zuri_nbt::{decode, encode, Value};
+use zuri_nbt::{decode, encode, NBTTag};
 
 use crate::proto::types::entity_data::{EntityDataEntry, EntityDataType};
 
@@ -16,27 +16,27 @@ pub struct Writer {
     shield_id: i32,
 }
 
-impl Into<BytesMut> for Writer {
-    fn into(self) -> BytesMut {
-        self.buf
+impl From<Writer> for BytesMut {
+    fn from(value: Writer) -> Self {
+        value.buf
     }
 }
 
-impl Into<Bytes> for Writer {
-    fn into(self) -> Bytes {
-        self.buf.into()
+impl From<Writer> for Bytes {
+    fn from(value: Writer) -> Self {
+        value.buf.into()
     }
 }
 
-impl Into<Vec<u8>> for Writer {
-    fn into(self) -> Vec<u8> {
-        self.buf.into()
+impl From<Writer> for Vec<u8> {
+    fn from(value: Writer) -> Self {
+        value.buf.into()
     }
 }
 
-impl Into<VecDeque<u8>> for Writer {
-    fn into(self) -> VecDeque<u8> {
-        <BytesMut as Into<Vec<u8>>>::into(self.buf).into()
+impl From<Writer> for VecDeque<u8> {
+    fn from(value: Writer) -> Self {
+        <BytesMut as Into<Vec<u8>>>::into(value.buf).into()
     }
 }
 
@@ -54,6 +54,10 @@ impl Writer {
 
     pub fn len(&self) -> usize {
         self.buf.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.buf.is_empty()
     }
 
     pub fn u8(&mut self, x: u8) {
@@ -190,7 +194,7 @@ impl Writer {
         self.buf.put(x.to_bytes_le().as_ref());
     }
 
-    pub fn nbt<T: encode::Writer + Sized>(&mut self, val: &Value, mut writer: T) {
+    pub fn nbt<T: encode::Writer + Sized>(&mut self, val: &NBTTag, mut writer: T) {
         val.write(&mut self.buf, &mut writer).unwrap();
     }
 
@@ -204,7 +208,7 @@ impl Writer {
     pub fn entity_metadata(&mut self, x: &HashMap<u32, EntityDataEntry>) {
         self.var_u32(x.len() as u32);
 
-        let mut keys: Vec<u32> = x.keys().map(|k| *k).collect();
+        let mut keys: Vec<u32> = x.keys().copied().collect();
         keys.sort();
 
         for key in keys {
@@ -258,9 +262,7 @@ pub trait Writable {
 impl<T: Writable, const N: usize> Writable for [T; N] {
     #[inline]
     fn write(&self, writer: &mut Writer) {
-        for i in 0..N {
-            self[i].write(writer);
-        }
+        self.iter().for_each(|i| i.write(writer));
     }
 }
 
@@ -296,7 +298,7 @@ impl Writable for IVec2 {
 impl Writable for Uuid {
     #[inline]
     fn write(&self, writer: &mut Writer) {
-        writer.uuid(self.clone());
+        writer.uuid(*self);
     }
 }
 
@@ -390,9 +392,9 @@ pub struct Reader {
     shield_id: i32,
 }
 
-impl Into<Bytes> for Reader {
-    fn into(self) -> Bytes {
-        self.buf
+impl From<Reader> for Bytes {
+    fn from(value: Reader) -> Self {
+        value.buf
     }
 }
 
@@ -409,40 +411,44 @@ impl Reader {
         self.buf.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.buf.is_empty()
+    }
+
     pub fn u8(&mut self) -> u8 {
-        return self.buf.get_u8();
+        self.buf.get_u8()
     }
 
     pub fn i8(&mut self) -> i8 {
-        return self.buf.get_i8();
+        self.buf.get_i8()
     }
 
     pub fn u16(&mut self) -> u16 {
-        return self.buf.get_u16_le();
+        self.buf.get_u16_le()
     }
 
     pub fn i16(&mut self) -> i16 {
-        return self.buf.get_i16_le();
+        self.buf.get_i16_le()
     }
 
     pub fn u32(&mut self) -> u32 {
-        return self.buf.get_u32_le();
+        self.buf.get_u32_le()
     }
 
     pub fn i32(&mut self) -> i32 {
-        return self.buf.get_i32_le();
+        self.buf.get_i32_le()
     }
 
     pub fn i32_be(&mut self) -> i32 {
-        return self.buf.get_i32();
+        self.buf.get_i32()
     }
 
     pub fn u64(&mut self) -> u64 {
-        return self.buf.get_u64_le();
+        self.buf.get_u64_le()
     }
 
     pub fn i64(&mut self) -> i64 {
-        return self.buf.get_i64_le();
+        self.buf.get_i64_le()
     }
 
     pub fn var_u32(&mut self) -> u32 {
@@ -500,7 +506,7 @@ impl Reader {
     }
 
     pub fn f32(&mut self) -> f32 {
-        return self.buf.get_f32_le();
+        self.buf.get_f32_le()
     }
 
     pub fn byte_f32(&mut self) -> f32 {
@@ -576,8 +582,8 @@ impl Reader {
         Uuid::from_slice_le(&b).unwrap()
     }
 
-    pub fn nbt<T: decode::Reader + Sized>(&mut self, mut reader: T) -> Value {
-        Value::read(&mut self.buf, &mut reader).unwrap()
+    pub fn nbt<T: decode::Reader + Sized>(&mut self, mut reader: T) -> NBTTag {
+        NBTTag::read(&mut self.buf, &mut reader).unwrap()
     }
 
     pub fn optional<T: Readable<T>>(&mut self) -> Option<T> {
@@ -778,12 +784,12 @@ pub trait EnumReadable<T, D> {
 
 #[derive(Clone, Debug)]
 pub struct NBT<E: decode::Reader + encode::Writer> {
-    val: Value,
+    val: NBTTag,
     encoding: E,
 }
 
 impl<E: decode::Reader + encode::Writer + Default> NBT<E> {
-    fn new(val: Value) -> Self {
+    fn new(val: NBTTag) -> Self {
         Self {
             val,
             encoding: E::default(),
@@ -793,7 +799,7 @@ impl<E: decode::Reader + encode::Writer + Default> NBT<E> {
 
 impl<E: decode::Reader + encode::Writer> NBT<E> {
     #![allow(unused)]
-    fn new_with_encoder(val: Value, encoder: E) -> Self {
+    fn new_with_encoder(val: NBTTag, encoder: E) -> Self {
         Self {
             val,
             encoding: encoder,
@@ -801,14 +807,14 @@ impl<E: decode::Reader + encode::Writer> NBT<E> {
     }
 }
 
-impl<E: decode::Reader + encode::Writer> Into<Value> for NBT<E> {
-    fn into(self) -> Value {
-        self.val
+impl<E: decode::Reader + encode::Writer> From<NBT<E>> for NBTTag {
+    fn from(value: NBT<E>) -> Self {
+        value.val
     }
 }
 
-impl<E: decode::Reader + encode::Writer + Default> From<Value> for NBT<E> {
-    fn from(value: Value) -> Self {
+impl<E: decode::Reader + encode::Writer + Default> From<NBTTag> for NBT<E> {
+    fn from(value: NBTTag) -> Self {
         NBT::new(value)
     }
 }
@@ -854,9 +860,9 @@ impl Readable<UBlockPos> for UBlockPos {
     }
 }
 
-impl Into<IVec3> for UBlockPos {
-    fn into(self) -> IVec3 {
-        IVec3::new(self.x, self.y as i32, self.z)
+impl From<UBlockPos> for IVec3 {
+    fn from(value: UBlockPos) -> Self {
+        IVec3::new(value.x, value.y as i32, value.z)
     }
 }
 
@@ -887,9 +893,9 @@ impl Readable<BlockPos> for BlockPos {
     }
 }
 
-impl Into<IVec3> for BlockPos {
-    fn into(self) -> IVec3 {
-        self.0
+impl From<BlockPos> for IVec3 {
+    fn from(value: BlockPos) -> Self {
+        value.0
     }
 }
 

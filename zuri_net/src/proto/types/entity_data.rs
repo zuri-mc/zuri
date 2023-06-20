@@ -3,7 +3,7 @@ use num_derive::{FromPrimitive, ToPrimitive};
 use std::collections::HashMap;
 
 use crate::proto::ints::{VarI32, VarU32};
-use zuri_nbt::Value;
+use zuri_nbt::NBTTag;
 use zuri_net_derive::proto;
 
 use crate::proto::io::{Readable, Reader, Writable, Writer};
@@ -55,7 +55,7 @@ pub enum EntityDataEntry {
     I32(i32),
     F32(f32),
     String(String),
-    NBT(Value),
+    NBT(NBTTag),
     BlockPos(IVec3),
     I64(i64),
     Vec3(Vec3),
@@ -320,4 +320,8 @@ pub enum EntityDataFlag {
     SonicBoom,
     HasDashTimeout,
     PushTowardsClosestSpace,
+    Scenting,
+    Rising,
+    FeelingHappy,
+    Searching,
 }

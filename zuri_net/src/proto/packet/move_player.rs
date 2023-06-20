@@ -10,7 +10,7 @@ use zuri_net_derive::proto;
 pub struct MovePlayer {
     /// The runtime ID of the player. The runtime ID is unique for each world session, and entities
     /// are generally identified in packets using this runtime ID.
-    pub entity_runtime_id: u64,
+    pub entity_runtime_id: VarU64,
     /// The position to spawn the player on. If the player is on a distance that the viewer cannot
     /// see it, the player will still show up if the viewer moves closer.
     pub position: Vec3,
@@ -27,7 +27,7 @@ pub struct MovePlayer {
     pub mode: MoveMode,
     /// The server tick at which the packet was sent. It is used in relation to
     /// CorrectPlayerMovePrediction.
-    pub tick: u64,
+    pub tick: VarU64,
 }
 
 #[proto(u8)]

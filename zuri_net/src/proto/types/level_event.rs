@@ -5,6 +5,7 @@ use zuri_net_derive::proto;
 #[proto(VarI32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum LevelEventType {
+    #[fallback]
     Undefined,
     SoundClick = 1000,
     SoundClickFail = 1001,
@@ -40,6 +41,7 @@ pub enum LevelEventType {
     SoundPointedDripstoneLand = 1064,
     SoundDyeUsed = 1065,
     SoundInkSacUsed = 1066,
+    SoundAmethystResonate = 1067,
     QueueCustomMusic = 1900,
     PlayCustomMusic = 1901,
     StopCustomMusic = 1902,
@@ -110,6 +112,12 @@ pub enum LevelEventType {
     StartBlockCracking = 3600,
     StopBlockCracking = 3601,
     UpdateBlockCracking = 3602,
+    ParticlesCrackBlockDown = 3603,
+    ParticlesCrackBlockUp = 3604,
+    ParticlesCrackBlockNorth = 3605,
+    ParticlesCrackBlockSouth = 3606,
+    ParticlesCrackBlockWest = 3607,
+    ParticlesCrackBlockEast = 3608,
     AllPlayersSleeping = 9800,
     SleepingPlayers = 9801,
     JumpPrevented = 9810,

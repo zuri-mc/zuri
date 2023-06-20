@@ -43,11 +43,11 @@ pub enum BossEventType {
 #[proto]
 #[derive(Debug, Clone, PartialEq)]
 pub struct BossEventShow {
-    /// The title shown above the boss bar. It currently does not function, and instead uses the
-    /// name-tag of the boss entity at all times.
+    /// The title shown above the boss bar. It may be set to a different title if the
+    /// BossEntityUniqueID matches the client's entity unique ID.
     pub boss_bar_title: String,
-    /// The percentage of health that is shown in the boss bar. It currently does not function, and
-    /// instead uses the health percentage of the boss entity at all times.
+    /// The percentage of health that is shown in the boss bar. The HealthPercentage may be set to a
+    /// specific value if the BossEntityUniqueID matches the client's entity unique ID
     pub health_percentage: f32,
     /// The purpose of this field is currently unknown.
     pub screen_darkening: i16,

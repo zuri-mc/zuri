@@ -20,5 +20,5 @@ pub struct PlayerSkin {
     /// No longer has a function. The field can be left empty at all times.
     pub old_skin_name: String,
     #[overwrite(skin.trusted)]
-    __: bool,
+    pub trusted: bool,
 }

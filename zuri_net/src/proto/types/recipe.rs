@@ -18,7 +18,36 @@ pub enum Recipe {
     ShulkerBoxRecipe(ShulkerBoxRecipe),
     ShapelessChemistryRecipe(ShapelessChemistryRecipe),
     ShapedChemistryRecipe(ShapedChemistryRecipe),
+    SmithingTransform(SmithingTransformRecipe),
+    SmithingTrim(SmithingTrimRecipe),
 }
+
+/// A recipe specifically used for smithing tables. It has two input items and adds them together,
+/// resulting in a new item.
+#[proto]
+#[derive(Debug, Clone)]
+pub struct SmithingTransformRecipe {
+    /// A unique ID used to identify the recipe over network. Each recipe must have a unique network
+    /// ID. Recommended is to just increment a variable for each unique recipe registered. This
+    /// field must never be 0.
+    pub recipe_network_id: u32,
+    /// A unique ID of the recipe. This ID must be unique amongst all other types of recipes too,
+    /// but its functionality is not exactly known.
+    pub recipe_id: String,
+    /// The item that is used to shape the Base item based on the Addition being applied.
+    pub template: ItemDescriptorCount,
+    /// The item that the Addition is being applied to in the smithing table.
+    pub base: ItemDescriptorCount,
+    /// The item that is being added to the Base item to result in a modified item.
+    pub addition: ItemDescriptorCount,
+    /// The resulting item from the two items being added together.
+    pub result: ItemStack,
+    /// The block name that is required to create the output of the recipe. The block is not
+    /// prefixed with 'minecraft:', so it will look like 'smithing_table' as an example.
+    pub block: String,
+}
+
+pub type SmithingTrimRecipe = ShapelessRecipe;
 
 #[proto]
 #[derive(Debug, Clone)]

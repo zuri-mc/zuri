@@ -22,6 +22,8 @@ use block_pick_request::*;
 use book_edit::*;
 use boss_event::*;
 use camera::*;
+use camera_instruction::*;
+use camera_presets::*;
 use camera_shake::*;
 use change_dimension::*;
 use change_mob_property::*;
@@ -31,6 +33,7 @@ use client_bound_map_item_data::*;
 use client_cache_blob_status::*;
 use client_cache_miss_response::*;
 use client_cache_status::*;
+use client_cheat_ability::*;
 use client_start_item_cooldown::*;
 use client_to_server_handshake::*;
 use code_builder::*;
@@ -39,6 +42,7 @@ use command_block_update::*;
 use command_output::*;
 use command_request::*;
 use completed_using_item::*;
+use compressed_biome_definition_list::*;
 use container_close::*;
 use container_open::*;
 use container_set_data::*;
@@ -98,6 +102,7 @@ use network_stack_latency::*;
 use npc_dialogue::*;
 use npc_request::*;
 use on_screen_texture_animation::*;
+use open_sign::*;
 use packet_violation_warning::*;
 use passenger_jump::*;
 use photo_info_request::*;
@@ -176,6 +181,8 @@ use tick_sync::*;
 use ticking_area_load_status::*;
 use toast_request::*;
 use transfer::*;
+use trim_data::*;
+use unlocked_recipes::*;
 use update_abilities::*;
 use update_adventure_settings::*;
 use update_attributes::*;
@@ -215,6 +222,8 @@ pub mod block_pick_request;
 pub mod book_edit;
 pub mod boss_event;
 pub mod camera;
+pub mod camera_instruction;
+pub mod camera_presets;
 pub mod camera_shake;
 pub mod change_dimension;
 pub mod change_mob_property;
@@ -224,6 +233,7 @@ pub mod client_bound_map_item_data;
 pub mod client_cache_blob_status;
 pub mod client_cache_miss_response;
 pub mod client_cache_status;
+pub mod client_cheat_ability;
 pub mod client_start_item_cooldown;
 pub mod client_to_server_handshake;
 pub mod code_builder;
@@ -232,6 +242,7 @@ pub mod command_block_update;
 pub mod command_output;
 pub mod command_request;
 pub mod completed_using_item;
+pub mod compressed_biome_definition_list;
 pub mod container_close;
 pub mod container_open;
 pub mod container_set_data;
@@ -291,6 +302,7 @@ pub mod network_stack_latency;
 pub mod npc_dialogue;
 pub mod npc_request;
 pub mod on_screen_texture_animation;
+pub mod open_sign;
 pub mod packet_violation_warning;
 pub mod passenger_jump;
 pub mod photo_info_request;
@@ -369,6 +381,8 @@ pub mod tick_sync;
 pub mod ticking_area_load_status;
 pub mod toast_request;
 pub mod transfer;
+pub mod trim_data;
+pub mod unlocked_recipes;
 pub mod update_abilities;
 pub mod update_adventure_settings;
 pub mod update_attributes;
@@ -573,6 +587,13 @@ encodable_enum!(
         GameTestRequest = 194,
         GameTestResults = 195,
         UpdateClientInputLocks = 196,
+        ClientCheatAbility = 197,
+        CameraPresets = 198,
+        UnlockedRecipes = 199
+        CameraInstruction = 300,
+        CompressedBiomeDefinitionList = 301,
+        TrimData = 302,
+        OpenSign = 303,
     }
 );
 

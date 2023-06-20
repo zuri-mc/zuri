@@ -174,13 +174,11 @@ impl CommandEnum {
     }
 
     pub fn read(reader: &mut Reader) -> Self {
-        let command_enum = Self {
+        // TODO: READING
+        Self {
             enum_type: reader.string(),
             ..Default::default()
-        };
-        // TODO: READING
-
-        command_enum
+        }
     }
 }
 

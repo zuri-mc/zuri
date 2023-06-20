@@ -1,10 +1,10 @@
+use async_trait::async_trait;
+use bevy::app::AppExit;
 use std::env;
 use std::net::ToSocketAddrs;
 use std::sync::Arc;
 use std::time::Duration;
 
-use async_trait::async_trait;
-use bevy::app::AppExit;
 use bevy::prelude::*;
 use futures_lite::future;
 use oauth2::devicecode::StandardDeviceAuthorizationResponse;
@@ -14,7 +14,6 @@ use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
 use uuid::Uuid;
-
 use zuri_net::client::data::{ClientData, IdentityData};
 use zuri_net::client::Handler;
 use zuri_net::connection::ConnError;
@@ -70,6 +69,7 @@ struct ClientWaiter {
 }
 
 /// Temporary system responsible for starting the thread which handles the login sequence.
+#[allow(clippy::unnecessary_to_owned)] // `verification_uri` doesnt actually implement display.
 fn init_client(world: &mut World) {
     let address = env::var("zuri_ip").unwrap_or("127.0.0.1:19132".into());
 
@@ -172,25 +172,18 @@ fn send_packets(mut packets: ResMut<Events<Packet>>, chan: Option<NonSend<Sender
 /// Receives the packets read by the packet reader thread and sends them as an event so it can be
 /// handled by the ECS. Should run on the main thread due to tokio.
 fn receive_packets(world: &mut World) {
-    if world
-        .get_non_send_resource_mut::<Receiver<Packet>>()
-        .is_none()
-    {
+    let mut opt_chan = world.get_non_send_resource_mut::<Receiver<Packet>>();
+    if opt_chan.is_none() {
         return;
     }
     loop {
-        match world
-            .get_non_send_resource_mut::<Receiver<Packet>>()
-            .unwrap()
-            .try_recv()
-        {
+        match opt_chan.as_mut().unwrap().try_recv() {
             Err(err) => {
                 return match err {
                     TryRecvError::Empty => {}
                     TryRecvError::Disconnected => {
-                        world
-                            .remove_non_send_resource::<Receiver<Vec<Packet>>>()
-                            .unwrap();
+                        let _ = world.remove_non_send_resource::<Receiver<Vec<Packet>>>();
+                        info!("Stopped receiving packets: connection closed by server");
                     }
                 }
             }

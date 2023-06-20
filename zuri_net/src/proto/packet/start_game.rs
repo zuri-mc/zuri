@@ -69,6 +69,12 @@ pub struct StartGame {
     /// Dictates if the world is in editor mode, a special mode recently introduced adding "powerful
     /// tools for editing worlds, intended for experienced creators."
     pub editor_world: bool,
+    /// Dictates if the world was created as a project in the editor mode. The functionality of this
+    /// field is currently unknown.
+    pub created_in_editor: bool,
+    /// Dictates if the world was exported from editor mode. The functionality of this field is
+    /// currently unknown.
+    pub exported_from_editor: bool,
     /// The time at which the day cycle was locked if the day cycle is disabled using the respective
     /// game rule. The client will maintain this time as long as the day cycle is disabled.
     pub day_cycle_lock_time: VarI32,
@@ -154,6 +160,8 @@ pub struct StartGame {
     pub persona_disabled: bool,
     /// Specifies if custom skins are disabled for the current game session.
     pub custom_skins_disabled: bool,
+    /// Specifies if players will be sent a chat message when using certain emotes.
+    pub emote_chat_muted: bool,
     /// The version of the game from which Vanilla features will be used. The exact function this
     /// field isn't clear.
     pub base_game_version: String,
@@ -223,6 +231,13 @@ pub struct StartGame {
     /// Specifies if the client should use the features registered in the FeatureRegistry packet to
     /// generate terrain client-side to save on bandwidth.
     pub client_side_generation: bool,
+    /// Whether the client should use the hash of a block's name as its network ID rather than its
+    /// index in the expected block palette. This is useful for servers that wish to support
+    /// multiple protocol versions and custom blocks, but it will result in extra bytes being
+    /// written for every block in a sub chunk palette.
+    pub use_block_network_id_hashes: bool,
+    /// The use for this field is currently unknown.
+    pub server_authorative_sound: bool,
 }
 
 #[proto(i16)]

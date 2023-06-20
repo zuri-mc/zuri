@@ -35,6 +35,8 @@ pub struct ClientData {
 
     pub client_random_id: i64,
 
+    pub compatible_with_client_side_chunk_gen: bool,
+
     pub current_input_mode: i32,
 
     pub default_input_mode: i32,
@@ -106,6 +108,8 @@ pub struct ClientData {
     pub ui_profile: i32,
 
     pub trusted_skin: bool,
+    /// The usage of this field is currently unknown.
+    pub override_skin: bool,
 }
 
 const DEFAULT_SKIN_GEOMETRY: &[u8] = include_bytes!("default_model.json");
@@ -121,6 +125,7 @@ impl Default for ClientData {
             cape_image_width: 0,
             cape_on_classic_skin: false,
             client_random_id: rand::random(),
+            compatible_with_client_side_chunk_gen: false,
             current_input_mode: 0,
             default_input_mode: 0,
             device_model: String::new(),
@@ -153,7 +158,8 @@ impl Default for ClientData {
             third_party_name: String::new(),
             third_party_name_only: false,
             ui_profile: 0,
-            trusted_skin: false,
+            trusted_skin: true,
+            override_skin: true,
         }
     }
 }
