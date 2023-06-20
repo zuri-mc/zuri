@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::{VarI64, VarU32};
+use zuri_net_derive::proto;
 
 /// Sent by the server to make a specific 'boss event' occur in the world. It includes features such
 /// as showing a boss bar to the player and turning the sky dark.

@@ -7,5 +7,6 @@ edition = "2021"
 bevy = "0.9.1"
 bevy_render = "0.9.1"
 downcast-rs = "1.2.0"
+fnv = "1.0.7"
 zuri_nbt = { path = "../zuri_nbt" }
 zuri_net = { path = "../zuri_net" }

@@ -1,6 +1,6 @@
-use zuri_net::proto::io::Reader;
 use crate::paletted_storage::{Palette, PalettedStorage};
 use crate::pos::SubChunkIndex;
+use zuri_net::proto::io::Reader;
 
 /// A 16x16x16 area that makes up part of a world chunk.
 /// It consists of `L` layers which are used for things like waterlogged blocks.
@@ -18,7 +18,12 @@ impl<const L: usize> SubChunk<L> {
         for _ in 0..L {
             layers.push(PalettedStorage::new(vec![], Palette::new(vec![air_id])));
         }
-        layers.iter().cloned().collect::<Vec<PalettedStorage>>().try_into().unwrap()
+        layers
+            .iter()
+            .cloned()
+            .collect::<Vec<PalettedStorage>>()
+            .try_into()
+            .unwrap()
     }
 
     /// Creates a subchunk filled with `air_rid`.

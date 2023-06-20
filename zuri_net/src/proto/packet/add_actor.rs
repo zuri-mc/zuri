@@ -1,6 +1,6 @@
+use crate::proto::ints::{VarI64, VarU32, VarU64};
 use glam::Vec3;
 use zuri_net_derive::proto;
-use crate::proto::ints::{VarI64, VarU64, VarU32};
 
 use crate::proto::types::attribute::AttributeValue;
 use crate::proto::types::entity_data::{EntityMetadata, EntityProperties};

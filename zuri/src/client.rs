@@ -9,18 +9,18 @@ use bevy::prelude::*;
 use futures_lite::future;
 use oauth2::devicecode::StandardDeviceAuthorizationResponse;
 use tokio::sync::mpsc;
-use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::sync::mpsc::error::TryRecvError;
+use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
 use uuid::Uuid;
 
-use zuri_net::client::Handler;
 use zuri_net::client::data::{ClientData, IdentityData};
+use zuri_net::client::Handler;
 use zuri_net::connection::ConnError;
 use zuri_net::proto::packet::level_chunk::LevelChunk;
-use zuri_net::proto::packet::Packet;
 use zuri_net::proto::packet::update_block::UpdateBlock;
+use zuri_net::proto::packet::Packet;
 use zuri_xbox::live;
 
 /// The ClientPlugin is responsible for handling and managing the connection to the server.
@@ -42,7 +42,6 @@ impl Plugin for ClientPlugin {
             // Packet events go here.
             .add_event::<LevelChunk>()
             .add_event::<UpdateBlock>()
-
             .add_startup_system(init_client)
             .add_system_to_stage(CoreStage::Last, graceful_disconnect)
             .add_system(client_connection_system)
@@ -104,9 +103,7 @@ fn init_client(world: &mut World) {
             ClientData::default(),
             identity_data,
             live_token,
-            PacketHandler {
-                send_chan: send,
-            },
+            PacketHandler { send_chan: send },
         )),
     });
     world.insert_non_send_resource(recv);
@@ -167,24 +164,36 @@ fn send_packets(mut packets: ResMut<Events<Packet>>, chan: Option<NonSend<Sender
     if packets.is_empty() || chan.is_none() {
         return;
     }
-    chan.unwrap().blocking_send(packets.drain().collect())
+    chan.unwrap()
+        .blocking_send(packets.drain().collect())
         .expect("Could not send packets to writer");
 }
 
 /// Receives the packets read by the packet reader thread and sends them as an event so it can be
 /// handled by the ECS. Should run on the main thread due to tokio.
 fn receive_packets(world: &mut World) {
-    if world.get_non_send_resource_mut::<Receiver<Packet>>().is_none() {
+    if world
+        .get_non_send_resource_mut::<Receiver<Packet>>()
+        .is_none()
+    {
         return;
     }
     loop {
-        match world.get_non_send_resource_mut::<Receiver<Packet>>().unwrap().try_recv() {
-            Err(err) => return match err {
-                TryRecvError::Empty => {}
-                TryRecvError::Disconnected => {
-                    world.remove_non_send_resource::<Receiver<Vec<Packet>>>().unwrap();
+        match world
+            .get_non_send_resource_mut::<Receiver<Packet>>()
+            .unwrap()
+            .try_recv()
+        {
+            Err(err) => {
+                return match err {
+                    TryRecvError::Empty => {}
+                    TryRecvError::Disconnected => {
+                        world
+                            .remove_non_send_resource::<Receiver<Vec<Packet>>>()
+                            .unwrap();
+                    }
                 }
-            },
+            }
             Ok(pk) => match pk {
                 Packet::LevelChunk(pk) => world.send_event(pk),
                 Packet::UpdateBlock(pk) => world.send_event(pk),

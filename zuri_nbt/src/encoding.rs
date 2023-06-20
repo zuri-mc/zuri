@@ -1,7 +1,7 @@
-use bytes::{Buf, BufMut};
 use crate::decode::Reader;
 use crate::encode::Writer;
 use crate::err::{NbtError, Res};
+use bytes::{Buf, BufMut};
 
 #[derive(Debug, Default, Clone)]
 pub struct LittleEndian;
@@ -87,11 +87,7 @@ impl Reader for NetworkLittleEndian {
             v |= ((b & 0x7f) as u32) << i;
             if b & 0x80 == 0 {
                 let x = (v >> 1) as i32;
-                return Ok(if v & 1 != 0 {
-                    -x
-                } else {
-                    x
-                });
+                return Ok(if v & 1 != 0 { -x } else { x });
             }
         }
         Err(NbtError::ParseError("varint overflows integer".to_string()))
@@ -105,11 +101,7 @@ impl Reader for NetworkLittleEndian {
             v |= ((b & 0x7f) as u64) << i;
             if b & 0x80 == 0 {
                 let x = (v >> 1) as i64;
-                return Ok(if v & 1 != 0 {
-                    -x
-                } else {
-                    x
-                });
+                return Ok(if v & 1 != 0 { -x } else { x });
             }
         }
         Err(NbtError::ParseError("varint overflows integer".to_string()))

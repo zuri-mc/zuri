@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use crate::pos::{ChunkIndex};
+use crate::pos::ChunkIndex;
 
 /// Represents the vertical range of a world.
 #[derive(Copy, Clone)]

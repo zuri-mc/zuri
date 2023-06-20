@@ -1,7 +1,7 @@
+use crate::proto::ints::VarU32;
 use glam::Vec3;
 use num_derive::{FromPrimitive, ToPrimitive};
 use zuri_net_derive::proto;
-use crate::proto::ints::VarU32;
 
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
 pub enum ClientInputLock {

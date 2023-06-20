@@ -1,6 +1,6 @@
+use crate::proto::ints::VarU32;
 use uuid::Uuid;
 use zuri_net_derive::proto;
-use crate::proto::ints::VarU32;
 
 use crate::proto::types::container::ContainerType;
 use crate::proto::types::inventory::Window;

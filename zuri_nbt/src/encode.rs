@@ -1,5 +1,5 @@
-use bytes::BufMut;
 use crate::err::{NbtError, Res};
+use bytes::BufMut;
 
 pub trait Writer {
     fn write_bool(&mut self, buf: &mut impl BufMut, x: bool) -> Res<()> {

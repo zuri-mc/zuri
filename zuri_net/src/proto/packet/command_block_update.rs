@@ -1,7 +1,7 @@
 use zuri_net_derive::proto;
 
-use crate::proto::io::UBlockPos;
 use crate::proto::ints::VarU32;
+use crate::proto::io::UBlockPos;
 
 /// Sent by the client to update a command block at a specific position. The command block may be
 /// either a physical block or an entity.

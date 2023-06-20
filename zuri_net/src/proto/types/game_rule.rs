@@ -51,7 +51,7 @@ impl GameRule {
             value: match GameRuleType::from_u32(reader.var_u32()).unwrap() {
                 GameRuleType::Bool => GameRuleValue::Bool(reader.bool()),
                 GameRuleType::Int => GameRuleValue::Int(reader.var_u32()),
-                GameRuleType::Float => GameRuleValue::Float(reader.f32())
+                GameRuleType::Float => GameRuleValue::Float(reader.f32()),
             },
         }
     }

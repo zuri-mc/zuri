@@ -20,7 +20,10 @@ pub struct IdentityClaims {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct IdentityPublicKeyClaims {
-    #[serde(rename = "certificateAuthority", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "certificateAuthority",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub certificate_authority: Option<bool>,
 
     #[serde(rename = "exp")]

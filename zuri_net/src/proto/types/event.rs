@@ -42,7 +42,7 @@ pub struct EntityDefinitionTrigger {
     pub event_name: String,
 }
 
-impl EntityDefinitionTrigger{
+impl EntityDefinitionTrigger {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             event_name: reader.string(),

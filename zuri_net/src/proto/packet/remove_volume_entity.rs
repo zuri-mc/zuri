@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
+use zuri_net_derive::proto;
 
 use crate::proto::types::world::Dimension;
 

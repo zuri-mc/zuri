@@ -1,6 +1,6 @@
+use crate::proto::ints::VarU64;
 use glam::Vec3;
 use zuri_net_derive::proto;
-use crate::proto::ints::VarU64;
 
 /// Sent by the server to make a player respawn client-side. It is sent in response to a
 /// PlayerAction packet with the action type Respawn. As of 1.13, the server sends two of these

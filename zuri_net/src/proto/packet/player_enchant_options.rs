@@ -1,6 +1,6 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarU32;
 use crate::proto::types::item_stack::EnchantmentOption;
+use zuri_net_derive::proto;
 
 /// Sent by the server to update the enchantment options displayed when the user opens the
 /// enchantment table and puts an item in. This packet was added in 1.16 and allows the server to

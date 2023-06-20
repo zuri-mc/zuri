@@ -21,10 +21,10 @@ impl Display for NbtError {
         match self {
             NbtError::ParseError(s) => {
                 f.write_str(format!("could not encode/decode NBT: {}", s).as_str())
-            },
-            NbtError::IoError(err) => {
-                f.write_str(format!("encountered IO error while encoding/decoding NBT: {}", err).as_str())
             }
+            NbtError::IoError(err) => f.write_str(
+                format!("encountered IO error while encoding/decoding NBT: {}", err).as_str(),
+            ),
         }
     }
 }

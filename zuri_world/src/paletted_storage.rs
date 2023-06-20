@@ -14,15 +14,13 @@ impl Palette {
         if mapping.len() == 0 {
             panic!("Palette must contain at least 1 entry");
         }
-        Self {
-            mapping,
-        }
+        Self { mapping }
     }
 
     pub fn index(&self, val: u32) -> Option<u32> {
         for (i, rid) in self.mapping.iter().copied().enumerate() {
             if rid == val {
-                return Some(i as u32)
+                return Some(i as u32);
             }
         }
         None
@@ -62,9 +60,8 @@ impl PalettedStorage {
         let palette_index = if self.bits_per_index == 0 {
             0
         } else {
-            let offset = (((pos.x() as u16) << 8)
-                | ((pos.z() as u16) << 4)
-                | (pos.y() as u16)) * self.bits_per_index;
+            let offset = (((pos.x() as u16) << 8) | ((pos.z() as u16) << 4) | (pos.y() as u16))
+                * self.bits_per_index;
 
             let u32_offset = offset / self.filled_bits_per_index;
             let bit_offset = offset % self.filled_bits_per_index;
@@ -93,12 +90,11 @@ impl PalettedStorage {
                     *self = new_storage;
                 }
                 (self.palette.mapping.len() - 1) as u32
-            },
+            }
             Some(index) => index,
         };
-        let offset = (((pos.x() as u16) << 8)
-            | ((pos.z() as u16) << 4)
-            | (pos.y() as u16)) * self.bits_per_index;
+        let offset = (((pos.x() as u16) << 8) | ((pos.z() as u16) << 4) | (pos.y() as u16))
+            * self.bits_per_index;
 
         let u32_offset = offset / self.filled_bits_per_index;
         let bit_offset = offset % self.filled_bits_per_index;
@@ -164,7 +160,7 @@ impl PalettedStorage {
                     if let Value::String(name) = map.get("name").unwrap() {
                         if name == "air" {
                             palette.push(10462);
-                            continue
+                            continue;
                         }
                         palette.push(0);
                     }

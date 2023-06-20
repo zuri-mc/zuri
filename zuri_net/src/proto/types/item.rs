@@ -78,10 +78,16 @@ impl Writable for ItemInstance {
         }
 
         extra_data.u32(self.stack.can_be_placed_on.len() as u32);
-        self.stack.can_be_placed_on.iter().for_each(|b| extra_data.string_utf(b.as_str()));
+        self.stack
+            .can_be_placed_on
+            .iter()
+            .for_each(|b| extra_data.string_utf(b.as_str()));
 
         extra_data.u32(self.stack.can_break.len() as u32);
-        self.stack.can_break.iter().for_each(|b| extra_data.string_utf(b.as_str()));
+        self.stack
+            .can_break
+            .iter()
+            .for_each(|b| extra_data.string_utf(b.as_str()));
 
         if self.stack.network_id == writer.shield_id() {
             extra_data.i64(0);
@@ -112,10 +118,7 @@ impl Readable<ItemInstance> for ItemInstance {
         }
         instance.stack.block_runtime_id = reader.var_i32();
 
-        let mut extra_data = Reader::from_buf(
-            reader.byte_slice(),
-            reader.shield_id(),
-        );
+        let mut extra_data = Reader::from_buf(reader.byte_slice(), reader.shield_id());
 
         let length = extra_data.i16();
         if length == -1 {
@@ -181,10 +184,14 @@ impl Writable for ItemStack {
         }
 
         extra_data.u32(self.can_be_placed_on.len() as u32);
-        self.can_be_placed_on.iter().for_each(|b| extra_data.string_utf(b.as_str()));
+        self.can_be_placed_on
+            .iter()
+            .for_each(|b| extra_data.string_utf(b.as_str()));
 
         extra_data.u32(self.can_break.len() as u32);
-        self.can_break.iter().for_each(|b| extra_data.string_utf(b.as_str()));
+        self.can_break
+            .iter()
+            .for_each(|b| extra_data.string_utf(b.as_str()));
 
         if self.network_id == writer.shield_id() {
             extra_data.i64(0);
@@ -209,10 +216,7 @@ impl Readable<ItemStack> for ItemStack {
         stack.metadata_value = reader.var_u32();
         stack.block_runtime_id = reader.var_i32();
 
-        let mut extra_data = Reader::from_buf(
-            reader.byte_slice(),
-            reader.shield_id(),
-        );
+        let mut extra_data = Reader::from_buf(reader.byte_slice(), reader.shield_id());
 
         let length = extra_data.i16();
         if length == -1 {

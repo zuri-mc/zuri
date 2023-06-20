@@ -1,5 +1,5 @@
+use crate::proto::ints::{VarI32, VarU32, VarU64};
 use zuri_net_derive::proto;
-use crate::proto::ints::{VarI32, VarU64, VarU32};
 
 /// Sent by the server to apply an effect to the player, for example an effect like poison. It may
 /// also be used to modify existing effects, or removing them completely.

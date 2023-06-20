@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarI32;
+use zuri_net_derive::proto;
 
 /// Sent by the server to make a title, subtitle or action bar shown to a player. It has several
 /// fields that allow setting the duration of the titles.

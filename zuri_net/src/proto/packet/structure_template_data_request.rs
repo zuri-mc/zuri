@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::io::UBlockPos;
+use zuri_net_derive::proto;
 
 use crate::proto::types::structure::{StructureSettings, StructureTemplateDataRequestType};
 

@@ -2,20 +2,20 @@ extern crate core;
 
 use std::f32::consts::PI;
 
+use bevy::core_pipeline::clear_color::ClearColorConfig;
+use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
+use bevy::window::{CursorGrabMode, PresentMode};
 use bevy::{
     pbr::wireframe::{WireframeConfig, WireframePlugin},
     prelude::*,
     render::{render_resource::WgpuFeatures, settings::WgpuSettings},
 };
-use bevy::core_pipeline::clear_color::ClearColorConfig;
-use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
-use bevy::window::{CursorGrabMode, PresentMode};
 
 use dotenvy::dotenv;
-use zuri_net::proto::packet::level_chunk::LevelChunk;
 use zuri_net::proto::io::Reader;
+use zuri_net::proto::packet::level_chunk::LevelChunk;
 use zuri_world::block::component::geometry::Geometry;
-use zuri_world::block::RuntimeBlocks;
+use zuri_world::block::BlockMap;
 
 use zuri_world::chunk::{Chunk, ChunkManager};
 use zuri_world::range::YRange;
@@ -26,10 +26,10 @@ use crate::entity::Head;
 use crate::input::InputPlugin;
 use crate::player::{Local, LocalPlayerPlugin};
 
-mod entity;
-mod player;
-mod input;
 mod client;
+mod entity;
+mod input;
+mod player;
 
 #[tokio::main]
 async fn main() {
@@ -40,22 +40,24 @@ async fn main() {
             features: WgpuFeatures::POLYGON_MODE_LINE,
             ..default()
         })
-        .add_plugins(DefaultPlugins.set(WindowPlugin {
-            window: WindowDescriptor {
-                title: "Minecraft".into(),
-                present_mode: PresentMode::Immediate,
-                ..default()
-            },
-            ..default()
-        }).set(ImagePlugin::default_nearest()))
+        .add_plugins(
+            DefaultPlugins
+                .set(WindowPlugin {
+                    window: WindowDescriptor {
+                        title: "Minecraft".into(),
+                        present_mode: PresentMode::Immediate,
+                        ..default()
+                    },
+                    ..default()
+                })
+                .set(ImagePlugin::default_nearest()),
+        )
         .add_plugin(WireframePlugin)
         .add_plugin(FrameTimeDiagnosticsPlugin)
-
         .add_plugin(ClientPlugin)
         .add_plugin(InputPlugin)
         .add_plugin(LocalPlayerPlugin)
         .add_plugin(WorldPlugin)
-
         .insert_resource(BlockTextures::default())
         .insert_resource(ChunkManager::default())
         .add_startup_system(setup)
@@ -96,34 +98,46 @@ fn chunk_load_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut world_chunks: Query<&mut Chunk>,
     block_tex: Res<BlockTextures>,
-    blocks: Res<RuntimeBlocks>,
+    blocks: Res<BlockMap>,
 ) {
     for event in events.iter() {
         let mut reader = Reader::from_buf(event.raw_payload.clone(), 0);
         // If the chunk already exists, so replace its contents.
         if let Some(entity) = chunks.get(event.position) {
-            *world_chunks.get_mut(entity).unwrap() = Chunk::read(&mut reader, YRange::new(-64, 319), event.sub_chunk_count, 10462);
+            *world_chunks.get_mut(entity).unwrap() = Chunk::read(
+                &mut reader,
+                YRange::new(-64, 319),
+                event.sub_chunk_count,
+                10462,
+            );
             continue;
         }
 
         let pos = event.position * 16;
 
-        let s = Chunk::read(&mut reader, YRange::new(-64, 319), event.sub_chunk_count, 10462);
-        let entity = commands.spawn((
-            PbrBundle {
-                mesh: meshes.add(s.build_mesh(blocks.components::<Geometry>())),
-                material: materials.add(StandardMaterial {
-                    base_color_texture: Some(block_tex.dirt.clone().unwrap()),
-                    base_color: Color::WHITE,
-                    alpha_mode: AlphaMode::Opaque,
-                    perceptual_roughness: 0.94,
+        let s = Chunk::read(
+            &mut reader,
+            YRange::new(-64, 319),
+            event.sub_chunk_count,
+            10462,
+        );
+        let entity = commands
+            .spawn((
+                PbrBundle {
+                    mesh: meshes.add(s.build_mesh(blocks.components::<Geometry>())),
+                    material: materials.add(StandardMaterial {
+                        base_color_texture: Some(block_tex.dirt.clone().unwrap()),
+                        base_color: Color::WHITE,
+                        alpha_mode: AlphaMode::Opaque,
+                        perceptual_roughness: 0.94,
+                        ..default()
+                    }),
+                    transform: Transform::from_xyz(pos.x as f32, -32., pos.y as f32),
                     ..default()
-                }),
-                transform: Transform::from_xyz(pos.x as f32, -32., pos.y as f32),
-                ..default()
-            },
-            s,
-        )).id();
+                },
+                s,
+            ))
+            .id();
 
         chunks.set(event.position, Some(entity));
     }
@@ -184,8 +198,10 @@ fn setup(
         transform: Transform::from_xyz(-5.0, 2.5, 5.0),
         ..default()
     });
-    commands.spawn(TransformBundle {
-        local: Transform::from_xyz(-5.0, 2.5, 5.0),
-        ..default()
-    }).insert((Head::default(), Local));
+    commands
+        .spawn(TransformBundle {
+            local: Transform::from_xyz(-5.0, 2.5, 5.0),
+            ..default()
+        })
+        .insert((Head::default(), Local));
 }

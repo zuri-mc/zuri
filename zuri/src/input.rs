@@ -6,8 +6,7 @@ pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .insert_resource(ClientInput::default())
+        app.insert_resource(ClientInput::default())
             .add_system(mouse_input_system)
             .add_system(keyboard_input_system);
     }
@@ -38,7 +37,8 @@ fn keyboard_input_system(keyboard: Res<Input<KeyCode>>, mut input: ResMut<Client
         } else {
             0.
         },
-    ).normalize_or_zero();
+    )
+    .normalize_or_zero();
     input.jump = keyboard.pressed(KeyCode::Space);
     input.sprint = keyboard.pressed(KeyCode::LShift);
     input.sneak = keyboard.pressed(KeyCode::LControl);

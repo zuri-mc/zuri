@@ -1,9 +1,12 @@
-use std::fs::File;
 use oauth2::basic::{BasicClient, BasicErrorResponse, BasicTokenResponse};
 use oauth2::devicecode::{DeviceCodeErrorResponse, StandardDeviceAuthorizationResponse};
-use oauth2::ureq::Error as UReqError;
 use oauth2::ureq::http_client;
-use oauth2::{AuthType, AuthUrl, ClientId, DeviceAuthorizationUrl, RequestTokenError, Scope, TokenResponse, TokenUrl};
+use oauth2::ureq::Error as UReqError;
+use oauth2::{
+    AuthType, AuthUrl, ClientId, DeviceAuthorizationUrl, RequestTokenError, Scope, TokenResponse,
+    TokenUrl,
+};
+use std::fs::File;
 
 const DEVICE_AUTHORIZE_URL: &str = "https://login.live.com/oauth20_connect.srf";
 const AUTHORIZE_URL: &str = "https://login.live.com/oauth20_authorize.srf";
@@ -38,9 +41,11 @@ pub fn read_or_obtain_token<F: FnOnce(&StandardDeviceAuthorizationResponse)>(
 }
 
 /// Starts the device auth, retrieving a login URI for the user and a code the user needs to enter.
-pub fn start_device_auth() -> Result<StandardDeviceAuthorizationResponse, RequestTokenError<UReqError, BasicErrorResponse>> {
+pub fn start_device_auth(
+) -> Result<StandardDeviceAuthorizationResponse, RequestTokenError<UReqError, BasicErrorResponse>> {
     live_client()
-        .exchange_device_code().unwrap()
+        .exchange_device_code()
+        .unwrap()
         .add_scope(Scope::new(SCOPE.into()))
         .add_extra_param("response_type", "device_code")
         .request(http_client)
@@ -48,14 +53,18 @@ pub fn start_device_auth() -> Result<StandardDeviceAuthorizationResponse, Reques
 
 /// Polls the token endpoint until the user enters the code or the timeout is reached. If the
 /// timeout is reached, the result will contain an error.
-pub fn await_device_auth(auth: StandardDeviceAuthorizationResponse) -> Result<BasicTokenResponse, RequestTokenError<UReqError, DeviceCodeErrorResponse>> {
+pub fn await_device_auth(
+    auth: StandardDeviceAuthorizationResponse,
+) -> Result<BasicTokenResponse, RequestTokenError<UReqError, DeviceCodeErrorResponse>> {
     live_client()
         .exchange_device_access_token(&auth)
         .request(http_client, std::thread::sleep, None)
 }
 
 /// Refreshes the BasicTokenResponse given to it. An error is returned if the refresh fails.
-pub fn refresh_token(token: BasicTokenResponse) -> Result<BasicTokenResponse, RequestTokenError<UReqError, BasicErrorResponse>> {
+pub fn refresh_token(
+    token: BasicTokenResponse,
+) -> Result<BasicTokenResponse, RequestTokenError<UReqError, BasicErrorResponse>> {
     live_client()
         .exchange_refresh_token(token.refresh_token().unwrap())
         .request(http_client)
@@ -66,13 +75,9 @@ fn live_client() -> BasicClient {
     BasicClient::new(
         ClientId::new(CLIENT_ID.into()),
         None,
-        AuthUrl::new(
-            AUTHORIZE_URL.into(),
-        ).unwrap(),
-        Some(TokenUrl::new(
-            TOKEN_URL.into(),
-        ).unwrap()),
-    ).set_auth_type(AuthType::RequestBody).set_device_authorization_url(DeviceAuthorizationUrl::new(
-        DEVICE_AUTHORIZE_URL.into(),
-    ).unwrap())
+        AuthUrl::new(AUTHORIZE_URL.into()).unwrap(),
+        Some(TokenUrl::new(TOKEN_URL.into()).unwrap()),
+    )
+    .set_auth_type(AuthType::RequestBody)
+    .set_device_authorization_url(DeviceAuthorizationUrl::new(DEVICE_AUTHORIZE_URL.into()).unwrap())
 }

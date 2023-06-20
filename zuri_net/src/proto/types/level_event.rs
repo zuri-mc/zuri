@@ -1,6 +1,6 @@
+use crate::proto::ints::VarI32;
 use num_derive::{FromPrimitive, ToPrimitive};
 use zuri_net_derive::proto;
-use crate::proto::ints::VarI32;
 
 #[proto(VarI32)]
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]

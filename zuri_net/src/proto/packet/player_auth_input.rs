@@ -137,7 +137,9 @@ impl PacketType for PlayerAuthInput {
         }
         if self.input_data & InputFlag::PerformBlockActions.flag() != 0 {
             writer.var_u32(self.block_actions.len() as u32);
-            self.block_actions.iter().for_each(|action| action.write(writer));
+            self.block_actions
+                .iter()
+                .for_each(|action| action.write(writer));
         }
     }
 
@@ -169,7 +171,9 @@ impl PacketType for PlayerAuthInput {
             packet.item_stack_request = ItemStackRequestEntry::read(reader);
         }
         if packet.input_data & InputFlag::PerformBlockActions.flag() != 0 {
-            packet.block_actions = (0..reader.var_u32()).map(|_| PlayerBlockAction::read(reader)).collect();
+            packet.block_actions = (0..reader.var_u32())
+                .map(|_| PlayerBlockAction::read(reader))
+                .collect();
         }
         packet
     }

@@ -1,9 +1,9 @@
+use crate::block::component::geometry::Geometry;
+use crate::block::BlockMap;
 use bevy::asset::{Assets, Handle};
 use bevy::math::IVec3;
 use bevy::prelude::{Changed, EventReader, Mesh, Query, Res, ResMut};
 use zuri_net::proto::packet::update_block::UpdateBlock;
-use crate::block::component::geometry::Geometry;
-use crate::block::RuntimeBlocks;
 
 use crate::chunk::{Chunk, ChunkManager};
 use crate::pos::ChunkIndex;
@@ -12,7 +12,7 @@ use crate::pos::ChunkIndex;
 pub(crate) fn chunk_update_system(
     mut assets: ResMut<Assets<Mesh>>,
     mut query: Query<(&mut Handle<Mesh>, &Chunk), Changed<Chunk>>,
-    blocks: Res<RuntimeBlocks>,
+    blocks: Res<BlockMap>,
 ) {
     for (mesh, chunk) in &mut query {
         assets.set_untracked(mesh.id(), chunk.build_mesh(blocks.components::<Geometry>()));
@@ -31,7 +31,10 @@ pub(crate) fn block_update_system(
             continue;
         }
         if let Some(chunk_entity) = chunks.at_block_pos(pk.position.into()) {
-            query.get_mut(chunk_entity).unwrap().set(<ChunkIndex as From<IVec3>>::from(pk.position.into()), pk.new_block_runtime_id.into());
+            query.get_mut(chunk_entity).unwrap().set(
+                <ChunkIndex as From<IVec3>>::from(pk.position.into()),
+                pk.new_block_runtime_id.into(),
+            );
         }
     }
 }

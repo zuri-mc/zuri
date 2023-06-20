@@ -70,7 +70,10 @@ impl Encryption {
 
         let our_checksum = digest.finalize()[0..8].to_vec();
         if their_checksum != our_checksum {
-            return Err(format!("invalid checksum (expected {:?}, got {:?})", our_checksum, their_checksum))?;
+            return Err(format!(
+                "invalid checksum (expected {:?}, got {:?})",
+                our_checksum, their_checksum
+            ))?;
         }
 
         Ok(())

@@ -1,6 +1,6 @@
+use crate::proto::ints::{VarI32, VarI64};
 use bytes::Bytes;
 use zuri_net_derive::proto;
-use crate::proto::ints::{VarI32, VarI64};
 
 use crate::proto::types::inventory::Window;
 

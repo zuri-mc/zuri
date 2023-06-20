@@ -1,7 +1,7 @@
 use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_net_derive::proto;
 
-use crate::proto::io::{NBT, UBlockPos};
+use crate::proto::io::{UBlockPos, NBT};
 use crate::proto::types::world::Dimension;
 
 /// Sends a volume entity's definition and metadata from server to client.

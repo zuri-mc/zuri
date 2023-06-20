@@ -1,7 +1,7 @@
 use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_net_derive::proto;
 
-use crate::proto::io::{NBT, UBlockPos};
+use crate::proto::io::{UBlockPos, NBT};
 
 /// Sent by the server to update data of a block entity, for example the data of a chest.
 #[proto]

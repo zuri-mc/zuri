@@ -112,7 +112,6 @@ impl Readable<VarU64> for VarU64 {
     }
 }
 
-
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Ord, PartialOrd)]
 pub struct VarI32(pub i32);
 

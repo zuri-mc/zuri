@@ -1,5 +1,5 @@
-use bevy::prelude::Mesh;
 use crate::block::component::Component;
+use bevy::prelude::Mesh;
 
 #[derive(Debug)]
 pub struct Geometry {

@@ -1,14 +1,14 @@
 use std::collections::HashMap;
 use std::iter;
 
+use crate::block::component::geometry::Geometry;
+use crate::block::component::ComponentStorage;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy_render::mesh::VertexAttributeValues;
 use zuri_net::proto::io::Reader;
-use crate::block::component::ComponentStorage;
-use crate::block::component::geometry::Geometry;
 
-use crate::pos::{ChunkIndex};
+use crate::pos::ChunkIndex;
 use crate::range::YRange;
 use crate::sub_chunk::*;
 
@@ -28,7 +28,9 @@ impl Chunk {
         Self {
             _air_rid,
             range,
-            sub_chunks: iter::repeat(None).take((range.height() >> 4) as usize).collect(),
+            sub_chunks: iter::repeat(None)
+                .take((range.height() >> 4) as usize)
+                .collect(),
         }
     }
 
@@ -88,9 +90,15 @@ impl Chunk {
                         // it is treated as visible.
                         let geo_vertices = geo.mesh.attribute(Mesh::ATTRIBUTE_POSITION);
                         if geo_vertices.is_some() {
-                            if let VertexAttributeValues::Float32x3(positions) = geo_vertices.unwrap() {
+                            if let VertexAttributeValues::Float32x3(positions) =
+                                geo_vertices.unwrap()
+                            {
                                 for vertex in positions {
-                                    vertices.push([vertex[0] + x as f32, vertex[1] + y as f32, vertex[2] + z as f32]);
+                                    vertices.push([
+                                        vertex[0] + x as f32,
+                                        vertex[1] + y as f32,
+                                        vertex[2] + z as f32,
+                                    ]);
                                 }
                             } else {
                                 unreachable!();
@@ -290,12 +298,31 @@ impl Chunk {
         mesh
     }
 
-    fn face_visible(&self, geometries: &ComponentStorage<Geometry>, x: u8, y: i16, z: u8, x_off: i8, y_off: i16, z_off: i8) -> bool {
+    fn face_visible(
+        &self,
+        geometries: &ComponentStorage<Geometry>,
+        x: u8,
+        y: i16,
+        z: u8,
+        x_off: i8,
+        y_off: i16,
+        z_off: i8,
+    ) -> bool {
         let max = 16 as u8 - 1;
-        if x_off < 0 && x == 0 || x_off > 0 && x == max || y_off < 0 && y == self.range.min() || y_off > 0 && y == self.range.max() || z_off < 0 && z == 0 || z_off > 0 && z == max {
+        if x_off < 0 && x == 0
+            || x_off > 0 && x == max
+            || y_off < 0 && y == self.range.min()
+            || y_off > 0 && y == self.range.max()
+            || z_off < 0 && z == 0
+            || z_off > 0 && z == max
+        {
             return true;
         }
-        let neighbour_geo = geometries.get(self.at(ChunkIndex::new((x as i8 + x_off) as u8, (y + y_off) as i16, (z as i8 + z_off) as u8)));
+        let neighbour_geo = geometries.get(self.at(ChunkIndex::new(
+            (x as i8 + x_off) as u8,
+            (y + y_off) as i16,
+            (z as i8 + z_off) as u8,
+        )));
         neighbour_geo.is_some() // todo: have a smarter system for this
     }
 }
@@ -330,7 +357,10 @@ impl ChunkManager {
     /// Returns the chunk in which the provided world position is in (if it is loaded).
     /// The provided Y-value does not have an effect on the result.
     pub fn at_pos(&self, world_pos: Vec3) -> Option<Entity> {
-        self.get(IVec2::new(world_pos.x.floor() as i32 >> 4, world_pos.z.floor() as i32 >> 4))
+        self.get(IVec2::new(
+            world_pos.x.floor() as i32 >> 4,
+            world_pos.z.floor() as i32 >> 4,
+        ))
     }
 
     /// Returns the chunk in which the provided block position is in (if it is loaded).

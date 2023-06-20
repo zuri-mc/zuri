@@ -1,3 +1,6 @@
+use crate::block::RuntimeId;
+use std::fmt::Debug;
+
 pub mod geometry;
 
 /// The base trait for any type of component. A component does not actually require to have any
@@ -9,8 +12,10 @@ downcast_rs::impl_downcast!(sync Component);
 
 /// The different ways component of a same type can be stored. Each has different advantages and
 /// drawbacks.
+#[derive(Default, Debug, Copy, Clone, Eq, PartialEq)]
 pub enum ComponentStorageType {
     // todo: document each type
+    #[default]
     Vector,
     Compact,
     Hashed,
@@ -27,16 +32,18 @@ impl<T: Component> ComponentStorage<T> {
     pub(super) fn new(storage: ComponentStorageType, size: u32) -> Self {
         Self {
             storage: match storage {
-                ComponentStorageType::Vector => ComponentStorageImpl::Vector((0..size).map(|_| None).collect()),
+                ComponentStorageType::Vector => {
+                    ComponentStorageImpl::Vector((0..size).map(|_| None).collect())
+                }
                 ComponentStorageType::Compact => todo!(),
                 ComponentStorageType::Hashed => todo!(),
             },
         }
     }
 
-    pub fn get(&self, rid: u32) -> Option<&T> {
+    pub fn get(&self, rid: impl Into<RuntimeId>) -> Option<&T> {
         match &self.storage {
-            ComponentStorageImpl::Vector(v) => match v.get(rid as usize).unwrap() {
+            ComponentStorageImpl::Vector(v) => match v.get(rid.into().0 as usize).unwrap() {
                 None => None,
                 Some(v) => Some(v),
             },
@@ -45,9 +52,9 @@ impl<T: Component> ComponentStorage<T> {
         }
     }
 
-    pub fn set(&mut self, index: u32, comp: T) {
+    pub fn set(&mut self, index: impl Into<RuntimeId>, comp: T) {
         match &mut self.storage {
-            ComponentStorageImpl::Vector(v) => v[index as usize] = Some(comp),
+            ComponentStorageImpl::Vector(v) => v[index.into().0 as usize] = Some(comp),
             ComponentStorageImpl::Compact() => todo!(),
             ComponentStorageImpl::Hashed() => todo!(),
         };
@@ -65,18 +72,18 @@ pub(super) enum ComponentStorageImpl<T: Component> {
     Hashed(/* todo */),
 }
 
-pub(super) trait IComponentStorage: downcast_rs::DowncastSync {
+pub(super) trait AnyComponentStorage: downcast_rs::DowncastSync + Debug {
+    // todo: allow specifying max capacity instead of extending
     fn extend(&mut self, additional_size: u32);
 }
-downcast_rs::impl_downcast!(sync IComponentStorage);
+downcast_rs::impl_downcast!(sync AnyComponentStorage);
 
-impl<T: Component> IComponentStorage for ComponentStorage<T> {
+impl<T: Component> AnyComponentStorage for ComponentStorage<T> {
     fn extend(&mut self, additional_size: u32) {
         match &mut self.storage {
-            ComponentStorageImpl::Vector(v) => v.resize_with(
-                v.len() + additional_size as usize,
-                || None,
-            ),
+            ComponentStorageImpl::Vector(v) => {
+                v.resize_with(v.len() + additional_size as usize, || None)
+            }
             ComponentStorageImpl::Compact() => todo!(),
             ComponentStorageImpl::Hashed() => todo!(),
         };

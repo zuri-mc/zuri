@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::{VarU32, VarU64};
+use zuri_net_derive::proto;
 
 use crate::proto::io::BlockPos;
 use crate::proto::types::world::UpdateBlockTransition;

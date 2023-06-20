@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::I32BE;
+use zuri_net_derive::proto;
 
 /// Sent by the server to update a player on the play status. This includes failed statuses due to a
 /// mismatched version, but also success statuses.

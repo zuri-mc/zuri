@@ -61,9 +61,7 @@ impl Readable<PlayerListAdd> for PlayerListAdd {
         for i in 0..entry_count {
             entries[i as usize].skin.trusted = reader.bool();
         }
-        PlayerListAdd {
-            entries,
-        }
+        PlayerListAdd { entries }
     }
 }
 

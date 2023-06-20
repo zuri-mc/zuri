@@ -123,7 +123,9 @@ impl Writable for ItemEnchantments {
         writer.i32(self.slot);
         self.enchantments.iter().for_each(|enchantment| {
             writer.var_u32(enchantment.len() as u32);
-            enchantment.iter().for_each(|enchantment| enchantment.write(writer));
+            enchantment
+                .iter()
+                .for_each(|enchantment| enchantment.write(writer));
         });
     }
 }
@@ -133,9 +135,15 @@ impl Readable<ItemEnchantments> for ItemEnchantments {
         Self {
             slot: reader.i32(),
             enchantments: [
-                (0..reader.var_u32()).map(|_| EnchantmentInstance::read(reader)).collect(),
-                (0..reader.var_u32()).map(|_| EnchantmentInstance::read(reader)).collect(),
-                (0..reader.var_u32()).map(|_| EnchantmentInstance::read(reader)).collect(),
+                (0..reader.var_u32())
+                    .map(|_| EnchantmentInstance::read(reader))
+                    .collect(),
+                (0..reader.var_u32())
+                    .map(|_| EnchantmentInstance::read(reader))
+                    .collect(),
+                (0..reader.var_u32())
+                    .map(|_| EnchantmentInstance::read(reader))
+                    .collect(),
             ],
         }
     }
@@ -196,16 +204,18 @@ impl ItemStackRequestEntry {
             action.write(writer);
         });
         writer.var_u32(self.filter_strings.len() as u32);
-        self.filter_strings.iter().for_each(|filter_string| writer.string(filter_string.as_str()));
+        self.filter_strings
+            .iter()
+            .for_each(|filter_string| writer.string(filter_string.as_str()));
         writer.i32(self.filter_cause);
     }
 
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             request_id: reader.var_i32(),
-            actions: (0..reader.var_u32()).map(|_| {
-                StackRequestAction::read(reader)
-            }).collect(),
+            actions: (0..reader.var_u32())
+                .map(|_| StackRequestAction::read(reader))
+                .collect(),
             filter_strings: (0..reader.var_u32()).map(|_| reader.string()).collect(),
             filter_cause: reader.i32(),
         }
@@ -225,7 +235,9 @@ impl ItemStackResponseEntry {
         writer.var_i32(self.request_id);
         if self.status == ItemStackResponseStatus::Ok {
             writer.var_u32(self.container_info.len() as u32);
-            self.container_info.iter().for_each(|container_info| container_info.write(writer));
+            self.container_info
+                .iter()
+                .for_each(|container_info| container_info.write(writer));
         }
     }
 
@@ -234,7 +246,13 @@ impl ItemStackResponseEntry {
         Self {
             status: status.clone(),
             request_id: reader.var_i32(),
-            container_info: if status == ItemStackResponseStatus::Ok { (0..reader.var_u32()).map(|_| StackResponseContainerInfo::read(reader)).collect() } else { Vec::new() },
+            container_info: if status == ItemStackResponseStatus::Ok {
+                (0..reader.var_u32())
+                    .map(|_| StackResponseContainerInfo::read(reader))
+                    .collect()
+            } else {
+                Vec::new()
+            },
         }
     }
 }
@@ -317,7 +335,9 @@ impl AutoCraftRecipeStackRequestAction {
         Self {
             recipe_network_id: reader.u32(),
             times_crafted: reader.u8(),
-            ingredients: (0..reader.var_u32()).map(|_| ItemDescriptorCount::read(reader)).collect(),
+            ingredients: (0..reader.var_u32())
+                .map(|_| ItemDescriptorCount::read(reader))
+                .collect(),
         }
     }
 
@@ -325,7 +345,9 @@ impl AutoCraftRecipeStackRequestAction {
         writer.u32(self.recipe_network_id);
         writer.u8(self.times_crafted);
         writer.var_u32(self.ingredients.len() as u32);
-        self.ingredients.iter().for_each(|ingredient| ingredient.write(writer));
+        self.ingredients
+            .iter()
+            .for_each(|ingredient| ingredient.write(writer));
     }
 }
 
@@ -580,7 +602,9 @@ pub struct CraftResultsDeprecatedStackRequestAction {
 impl CraftResultsDeprecatedStackRequestAction {
     pub fn read(reader: &mut Reader) -> Self {
         Self {
-            result_items: (0..reader.var_u32()).map(|_| ItemStack::read(reader)).collect(),
+            result_items: (0..reader.var_u32())
+                .map(|_| ItemStack::read(reader))
+                .collect(),
             times_crafted: reader.u8(),
         }
     }
@@ -665,13 +689,17 @@ impl StackResponseContainerInfo {
     pub fn write(&self, writer: &mut Writer) {
         writer.u8(self.container_id);
         writer.var_u32(self.slot_info.len() as u32);
-        self.slot_info.iter().for_each(|slot_info| slot_info.write(writer));
+        self.slot_info
+            .iter()
+            .for_each(|slot_info| slot_info.write(writer));
     }
 
     pub fn read(reader: &mut Reader) -> Self {
         Self {
             container_id: reader.u8(),
-            slot_info: (0..reader.var_u32()).map(|_| StackResponseSlotInfo::read(reader)).collect(),
+            slot_info: (0..reader.var_u32())
+                .map(|_| StackResponseSlotInfo::read(reader))
+                .collect(),
         }
     }
 }

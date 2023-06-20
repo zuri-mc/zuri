@@ -1,10 +1,10 @@
-use std::collections::HashMap;
 use glam::{IVec3, Vec3};
 use num_derive::{FromPrimitive, ToPrimitive};
+use std::collections::HashMap;
 
+use crate::proto::ints::{VarI32, VarU32};
 use zuri_nbt::Value;
 use zuri_net_derive::proto;
-use crate::proto::ints::{VarI32, VarU32};
 
 use crate::proto::io::{Readable, Reader, Writable, Writer};
 

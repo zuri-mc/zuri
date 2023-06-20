@@ -1,5 +1,5 @@
-use bytes::Buf;
 use crate::err::{NbtError, Res};
+use bytes::Buf;
 
 pub trait Reader {
     fn bool(&mut self, buf: &mut impl Buf) -> Res<bool> {
@@ -25,7 +25,9 @@ pub trait Reader {
     fn string(&mut self, buf: &mut impl Buf) -> Res<String> {
         let len = self.i16(buf)?;
         if len < 0 {
-            return Err(NbtError::ParseError("string length must be greater than 0".to_string()));
+            return Err(NbtError::ParseError(
+                "string length must be greater than 0".to_string(),
+            ));
         }
 
         let mut str_buf = Vec::with_capacity(len as usize);
@@ -39,7 +41,9 @@ pub trait Reader {
     fn u8_vec(&mut self, buf: &mut impl Buf) -> Res<Vec<u8>> {
         let len = self.i32(buf)?;
         if len < 0 {
-            return Err(NbtError::ParseError("vec length must be greater than 0".to_string()));
+            return Err(NbtError::ParseError(
+                "vec length must be greater than 0".to_string(),
+            ));
         }
 
         let mut vec_buf = Vec::with_capacity(len as usize);
@@ -53,7 +57,9 @@ pub trait Reader {
     fn i32_vec(&mut self, buf: &mut impl Buf) -> Res<Vec<i32>> {
         let len = self.i32(buf)?;
         if len < 0 {
-            return Err(NbtError::ParseError("vec length must be greater than 0".to_string()));
+            return Err(NbtError::ParseError(
+                "vec length must be greater than 0".to_string(),
+            ));
         }
 
         let mut vec_buf = Vec::with_capacity(len as usize);
@@ -67,7 +73,9 @@ pub trait Reader {
     fn i64_vec(&mut self, buf: &mut impl Buf) -> Res<Vec<i64>> {
         let len = self.i32(buf)?;
         if len < 0 {
-            return Err(NbtError::ParseError("vec length must be greater than 0".to_string()));
+            return Err(NbtError::ParseError(
+                "vec length must be greater than 0".to_string(),
+            ));
         }
 
         let mut vec_buf = Vec::with_capacity(len as usize);

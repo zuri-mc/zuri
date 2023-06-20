@@ -62,4 +62,3 @@ pub struct PersonaPieceTintColour {
     #[len_type(u32)]
     pub colours: Vec<String>,
 }
-

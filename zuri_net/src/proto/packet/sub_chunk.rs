@@ -24,7 +24,9 @@ impl PacketType for SubChunk {
         writer.var_i32(self.dimension.to_i32().unwrap());
         writer.block_pos(self.position);
         writer.u32(self.sub_chunk_entries.len() as u32);
-        self.sub_chunk_entries.iter().for_each(|entry| entry.write(writer, self.cache_enabled));
+        self.sub_chunk_entries
+            .iter()
+            .for_each(|entry| entry.write(writer, self.cache_enabled));
     }
 
     fn read(reader: &mut Reader) -> Self {
@@ -33,7 +35,9 @@ impl PacketType for SubChunk {
             cache_enabled,
             dimension: Dimension::from_i32(reader.var_i32()).unwrap(),
             position: reader.block_pos(),
-            sub_chunk_entries: (0..reader.u32()).map(|_| SubChunkEntry::read(reader, cache_enabled)).collect(),
+            sub_chunk_entries: (0..reader.u32())
+                .map(|_| SubChunkEntry::read(reader, cache_enabled))
+                .collect(),
         }
     }
 }

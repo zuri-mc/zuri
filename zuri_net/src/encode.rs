@@ -48,7 +48,10 @@ impl Encoder {
             return Err(format!("expected populated batch, got empty batch"));
         }
         if batch[0] != PACKET_HEADER {
-            return Err(format!("invalid packet header (expected {}, got {})", PACKET_HEADER, batch[0]))?;
+            return Err(format!(
+                "invalid packet header (expected {}, got {})",
+                PACKET_HEADER, batch[0]
+            ))?;
         }
 
         batch.remove(0);
@@ -66,7 +69,11 @@ impl Encoder {
         }
 
         if packets.len() > MAXIMUM_IN_BATCH {
-            Err(format!("too many packets in batch ({} > {})", packets.len(), MAXIMUM_IN_BATCH))?
+            Err(format!(
+                "too many packets in batch ({} > {})",
+                packets.len(),
+                MAXIMUM_IN_BATCH
+            ))?
         }
         Ok(packets)
     }

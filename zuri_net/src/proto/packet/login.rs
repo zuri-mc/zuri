@@ -1,6 +1,6 @@
+use crate::proto::ints::I32BE;
 use bytes::Bytes;
 use zuri_net_derive::proto;
-use crate::proto::ints::I32BE;
 
 /// Sent when the client initially tries to join the server. It is the first packet sent and
 /// contains information specific to the player.

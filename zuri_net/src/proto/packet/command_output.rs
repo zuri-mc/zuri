@@ -1,6 +1,6 @@
 use num_traits::{FromPrimitive, ToPrimitive};
 
-use crate::proto::io::{Reader, Readable, Writer, Writable};
+use crate::proto::io::{Readable, Reader, Writable, Writer};
 use crate::proto::packet::PacketType;
 use crate::proto::types::command::{CommandOrigin, CommandOutputMessage, CommandOutputType};
 
@@ -36,7 +36,9 @@ impl PacketType for CommandOutput {
         writer.var_u32(self.success_count);
 
         writer.var_u32(self.output_messages.len() as u32);
-        self.output_messages.iter().for_each(|message| message.write(writer));
+        self.output_messages
+            .iter()
+            .for_each(|message| message.write(writer));
 
         if self.output_type == CommandOutputType::DataSet {
             writer.string(self.data_set.as_str());
@@ -50,8 +52,14 @@ impl PacketType for CommandOutput {
             command_origin,
             output_type,
             success_count: reader.var_u32(),
-            output_messages: (0..reader.var_u32()).map(|_| CommandOutputMessage::read(reader)).collect(),
-            data_set: if output_type == CommandOutputType::DataSet { reader.string() } else { String::new() },
+            output_messages: (0..reader.var_u32())
+                .map(|_| CommandOutputMessage::read(reader))
+                .collect(),
+            data_set: if output_type == CommandOutputType::DataSet {
+                reader.string()
+            } else {
+                String::new()
+            },
         }
     }
 }
