@@ -3,6 +3,7 @@ use std::borrow::Borrow;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fmt::{Display, Formatter, Write};
 use std::hash::{Hash, Hasher};
+use std::io;
 use std::ops::Deref;
 
 use bevy::prelude::{Mesh, Resource};
@@ -185,6 +186,24 @@ impl BlockMap {
         let index = index.to_runtime_id(self);
         self.components_mut::<T>().set(index, value);
     }
+
+    /// Dumps all block states in the runtime id order. Useful for debugging.
+    #[allow(dead_code)]
+    pub(crate) fn dump_states(&self, writer: &mut impl io::Write, include_ids: bool) -> io::Result<()> {
+        for runtime_id in 0..self._runtime_id_count {
+            let block = self.block(runtime_id);
+            if include_ids {
+                writer.write(format!("{runtime_id}: ").as_bytes())?;
+            }
+
+            if block.is_none() {
+                writer.write(format!("?\n").as_bytes())?;
+                continue;
+            }
+            writer.write(format!("{}\n", self.block(runtime_id).unwrap()).as_bytes())?;
+        }
+        Ok(())
+    }
 }
 
 /// A type of minecraft block with a unique namespaced identifier.
@@ -355,8 +374,7 @@ pub struct BlockTypeIterator<'a> {
     /// allowed values as second field. The index of the slice corresponds with the index of the
     /// property in [BlockType].
     properties: Box<[(u32, u32)]>,
-    /// Used to determine if the iterator has been exhausted **when the [BlockType] has no
-    /// properties**.
+    /// Used to determine if the iterator has been fully used.
     exhausted: bool,
 }
 
@@ -364,10 +382,10 @@ impl<'a> Iterator for BlockTypeIterator<'a> {
     type Item = Block<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
+        if self.exhausted {
+            return None;
+        }
         if self.properties.len() == 0 {
-            if self.exhausted {
-                return None;
-            }
             self.exhausted = true;
             return Some(Block {
                 block_type: self.block_type,
@@ -387,7 +405,7 @@ impl<'a> Iterator for BlockTypeIterator<'a> {
                 break;
             }
             if i == 0 {
-                return None;
+                self.exhausted = true;
             }
             *value = 0
         }
