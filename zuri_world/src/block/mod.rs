@@ -1,6 +1,6 @@
 use std::any::TypeId;
 use std::borrow::Borrow;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fmt::{Display, Formatter, Write};
 use std::hash::{Hash, Hasher};
 use std::ops::Deref;
@@ -8,11 +8,12 @@ use std::ops::Deref;
 use bevy::prelude::{Mesh, Resource};
 use bevy::render::mesh::PrimitiveTopology;
 use bevy_render::mesh::Indices;
-use bevy_render::render_resource::encase::private::RuntimeSizedArray;
+use bytes::Bytes;
 
 pub use builder::BlockMapBuilder;
+use zuri_nbt::encoding::NetworkLittleEndian;
+use zuri_nbt::{tag, NBTTag};
 
-use crate::block::builder::FnvHashBuilder;
 use crate::block::component::geometry::Geometry;
 use crate::block::component::*;
 
@@ -20,50 +21,88 @@ mod builder;
 pub mod component;
 pub mod types;
 
-// todo: remove this temporary function. we want to eventually build all the runtime IDs from data
+// todo: remove this temporary function.
 pub fn build_rids() -> BlockMap {
-    const VANILLA_BLOCKS: &str = include_str!("vanilla_blocks.json");
-    let vanilla_blocks = json::parse(VANILLA_BLOCKS).unwrap();
+    const BLOCK_STATES: &[u8] = include_bytes!("block_states.nbt");
+
+    let mut nbt_stream = Bytes::from(BLOCK_STATES);
+    let mut vanilla_block_states: HashMap<Box<str>, HashMap<Box<str>, PropertyValues>> =
+        Default::default();
+    while !nbt_stream.is_empty() {
+        let nbt: tag::Compound = NBTTag::read(&mut nbt_stream, &mut NetworkLittleEndian)
+            .expect("could not decode nbt")
+            .try_into()
+            .unwrap();
+
+        let name: &str = if let NBTTag::String(s) = &nbt.0["name"] {
+            s.as_str()
+        } else {
+            panic!("Disallowed tag type for `name` field");
+        };
+
+        if !vanilla_block_states.contains_key(name) {
+            vanilla_block_states.insert(Box::from(name), HashMap::new());
+        }
+        let property_map = vanilla_block_states.get_mut(name).unwrap();
+
+        let states_list: tag::Compound = nbt.0["states"].clone().try_into().unwrap();
+        for (name, val) in states_list.0.iter().map(|(k, v)| (k.as_str(), v)) {
+            if !property_map.contains_key(name) {
+                property_map.insert(
+                    Box::from(name),
+                    match val {
+                        NBTTag::Byte(_) => PropertyValues::Boolean,
+                        NBTTag::Int(_) => PropertyValues::Ints(Box::from([])),
+                        NBTTag::String(_) => PropertyValues::Strings(Box::from([])),
+                        default => panic!(
+                            "Disallowed tag type for property value: `{}`",
+                            default.tag_type()
+                        ),
+                    },
+                );
+            }
+
+            match property_map.get_mut(name).unwrap() {
+                PropertyValues::Strings(s) => {
+                    let mut set: BTreeSet<_> = s.into_iter().cloned().collect();
+
+                    if let NBTTag::String(val) = val {
+                        set.insert(Box::from(val.0.as_str()));
+                    } else {
+                        panic!(
+                            "Disallowed tag type for property value: `{}`",
+                            val.tag_type()
+                        );
+                    }
+                    *s = set.into_iter().collect();
+                }
+                PropertyValues::Ints(s) => {
+                    let mut set: BTreeSet<_> = s.into_iter().cloned().collect();
+
+                    if let NBTTag::Int(val) = val {
+                        set.insert(val.0);
+                    } else {
+                        panic!(
+                            "Disallowed tag type for property value: `{}`",
+                            val.tag_type()
+                        );
+                    }
+                    *s = set.into_iter().collect();
+                }
+                PropertyValues::Boolean => {}
+            }
+        }
+    }
 
     let mut block_map =
         BlockMapBuilder::new().with_component_type::<Geometry>(ComponentStorageType::Vector);
 
-    // todo: greatly improve this
-    for block in vanilla_blocks["data_items"].members() {
-        let mut block_type = BlockType::new(block["name"].as_str().unwrap());
-
-        'outer: for prop in block["properties"].members() {
-            for prop_definition in vanilla_blocks["block_properties"].members() {
-                let name = prop["name"].as_str().unwrap();
-                if Some(name) != prop_definition["name"].as_str() {
-                    continue;
-                }
-                let values = match prop_definition["type"].as_str().unwrap() {
-                    "bool" => PropertyValues::Boolean,
-                    "int" => PropertyValues::Ints(
-                        prop_definition["values"]
-                            .members()
-                            .map(|v| v["value"].as_i32().unwrap())
-                            .collect(),
-                    ),
-                    "string" => PropertyValues::Strings(
-                        prop_definition["values"]
-                            .members()
-                            .map(|v| Box::from(v["value"].as_str().unwrap()))
-                            .collect(),
-                    ),
-                    _ => panic!("unknown property type"),
-                };
-
-                block_type.insert_property(name, values);
-                continue 'outer;
-            }
-            panic!("unknown property");
+    for (name, properties) in vanilla_block_states {
+        let mut block_type = BlockType::new(name);
+        for (name, values) in properties {
+            block_type.insert_property(name, values);
         }
-
-        if block_map.insert_block(block_type).is_some() {
-            panic!("overwriting");
-        }
+        block_map.insert_block(block_type);
     }
 
     let mut block_map = block_map.build();
@@ -91,6 +130,61 @@ pub fn build_rids() -> BlockMap {
     }
 
     block_map
+}
+
+/// Holds all known block types and runtime blocks.
+#[derive(Resource, Debug)]
+pub struct BlockMap {
+    /// Maps all existing block types to their first runtime id.
+    blocks_types: HashMap<BlockType, RuntimeId>,
+    _runtime_id_count: u32,
+    variant_map: Vec<(Box<str>, u32)>,
+    components: HashMap<TypeId, Box<dyn AnyComponentStorage>>,
+}
+
+impl BlockMap {
+    /// Get the [BlockType] for a certain unique block identifier, if it exists.
+    pub fn block_type(&self, identifier: &str) -> Option<&BlockType> {
+        self.blocks_types.get_key_value(identifier).map(|(k, _v)| k)
+    }
+
+    pub fn block(&self, runtime_id: impl ToRuntimeId) -> Option<Block> {
+        // todo: improve
+
+        let (block_type, variant) = self
+            .variant_map
+            .get(runtime_id.to_runtime_id(self).0 as usize)?;
+        let block_type = self.block_type(&block_type)?;
+        block_type.variants().nth(*variant as usize)
+    }
+
+    /// Get the value of component [T] for a block with the provided runtime id.
+    pub fn component<T: Component>(&self, runtime_id: impl ToRuntimeId) -> Option<&T> {
+        self.components::<T>().get(runtime_id.to_runtime_id(self))
+    }
+
+    pub fn components<T: Component>(&self) -> &ComponentStorage<T> {
+        self.components
+            .get(&TypeId::of::<T>())
+            .expect("Component not registered")
+            .downcast_ref()
+            .unwrap()
+    }
+
+    // todo: remove
+    pub fn components_mut<T: Component>(&mut self) -> &mut ComponentStorage<T> {
+        self.components
+            .get_mut(&TypeId::of::<T>())
+            .expect("Component not registered")
+            .downcast_mut()
+            .unwrap()
+    }
+
+    // todo: remove
+    pub fn set_component<T: Component>(&mut self, index: impl ToRuntimeId, value: T) {
+        let index = index.to_runtime_id(self);
+        self.components_mut::<T>().set(index, value);
+    }
 }
 
 /// A type of minecraft block with a unique namespaced identifier.
@@ -418,50 +512,6 @@ impl<'a> Display for PropertyValue<'a> {
     }
 }
 
-/// Holds all known block types and runtime blocks.
-#[derive(Resource, Debug)]
-pub struct BlockMap {
-    /// Maps all existing block types to their first runtime id.
-    blocks_types: HashMap<BlockType, RuntimeId, FnvHashBuilder>,
-    _runtime_id_count: u32,
-    components: HashMap<TypeId, Box<dyn AnyComponentStorage>>,
-}
-
-impl BlockMap {
-    /// Get the [BlockType] for a certain unique block identifier, if it exists.
-    pub fn block_type(&self, identifier: &str) -> Option<&BlockType> {
-        self.blocks_types.get_key_value(identifier).map(|(k, _v)| k)
-    }
-
-    /// Get the value of component [T] for a block with the provided runtime id.
-    pub fn component<T: Component>(&self, runtime_id: impl ToRuntimeId) -> Option<&T> {
-        self.components::<T>().get(runtime_id.to_runtime_id(self))
-    }
-
-    pub fn components<T: Component>(&self) -> &ComponentStorage<T> {
-        self.components
-            .get(&TypeId::of::<T>())
-            .expect("Component not registered")
-            .downcast_ref()
-            .unwrap()
-    }
-
-    // todo: remove
-    pub fn components_mut<T: Component>(&mut self) -> &mut ComponentStorage<T> {
-        self.components
-            .get_mut(&TypeId::of::<T>())
-            .expect("Component not registered")
-            .downcast_mut()
-            .unwrap()
-    }
-
-    // todo: remove
-    pub fn set_component<T: Component>(&mut self, index: impl ToRuntimeId, value: T) {
-        let index = index.to_runtime_id(self);
-        self.components_mut::<T>().set(index, value);
-    }
-}
-
 /// A block runtime id.
 ///
 /// Each combination of a unique block identifier and a set of properties mapped to one of the
@@ -499,22 +549,5 @@ impl From<u32> for RuntimeId {
 impl From<RuntimeId> for u32 {
     fn from(value: RuntimeId) -> Self {
         value.0
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::block::{BlockMap, Component, ComponentStorageType};
-
-    #[derive(Debug, Clone, PartialEq)]
-    struct TestComponent {
-        val: i32,
-    }
-
-    impl Component for TestComponent {}
-
-    #[test]
-    fn test() {
-        // todo: rewrite test
     }
 }

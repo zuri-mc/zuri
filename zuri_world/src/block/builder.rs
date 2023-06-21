@@ -2,17 +2,15 @@ use crate::block::component::{
     AnyComponentStorage, Component, ComponentStorage, ComponentStorageType,
 };
 use crate::block::{BlockMap, BlockType, RuntimeId};
-use fnv::FnvHasher;
 use std::any::TypeId;
 use std::collections::btree_map::BTreeMap;
 use std::collections::{HashMap, HashSet};
-use std::hash::BuildHasher;
 use std::sync::Arc;
 
 /// Allows for the creation of a [BlockMap] ready for use in the client.
 #[derive(Clone)]
 pub struct BlockMapBuilder {
-    blocks: HashSet<BlockType, FnvHashBuilder>,
+    blocks: HashSet<BlockType>,
     /// Maps the [TypeId] of a component to a function that creates a [ComponentStorage] for it.
     components: BTreeMap<TypeId, Arc<dyn Fn(usize) -> Box<dyn AnyComponentStorage>>>,
 }
@@ -78,13 +76,32 @@ impl BlockMapBuilder {
     pub fn build(mut self) -> BlockMap {
         self.blocks.shrink_to_fit();
 
-        let mut runtime_id_count = 0;
-        let mut block_rid_map =
-            HashMap::with_capacity_and_hasher(self.blocks.len(), FnvHashBuilder);
-        for block_type in self.blocks {
+        let runtime_id_count = self.blocks.iter().map(|v| v.variant_count()).sum();
+
+        let mut variant_map = Vec::with_capacity(runtime_id_count);
+        let mut block_rid_map = HashMap::with_capacity(self.blocks.len());
+
+        let mut blocks = Vec::with_capacity(self.blocks.len());
+        for block in self.blocks {
+            blocks.push(block);
+        }
+        blocks.sort_by(|a, b| {
+            let a_hash = hash_identifier(a.identifier.as_ref());
+            let b_hash = hash_identifier(b.identifier.as_ref());
+
+            a_hash.cmp(&b_hash)
+        });
+
+        let mut current_rid = 0;
+        for block_type in blocks {
             let variant_count = block_type.variant_count();
-            block_rid_map.insert(block_type, RuntimeId(runtime_id_count as u32));
-            runtime_id_count += variant_count;
+
+            for i in 0..block_type.variant_count() {
+                variant_map.push((block_type.identifier.clone(), i as u32))
+            }
+            block_rid_map.insert(block_type, RuntimeId(current_rid as u32));
+
+            current_rid += variant_count;
         }
 
         let mut components = HashMap::with_capacity(self.components.len());
@@ -95,18 +112,20 @@ impl BlockMapBuilder {
         BlockMap {
             blocks_types: block_rid_map,
             _runtime_id_count: runtime_id_count as u32,
+            variant_map,
             components,
         }
     }
 }
 
-#[derive(Default, Copy, Clone)]
-pub(super) struct FnvHashBuilder;
-
-impl BuildHasher for FnvHashBuilder {
-    type Hasher = FnvHasher;
-
-    fn build_hasher(&self) -> Self::Hasher {
-        FnvHasher::with_key(0x811c9dc5)
+/// Hashes a string using the `fnv1` hashing algorithm.
+///
+/// [Source](https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function#FNV-1_hash)
+fn hash_identifier(id: &str) -> u64 {
+    let mut hash = 14695981039346656037_u64;
+    for byte in id.as_bytes() {
+        hash = hash.wrapping_mul(1099511628211_u64);
+        hash = hash ^ (*byte as u64);
     }
+    hash
 }

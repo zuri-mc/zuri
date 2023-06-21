@@ -15,7 +15,7 @@ use dotenvy::dotenv;
 use zuri_net::proto::io::Reader;
 use zuri_net::proto::packet::level_chunk::LevelChunk;
 use zuri_world::block::component::geometry::Geometry;
-use zuri_world::block::BlockMap;
+use zuri_world::block::{BlockMap, ToRuntimeId};
 
 use zuri_world::chunk::{Chunk, ChunkManager};
 use zuri_world::range::YRange;
@@ -108,7 +108,14 @@ fn chunk_load_system(
                 &mut reader,
                 YRange::new(-64, 319),
                 event.sub_chunk_count,
-                10462,
+                blocks
+                    .block_type("minecraft:air")
+                    .unwrap()
+                    .variants()
+                    .next()
+                    .unwrap()
+                    .to_runtime_id(&blocks)
+                    .into(), // todo: improve
             );
             continue;
         }
@@ -119,7 +126,14 @@ fn chunk_load_system(
             &mut reader,
             YRange::new(-64, 319),
             event.sub_chunk_count,
-            10462,
+            blocks
+                .block_type("minecraft:air")
+                .unwrap()
+                .variants()
+                .next()
+                .unwrap()
+                .to_runtime_id(&blocks)
+                .into(), // todo: improve
         );
         let entity = commands
             .spawn((
