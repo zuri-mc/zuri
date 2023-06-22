@@ -329,16 +329,16 @@ impl BlockType {
     /// ```
     pub fn variants(&self) -> BlockTypeIterator {
         if self.properties.len() == 0 {
-            return BlockTypeIterator::Single(self);
+            return BlockTypeIterator(BlockTypeIteratorInner::Single(self));
         }
-        BlockTypeIterator::Multiple {
+        BlockTypeIterator(BlockTypeIteratorInner::Multiple {
             block_type: self,
             properties: self
                 .properties
                 .iter()
                 .map(|(_, values)| (0, values.variant_count() as u32))
                 .collect(),
-        }
+        })
     }
 }
 
@@ -409,7 +409,11 @@ impl PropertyValues {
 /// An iterator that iterates over all variants in a [BlockType]. See [BlockType::variants] for
 // additional info.
 #[derive(Debug, Clone)]
-pub enum BlockTypeIterator<'a> {
+pub struct BlockTypeIterator<'a>(BlockTypeIteratorInner<'a>);
+
+/// The data contained by a [BlockTypeIterator]. Hidden to disallow field access.
+#[derive(Debug, Clone)]
+enum BlockTypeIteratorInner<'a> {
     /// The iterator contains no more block variants.
     Exhausted,
     /// The iterator has at least one remaining variant of a block with one or more properties.
@@ -430,9 +434,9 @@ impl<'a> Iterator for BlockTypeIterator<'a> {
     type Item = Block<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self {
-            BlockTypeIterator::Exhausted => None,
-            BlockTypeIterator::Multiple {
+        match &mut self.0 {
+            BlockTypeIteratorInner::Exhausted => None,
+            BlockTypeIteratorInner::Multiple {
                 block_type,
                 properties,
             } => {
@@ -458,16 +462,16 @@ impl<'a> Iterator for BlockTypeIterator<'a> {
                     properties: next,
                 });
                 if exhaust {
-                    *self = Self::Exhausted;
+                    self.0 = BlockTypeIteratorInner::Exhausted;
                 }
                 ret
             }
-            BlockTypeIterator::Single(block_type) => {
+            BlockTypeIteratorInner::Single(block_type) => {
                 let ret = Some(Block {
                     block_type,
                     properties: Box::new([]),
                 });
-                *self = Self::Exhausted;
+                self.0 = BlockTypeIteratorInner::Exhausted;
                 ret
             }
         }

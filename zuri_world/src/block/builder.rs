@@ -1,9 +1,7 @@
 use crate::block::component::{
     AnyComponentStorage, Component, ComponentStorage, ComponentStorageType,
 };
-use crate::block::{
-    Block, BlockMap, BlockType, BlockTypeIterator, PropertyValue, RuntimeId, ToRuntimeId,
-};
+use crate::block::{Block, BlockMap, BlockType, BlockTypeIterator, BlockTypeIteratorInner, PropertyValue, RuntimeId, ToRuntimeId};
 use std::any::TypeId;
 use std::borrow::Cow;
 use std::collections::btree_map::BTreeMap;
@@ -265,12 +263,12 @@ impl<'a> BlockBuilder<'a> {
                     // When the BlockBuilder has a property not present in the block type with the
                     // same ID present in the block map, the BlockBuilder matches nothing.
                     if !v.has_property(name.as_ref()) {
-                        return BlockTypeIterator::Exhausted;
+                        return BlockTypeIterator(BlockTypeIteratorInner::Exhausted);
                     }
                 }
                 v.variants()
             })
-            .unwrap_or(BlockTypeIterator::Exhausted)
+            .unwrap_or(BlockTypeIterator(BlockTypeIteratorInner::Exhausted))
             .filter(|v| {
                 for (name, prop) in &self.properties {
                     // Filter any block variants that do not have the property in question or have
