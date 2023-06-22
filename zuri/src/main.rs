@@ -41,7 +41,7 @@ async fn main() {
             DefaultPlugins
                 .set(WindowPlugin {
                     window: WindowDescriptor {
-                        title: "Minecraft".into(),
+                        title: "Zuri".into(),
                         present_mode: PresentMode::Immediate,
                         ..default()
                     },
