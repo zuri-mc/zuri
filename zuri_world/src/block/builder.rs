@@ -1,8 +1,11 @@
 use crate::block::component::{
     AnyComponentStorage, Component, ComponentStorage, ComponentStorageType,
 };
-use crate::block::{BlockMap, BlockType, RuntimeId};
+use crate::block::{
+    Block, BlockMap, BlockType, BlockTypeIterator, PropertyValue, RuntimeId, ToRuntimeId,
+};
 use std::any::TypeId;
+use std::borrow::Cow;
 use std::collections::btree_map::BTreeMap;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -128,4 +131,184 @@ fn hash_identifier(id: &str) -> u64 {
         hash = hash ^ (*byte as u64);
     }
     hash
+}
+
+/// Represents a possible variant of a block type.
+///
+/// [BlockBuilder] is similar to [Block], but unlike the latter a BlockBuilder does not have to
+/// reference an existing block variant. This makes it easier to work with and allows properties to
+/// be set dynamically.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct BlockBuilder<'a> {
+    identifier: Cow<'a, str>,
+    properties: BTreeMap<Cow<'a, str>, PropertyValue<'a>>,
+}
+
+impl<'a> BlockBuilder<'a> {
+    /// Creates a new [BlockBuilder] for a block type with a certain unique identifier and an empty
+    /// properties list.
+    pub fn new(identifier: impl Into<Cow<'a, str>>) -> Self {
+        Self {
+            identifier: identifier.into(),
+            properties: Default::default(),
+        }
+    }
+
+    /// Gives the block's unique identifier corresponding to its block type.
+    pub fn identifier(&self) -> &str {
+        self.identifier.as_ref()
+    }
+
+    /// Gives a mutable reference to the unique identifier for the block type.
+    ///
+    /// May cause an allocation if the identifier was not an owned reference.
+    pub fn identifier_mut(&mut self) -> &mut String {
+        self.identifier.to_mut()
+    }
+
+    /// Returns an iterator that iterates over references to all properties present.
+    pub fn properties(&self) -> impl Iterator<Item = (&str, &PropertyValue<'a>)> {
+        self.properties.iter().map(|(k, v)| (k.as_ref(), v))
+    }
+
+    /// Returns an iterator that iterates over mutable references to all properties present.
+    pub fn properties_mut(&mut self) -> impl Iterator<Item = (&str, &mut PropertyValue<'a>)> {
+        self.properties.iter_mut().map(|(k, v)| (k.as_ref(), v))
+    }
+
+    /// Gives the value of a property with a certain name, if it exists.
+    pub fn property(&self, name: &str) -> Option<&PropertyValue<'a>> {
+        self.properties.get(name)
+    }
+
+    /// Gives a mutable reference to the value of a property with a certain name, if it exists.
+    pub fn property_mut(&mut self, name: &str) -> Option<&mut PropertyValue<'a>> {
+        self.properties.get_mut(name)
+    }
+
+    /// Inserts a new property with a certain value. Does not check if the actual block type allows
+    /// a value of the given type until used.
+    ///
+    /// Panics if a property with the same name exists already.
+    pub fn with_property(
+        mut self,
+        name: impl Into<Cow<'a, str>>,
+        value: PropertyValue<'a>,
+    ) -> Self {
+        let name = name.into();
+        if self.properties.contains_key(name.as_ref()) {
+            panic!("Trying to overwrite property `{}`", name);
+        }
+        self.properties.insert(name, value);
+        self
+    }
+
+    /// Inserts a new property with a certain value. Does not check if the actual block type allows
+    /// a value of the given type until used.
+    ///
+    /// Returns the old value if a property with the same name already exists.
+    pub fn insert_property(
+        &mut self,
+        name: impl Into<Cow<'a, str>>,
+        value: PropertyValue<'a>,
+    ) -> Option<PropertyValue<'a>> {
+        self.properties.insert(name.into(), value)
+    }
+
+    /// Returns an iterator that will yield any block type that 'matches' the values in the
+    /// [BlockBuilder].
+    ///
+    /// Matches are always variants of a [BlockType] with the same unique identifier as in the
+    /// [BlockBuilder]. These are further narrowed down depending on the properties present in the
+    /// builder.
+    ///
+    /// If the builder has a property that does not exist in the target block type or if
+    /// the property exists but the value in the builder is not one of the allowed values, the
+    /// iterator will be empty. If the property and its value do exist in the block type, then the
+    /// iterator will only contain block variants with that exact value for the property.
+    ///
+    /// # Example
+    /// The following can be used to iterate over all block states of the `minecraft:barrel` where
+    /// the barrel is closed. In this example this would iterate over 6 block states: one for each
+    /// direction the (closed) barrel can face.
+    /// ```
+    /// # use zuri_world::block::{BlockBuilder, BlockMapBuilder, BlockType, PropertyValue, PropertyValues};
+    /// # let block_map = BlockMapBuilder::new()
+    /// #     .with_block(
+    /// #         BlockType::new("minecraft:barrel")
+    /// #             .with_property("facing", PropertyValues::Strings([
+    /// #                     "down",
+    /// #                     "east",
+    /// #                     "north",
+    /// #                     "south",
+    /// #                     "up",
+    /// #                     "west"
+    /// #                 ].into_iter().map(|v| Box::from(v)).collect()))
+    /// #             .with_property("open", PropertyValues::Boolean)
+    /// #     ).build();
+    /// #
+    /// # let mut count = 0;
+    /// BlockBuilder::new("minecraft:barrel")
+    ///     .with_property("open", PropertyValue::Bool(false))
+    ///     .matches(&block_map)
+    ///     .for_each(|variant| {
+    ///         println!("{variant}");
+    /// #       count +=1;
+    ///     });
+    /// # assert_eq!(count, 6);
+    /// ```
+    pub fn matches<'b: 'a>(&self, block_map: &'b BlockMap) -> impl Iterator<Item = Block> {
+        block_map
+            .block_type(self.identifier())
+            .map(|v| {
+                for (name, _) in &self.properties {
+                    // When the BlockBuilder has a property not present in the block type with the
+                    // same ID present in the block map, the BlockBuilder matches nothing.
+                    if !v.has_property(name.as_ref()) {
+                        return BlockTypeIterator::Exhausted;
+                    }
+                }
+                v.variants()
+            })
+            .unwrap_or(BlockTypeIterator::Exhausted)
+            .filter(|v| {
+                for (name, prop) in &self.properties {
+                    // Filter any block variants that do not have the property in question or have
+                    // a different value for the property.
+                    if v.property_value(name.as_ref()) != Some(prop.clone()) {
+                        return false;
+                    }
+                }
+                true
+            })
+    }
+}
+
+impl<'a> ToRuntimeId for &BlockBuilder<'a> {
+    fn to_runtime_id(self, block_map: &BlockMap) -> RuntimeId {
+        // todo: don't panic
+        let (block_type, base) = block_map
+            .blocks_types
+            .get_key_value(self.identifier.as_ref())
+            .unwrap();
+        let base = base.clone();
+        let mut offset = 0;
+
+        if self.properties.len() != block_type.properties.len() {
+            panic!(); // todo: return error
+        }
+        for (name, values) in block_type.properties.iter().map(|(k, v)| (k.as_ref(), v)) {
+            offset = offset * values.variant_count() as u32
+                + values
+                    .find_index(self.properties.get(name).unwrap().clone())
+                    .unwrap() as u32;
+        }
+        RuntimeId(base.0 + offset)
+    }
+}
+
+impl<'a> ToRuntimeId for BlockBuilder<'a> {
+    fn to_runtime_id(self, block_map: &BlockMap) -> RuntimeId {
+        (&self).to_runtime_id(block_map)
+    }
 }

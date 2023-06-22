@@ -11,7 +11,7 @@ use bevy::render::mesh::PrimitiveTopology;
 use bevy_render::mesh::Indices;
 use bytes::Bytes;
 
-pub use builder::BlockMapBuilder;
+pub use builder::{BlockBuilder, BlockMapBuilder};
 use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_nbt::{tag, NBTTag};
 
@@ -109,7 +109,7 @@ pub fn build_rids() -> BlockMap {
     let mut block_map = block_map.build();
 
     block_map.set_component(
-        block_map.blocks_types.get("minecraft:air").unwrap().0,
+        BlockBuilder::new("minecraft:air"),
         Geometry {
             mesh: Mesh::new(PrimitiveTopology::TriangleList),
         },
@@ -124,10 +124,13 @@ pub fn build_rids() -> BlockMap {
         mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
         mesh.set_indices(Some(Indices::U32(vec![0, 1, 2, 1, 2, 3, 2, 1, 0, 3, 2, 1])));
 
-        block_map.set_component(
-            block_map.blocks_types.get("minecraft:tallgrass").unwrap().0,
-            Geometry { mesh },
-        );
+        let mut rids = Vec::new();
+        for block in BlockBuilder::new("minecraft:tallgrass").matches(&block_map) {
+            rids.push(block.to_runtime_id(&block_map));
+        }
+        for rid in rids {
+            block_map.set_component(rid, Geometry { mesh: mesh.clone() });
+        }
     }
 
     block_map
@@ -189,7 +192,11 @@ impl BlockMap {
 
     /// Dumps all block states in the runtime id order. Useful for debugging.
     #[allow(dead_code)]
-    pub(crate) fn dump_states(&self, writer: &mut impl io::Write, include_ids: bool) -> io::Result<()> {
+    pub(crate) fn dump_states(
+        &self,
+        writer: &mut impl io::Write,
+        include_ids: bool,
+    ) -> io::Result<()> {
         for runtime_id in 0..self._runtime_id_count {
             let block = self.block(runtime_id);
             if include_ids {
@@ -321,14 +328,16 @@ impl BlockType {
     /// (An, Bm)
     /// ```
     pub fn variants(&self) -> BlockTypeIterator {
-        BlockTypeIterator {
+        if self.properties.len() == 0 {
+            return BlockTypeIterator::Single(self);
+        }
+        BlockTypeIterator::Multiple {
             block_type: self,
             properties: self
                 .properties
                 .iter()
                 .map(|(_, values)| (0, values.variant_count() as u32))
                 .collect(),
-            exhausted: false,
         }
     }
 }
@@ -363,61 +372,113 @@ impl PropertyValues {
             PropertyValues::Ints(s) => PropertyValue::Int(s[index]),
         }
     }
+
+    fn find_index(&self, value: PropertyValue) -> Option<usize> {
+        match self {
+            PropertyValues::Strings(values) => {
+                if let PropertyValue::String(s) = value {
+                    for (i, value) in values.iter().enumerate() {
+                        if value.as_ref() != s {
+                            continue;
+                        }
+                        return Some(i);
+                    }
+                }
+                None
+            }
+            PropertyValues::Boolean => match value {
+                PropertyValue::Bool(true) => Some(1),
+                PropertyValue::Bool(false) => Some(0),
+                _ => None,
+            },
+            PropertyValues::Ints(values) => {
+                if let PropertyValue::Int(s) = value {
+                    for (i, value) in values.iter().cloned().enumerate() {
+                        if value != s {
+                            continue;
+                        }
+                        return Some(i);
+                    }
+                }
+                None
+            }
+        }
+    }
 }
 
 /// An iterator that iterates over all variants in a [BlockType]. See [BlockType::variants] for
 // additional info.
 #[derive(Debug, Clone)]
-pub struct BlockTypeIterator<'a> {
-    block_type: &'a BlockType,
-    /// Maps properties to a value from its set of allowed values as first field and the amount of
-    /// allowed values as second field. The index of the slice corresponds with the index of the
-    /// property in [BlockType].
-    properties: Box<[(u32, u32)]>,
-    /// Used to determine if the iterator has been fully used.
-    exhausted: bool,
+pub enum BlockTypeIterator<'a> {
+    /// The iterator contains no more block variants.
+    Exhausted,
+    /// The iterator has at least one remaining variant of a block with one or more properties.
+    Multiple {
+        /// The 'owning' [BlockType] of all the variants returned by the iterator.
+        block_type: &'a BlockType,
+        /// Maps properties to a value from its set of allowed values as first field and the amount of
+        /// allowed values as second field. The index of the slice corresponds with the index of the
+        /// property in [BlockType].
+        properties: Box<[(u32, u32)]>,
+    },
+    /// The iterator has exactly one remaining variant, which is a variant of a [BlockType] without
+    /// any properties.
+    Single(&'a BlockType),
 }
 
 impl<'a> Iterator for BlockTypeIterator<'a> {
     type Item = Block<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.exhausted {
-            return None;
-        }
-        if self.properties.len() == 0 {
-            self.exhausted = true;
-            return Some(Block {
-                block_type: self.block_type,
-                properties: Default::default(),
-            });
-        }
+        match self {
+            BlockTypeIterator::Exhausted => None,
+            BlockTypeIterator::Multiple {
+                block_type,
+                properties,
+            } => {
+                let mut exhaust = false;
+                let next = properties
+                    .iter()
+                    .cloned()
+                    .map(|(value, _value_count)| value)
+                    .collect();
+                for (i, (value, value_count)) in properties.iter_mut().enumerate().rev() {
+                    *value += 1;
+                    if value < value_count {
+                        break;
+                    }
+                    if i == 0 {
+                        exhaust = true;
+                    }
+                    *value = 0
+                }
 
-        let next = self
-            .properties
-            .iter()
-            .cloned()
-            .map(|(value, _value_count)| value)
-            .collect();
-        for (i, (value, value_count)) in self.properties.iter_mut().enumerate().rev() {
-            *value += 1;
-            if value < value_count {
-                break;
+                let ret = Some(Block {
+                    block_type: *block_type,
+                    properties: next,
+                });
+                if exhaust {
+                    *self = Self::Exhausted;
+                }
+                ret
             }
-            if i == 0 {
-                self.exhausted = true;
+            BlockTypeIterator::Single(block_type) => {
+                let ret = Some(Block {
+                    block_type,
+                    properties: Box::new([]),
+                });
+                *self = Self::Exhausted;
+                ret
             }
-            *value = 0
         }
-
-        Some(Block {
-            block_type: self.block_type,
-            properties: next,
-        })
     }
 }
 
-/// Block represents an variant of a certain [BlockType].
+/// Block is a reference to a variant of a certain [BlockType].
+///
+/// Values of type [Block] are guaranteed to reference an existing block variant. This can make it
+/// harder to use. [BlockBuilder] acts as an easier to use equivalent of this type, without having
+/// the guarantee that it defines a known block.
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Block<'a> {
     block_type: &'a BlockType,
@@ -509,7 +570,7 @@ impl<'a> Display for Block<'a> {
 }
 
 /// A single, non-owned value for a property.
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum PropertyValue<'a> {
     String(&'a str),
     Bool(bool),
@@ -537,7 +598,7 @@ impl<'a> Display for PropertyValue<'a> {
 /// [BlockType] has corresponds with [BlockType::variant_count]. Runtime ids are also unique between
 /// different block types.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct RuntimeId(u32);
+pub struct RuntimeId(pub u32);
 
 /// Allows for types to be converted to a [RuntimeId] given a [BlockType].
 pub trait ToRuntimeId {
