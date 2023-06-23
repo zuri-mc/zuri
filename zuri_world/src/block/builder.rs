@@ -1,10 +1,12 @@
 use crate::block::component::{
     AnyComponentStorage, Component, ComponentStorage, ComponentStorageType,
 };
+use crate::block::vanilla::vanilla_block_map;
 use crate::block::{
     Block, BlockMap, BlockType, BlockTypeIterator, BlockTypeIteratorInner, PropertyValue,
     RuntimeId, ToRuntimeId,
 };
+use bevy::prelude::Resource;
 use std::any::TypeId;
 use std::borrow::Cow;
 use std::collections::btree_map::BTreeMap;
@@ -12,16 +14,24 @@ use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 /// Allows for the creation of a [BlockMap] ready for use in the client.
-#[derive(Clone)]
+#[derive(Clone, Resource)]
 pub struct BlockMapBuilder {
     blocks: HashSet<BlockType>,
     /// Maps the [TypeId] of a component to a function that creates a [ComponentStorage] for it.
-    components: BTreeMap<TypeId, Arc<dyn Fn(usize) -> Box<dyn AnyComponentStorage>>>,
+    components: BTreeMap<TypeId, Arc<dyn Fn(usize) -> Box<dyn AnyComponentStorage> + Sync + Send>>,
 }
 
 impl BlockMapBuilder {
+    /// Initialises a [BlockMapBuilder] with all known vanilla block states.
+    pub fn vanilla() -> Self {
+        vanilla_block_map()
+    }
+
     /// Create a new, empty [BlockMapBuilder].
-    pub fn new() -> Self {
+    ///
+    /// Usually you want to use [Self::vanilla] to get a builder initialised with all known block
+    /// states in vanilla minecraft.
+    pub fn empty() -> Self {
         Self {
             blocks: Default::default(),
             components: Default::default(),
@@ -233,19 +243,20 @@ impl<'a> BlockBuilder<'a> {
     /// the barrel is closed. In this example this would iterate over 6 block states: one for each
     /// direction the (closed) barrel can face.
     /// ```
+    /// # use sorted_vec::SortedSet;
     /// # use zuri_world::block::{BlockBuilder, BlockMapBuilder, BlockType, PropertyValue, PropertyValues};
-    /// # let block_map = BlockMapBuilder::new()
+    /// # let block_map = BlockMapBuilder::empty()
     /// #     .with_block(
     /// #         BlockType::new("minecraft:barrel")
-    /// #             .with_property("facing", PropertyValues::Strings([
-    /// #                     "down",
-    /// #                     "east",
-    /// #                     "north",
-    /// #                     "south",
-    /// #                     "up",
-    /// #                     "west"
-    /// #                 ].into_iter().map(|v| Box::from(v)).collect()))
-    /// #             .with_property("open", PropertyValues::Boolean)
+    /// #             .with_property("facing", PropertyValues::Strings(SortedSet::from(vec![
+    /// #                     Box::from("down"),
+    /// #                     Box::from("east"),
+    /// #                     Box::from("north"),
+    /// #                     Box::from("south"),
+    /// #                     Box::from("up"),
+    /// #                     Box::from("west"),
+    /// #                 ])))
+    /// #             .with_property("open", PropertyValues::Bool)
     /// #     ).build();
     /// #
     /// # let mut count = 0;

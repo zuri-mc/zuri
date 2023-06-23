@@ -394,11 +394,11 @@ impl<'de> de::Deserializer<'de> for Deserializer<'de> {
         }
     }
 
-    fn deserialize_ignored_any<V>(self, _visitor: V) -> Result<V::Value, Self::Error>
+    fn deserialize_ignored_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
     where
         V: Visitor<'de>,
     {
-        unimplemented!()
+        self.deserialize_any(visitor)
     }
 }
 

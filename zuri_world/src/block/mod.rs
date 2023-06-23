@@ -1,142 +1,26 @@
 use std::any::TypeId;
 use std::borrow::{Borrow, Cow};
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::collections::{BTreeMap, HashMap};
 use std::fmt::{Display, Formatter, Write};
 use std::hash::{Hash, Hasher};
 use std::io;
 use std::ops::Deref;
 
-use bevy::prelude::{Mesh, Resource};
-use bevy::render::mesh::PrimitiveTopology;
-use bevy_render::mesh::Indices;
-use bytes::Bytes;
+use bevy::prelude::Resource;
+pub use sorted_vec::SortedSet;
 
 pub use builder::{BlockBuilder, BlockMapBuilder};
-use zuri_nbt::encoding::NetworkLittleEndian;
-use zuri_nbt::{tag, NBTTag};
 
-use crate::block::component::geometry::Geometry;
 use crate::block::component::*;
 
 mod builder;
 pub mod component;
 pub mod types;
-
-// todo: remove this temporary function.
-pub fn build_rids() -> BlockMap {
-    const BLOCK_STATES: &[u8] = include_bytes!("block_states.nbt");
-
-    let mut nbt_stream = Bytes::from(BLOCK_STATES);
-    let mut vanilla_block_states: HashMap<Box<str>, HashMap<Box<str>, PropertyValues>> =
-        Default::default();
-    while !nbt_stream.is_empty() {
-        let nbt: tag::Compound = NBTTag::read(&mut nbt_stream, &mut NetworkLittleEndian)
-            .expect("could not decode nbt")
-            .try_into()
-            .unwrap();
-
-        let name: &str = if let NBTTag::String(s) = &nbt.0["name"] {
-            s.as_str()
-        } else {
-            panic!("Disallowed tag type for `name` field");
-        };
-
-        if !vanilla_block_states.contains_key(name) {
-            vanilla_block_states.insert(Box::from(name), HashMap::new());
-        }
-        let property_map = vanilla_block_states.get_mut(name).unwrap();
-
-        let states_list: tag::Compound = nbt.0["states"].clone().try_into().unwrap();
-        for (name, val) in states_list.0.iter().map(|(k, v)| (k.as_str(), v)) {
-            if !property_map.contains_key(name) {
-                property_map.insert(
-                    Box::from(name),
-                    match val {
-                        NBTTag::Byte(_) => PropertyValues::Boolean,
-                        NBTTag::Int(_) => PropertyValues::Ints(Box::from([])),
-                        NBTTag::String(_) => PropertyValues::Strings(Box::from([])),
-                        default => panic!(
-                            "Disallowed tag type for property value: `{}`",
-                            default.tag_type()
-                        ),
-                    },
-                );
-            }
-
-            match property_map.get_mut(name).unwrap() {
-                PropertyValues::Strings(s) => {
-                    let mut set: BTreeSet<_> = s.into_iter().cloned().collect();
-
-                    if let NBTTag::String(val) = val {
-                        set.insert(Box::from(val.0.as_str()));
-                    } else {
-                        panic!(
-                            "Disallowed tag type for property value: `{}`",
-                            val.tag_type()
-                        );
-                    }
-                    *s = set.into_iter().collect();
-                }
-                PropertyValues::Ints(s) => {
-                    let mut set: BTreeSet<_> = s.into_iter().cloned().collect();
-
-                    if let NBTTag::Int(val) = val {
-                        set.insert(val.0);
-                    } else {
-                        panic!(
-                            "Disallowed tag type for property value: `{}`",
-                            val.tag_type()
-                        );
-                    }
-                    *s = set.into_iter().collect();
-                }
-                PropertyValues::Boolean => {}
-            }
-        }
-    }
-
-    let mut block_map =
-        BlockMapBuilder::new().with_component_type::<Geometry>(ComponentStorageType::Vector);
-
-    for (name, properties) in vanilla_block_states {
-        let mut block_type = BlockType::new(name);
-        for (name, values) in properties {
-            block_type.insert_property(name, values);
-        }
-        block_map.insert_block(block_type);
-    }
-
-    let mut block_map = block_map.build();
-
-    block_map.set_component(
-        BlockBuilder::new("minecraft:air"),
-        Geometry {
-            mesh: Mesh::new(PrimitiveTopology::TriangleList),
-        },
-    );
-    {
-        let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-        let vertices: Vec<[f32; 3]> = vec![[0., 0., 0.], [0., 1., 0.], [1., 0., 1.], [1., 1., 1.]];
-        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
-        let normals: Vec<[f32; 3]> = vec![[1., 0., 0.], [1., 0., 0.], [1., 0., 0.], [1., 0., 0.]];
-        mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
-        let uvs: Vec<[f32; 2]> = vec![[0., 0.], [0., 1.], [1., 0.], [1., 1.]];
-        mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
-        mesh.set_indices(Some(Indices::U32(vec![0, 1, 2, 1, 2, 3, 2, 1, 0, 3, 2, 1])));
-
-        let mut rids = Vec::new();
-        for block in BlockBuilder::new("minecraft:tallgrass").matches(&block_map) {
-            rids.push(block.to_runtime_id(&block_map));
-        }
-        for rid in rids {
-            block_map.set_component(rid, Geometry { mesh: mesh.clone() });
-        }
-    }
-
-    block_map
-}
+mod vanilla;
 
 /// Holds all known block types and runtime blocks.
+///
+/// Each variant of a block type (block state) can have its own values for components.
 #[derive(Resource, Debug)]
 pub struct BlockMap {
     /// Maps all existing block types to their first runtime id.
@@ -170,15 +54,28 @@ impl BlockMap {
         self.components::<T>().get(runtime_id.to_runtime_id(self))
     }
 
+    /// Gets the component storage of a certain type, which contains all the components of that
+    /// type.
     pub fn components<T: Component>(&self) -> &ComponentStorage<T> {
         self.components
             .get(&TypeId::of::<T>())
-            .expect("Component not registered")
+            .unwrap_or_else(|| {
+                panic!(
+                    "Component of type `{}` is not registered.",
+                    std::any::type_name::<T>()
+                )
+            })
             .downcast_ref()
             .unwrap()
     }
 
-    // todo: remove
+    /// Get a mutable reference to component [T] for a block with the provided runtime id.
+    pub fn component_mut<T: Component>(&mut self, runtime_id: impl ToRuntimeId) -> Option<&mut T> {
+        let runtime_id = runtime_id.to_runtime_id(self);
+        self.components_mut::<T>().get_mut(runtime_id)
+    }
+
+    /// Provides a mutable reference to the [ComponentStorage] for a component type.
     pub fn components_mut<T: Component>(&mut self) -> &mut ComponentStorage<T> {
         self.components
             .get_mut(&TypeId::of::<T>())
@@ -187,7 +84,8 @@ impl BlockMap {
             .unwrap()
     }
 
-    // todo: remove
+    /// Sets a component for a block with a certain runtime id. Overrides the previously set value
+    /// if this block already had the component.
     pub fn set_component<T: Component>(&mut self, index: impl ToRuntimeId, value: T) {
         let index = index.to_runtime_id(self);
         self.components_mut::<T>().set(index, value);
@@ -348,10 +246,13 @@ impl BlockType {
 /// A set of values of a certain type that a property can have.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PropertyValues {
-    Strings(Box<[Box<str>]>),
-    // todo: better public-facing types
-    Boolean,
-    Ints(Box<[i32]>),
+    /// A property can have a set of string values.
+    Strings(SortedSet<Box<str>>),
+    /// Boolean properties can have the values `true` or `false`.
+    Bool,
+    /// A property can have a set of integers for its values. There can be 'holes': `1, 2, 3, 5` is
+    /// allowed.
+    Ints(SortedSet<i32>),
 }
 
 impl PropertyValues {
@@ -359,7 +260,7 @@ impl PropertyValues {
     pub fn variant_count(&self) -> usize {
         match self {
             PropertyValues::Strings(v) => v.len(),
-            PropertyValues::Boolean => 2,
+            PropertyValues::Bool => 2,
             PropertyValues::Ints(v) => v.len(),
         }
     }
@@ -371,7 +272,7 @@ impl PropertyValues {
         }
         match self {
             PropertyValues::Strings(s) => PropertyValue::String(Cow::Borrowed(&s[index])),
-            PropertyValues::Boolean => PropertyValue::Bool(index == 1), // todo: check the order of this
+            PropertyValues::Bool => PropertyValue::Bool(index == 1), // todo: check the order of this
             PropertyValues::Ints(s) => PropertyValue::Int(s[index]),
         }
     }
@@ -389,7 +290,7 @@ impl PropertyValues {
                 }
                 None
             }
-            PropertyValues::Boolean => match value {
+            PropertyValues::Bool => match value {
                 PropertyValue::Bool(true) => Some(1),
                 PropertyValue::Bool(false) => Some(0),
                 _ => None,

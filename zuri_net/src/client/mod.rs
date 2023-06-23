@@ -134,12 +134,11 @@ impl<H: Handler + Send + 'static> Client<H> {
                             seq_chan = None;
                             expecter = None;
                         }
-                    } else {
-                        // We can call expect here: the handler stops if the read loop stops.
-                        chan.send(pk)
-                            .await
-                            .expect("Could not send packet to handler");
                     }
+                    // We can call expect here: the handler stops if the read loop stops.
+                    chan.send(pk)
+                        .await
+                        .expect("Could not send packet to handler");
                 }
                 Err(_) => {
                     return;

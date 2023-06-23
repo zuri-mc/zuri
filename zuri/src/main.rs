@@ -19,17 +19,18 @@ use zuri_world::block::{BlockMap, ToRuntimeId};
 
 use zuri_world::chunk::{Chunk, ChunkManager};
 use zuri_world::range::YRange;
-use zuri_world::WorldPlugin;
 
 use crate::client::ClientPlugin;
 use crate::entity::Head;
 use crate::input::InputPlugin;
 use crate::player::{Local, LocalPlayerPlugin};
+use crate::world::WorldPlugin;
 
 mod client;
 mod entity;
 mod input;
 mod player;
+mod world;
 
 #[tokio::main]
 async fn main() {
@@ -98,8 +99,13 @@ fn chunk_load_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut world_chunks: Query<&mut Chunk>,
     block_tex: Res<BlockTextures>,
-    blocks: Res<BlockMap>,
+    blocks: Option<Res<BlockMap>>,
 ) {
+    if blocks.is_none() {
+        return;
+    }
+    let blocks = blocks.unwrap();
+
     for event in events.iter() {
         let mut reader = Reader::from_buf(event.raw_payload.clone(), 0);
         // If the chunk already exists, so replace its contents.
