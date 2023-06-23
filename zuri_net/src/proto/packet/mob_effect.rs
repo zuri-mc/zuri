@@ -36,6 +36,8 @@ pub enum MobEffectOperation {
 #[proto(VarU32)]
 #[derive(Debug, Clone)]
 pub enum MobEffectType {
+    #[fallback]
+    Unknown = 0,
     Speed = 1,
     Slowness,
     Haste,
