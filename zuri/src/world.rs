@@ -42,8 +42,7 @@ fn build_block_map_system(world: &mut World) {
     #[derive(Deserialize, Debug)]
     struct BlockProperty {
         name: String,
-        #[serde(rename = "enum")]
-        values: BlockPropertyEnum,
+        r#enum: BlockPropertyEnum,
     }
 
     #[derive(Deserialize, Debug)]
@@ -85,7 +84,7 @@ fn build_block_map_system(world: &mut World) {
         for property in properties.properties {
             block_type.insert_property(
                 property.name,
-                match property.values {
+                match property.r#enum {
                     BlockPropertyEnum::Strings(v) => PropertyValues::Strings(v.into()),
                     BlockPropertyEnum::Ints(v) => PropertyValues::Ints(v.into()),
                     BlockPropertyEnum::Bool(_) => PropertyValues::Bool,
