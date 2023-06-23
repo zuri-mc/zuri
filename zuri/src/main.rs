@@ -12,13 +12,6 @@ use bevy::{
 };
 
 use dotenvy::dotenv;
-use zuri_net::proto::io::Reader;
-use zuri_net::proto::packet::level_chunk::LevelChunk;
-use zuri_world::block::component::geometry::Geometry;
-use zuri_world::block::{BlockMap, ToRuntimeId};
-
-use zuri_world::chunk::{Chunk, ChunkManager};
-use zuri_world::range::YRange;
 
 use crate::client::ClientPlugin;
 use crate::entity::Head;
@@ -59,11 +52,8 @@ async fn main() {
         .add_plugin(InputPlugin)
         .add_plugin(LocalPlayerPlugin)
         .add_plugin(WorldPlugin)
-        .insert_resource(BlockTextures::default())
-        .insert_resource(ChunkManager::default())
         .add_startup_system(setup)
         .add_system(cursor_grab_system)
-        .add_system(chunk_load_system)
         .run();
 }
 
@@ -85,94 +75,8 @@ fn cursor_grab_system(
     }
 }
 
-#[derive(Resource, Default)]
-pub struct BlockTextures {
-    // only support one block for now
-    dirt: Option<Handle<Image>>,
-}
-
-fn chunk_load_system(
-    mut commands: Commands,
-    mut events: EventReader<LevelChunk>,
-    mut chunks: ResMut<ChunkManager>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut world_chunks: Query<&mut Chunk>,
-    block_tex: Res<BlockTextures>,
-    blocks: Option<Res<BlockMap>>,
-) {
-    if blocks.is_none() {
-        return;
-    }
-    let blocks = blocks.unwrap();
-
-    for event in events.iter() {
-        let mut reader = Reader::from_buf(event.raw_payload.clone(), 0);
-        // If the chunk already exists, so replace its contents.
-        if let Some(entity) = chunks.get(event.position) {
-            *world_chunks.get_mut(entity).unwrap() = Chunk::read(
-                &mut reader,
-                YRange::new(-64, 319),
-                event.sub_chunk_count,
-                blocks
-                    .block_type("minecraft:air")
-                    .unwrap()
-                    .variants()
-                    .next()
-                    .unwrap()
-                    .to_runtime_id(&blocks)
-                    .into(), // todo: improve
-            );
-            continue;
-        }
-
-        let pos = event.position * 16;
-
-        let s = Chunk::read(
-            &mut reader,
-            YRange::new(-64, 319),
-            event.sub_chunk_count,
-            blocks
-                .block_type("minecraft:air")
-                .unwrap()
-                .variants()
-                .next()
-                .unwrap()
-                .to_runtime_id(&blocks)
-                .into(), // todo: improve
-        );
-        let entity = commands
-            .spawn((
-                PbrBundle {
-                    mesh: meshes.add(s.build_mesh(blocks.components::<Geometry>())),
-                    material: materials.add(StandardMaterial {
-                        base_color_texture: Some(block_tex.dirt.clone().unwrap()),
-                        base_color: Color::WHITE,
-                        alpha_mode: AlphaMode::Opaque,
-                        perceptual_roughness: 0.94,
-                        ..default()
-                    }),
-                    transform: Transform::from_xyz(pos.x as f32, -32., pos.y as f32),
-                    ..default()
-                },
-                s,
-            ))
-            .id();
-
-        chunks.set(event.position, Some(entity));
-    }
-}
-
-fn setup(
-    mut commands: Commands,
-    mut wireframe_config: ResMut<WireframeConfig>,
-    mut block_tex: ResMut<BlockTextures>,
-    asset_server: Res<AssetServer>,
-) {
+fn setup(mut commands: Commands, mut wireframe_config: ResMut<WireframeConfig>) {
     wireframe_config.global = false;
-
-    let texture_handle = asset_server.load("dirt.png");
-    block_tex.dirt = Some(texture_handle);
 
     // light
     commands.spawn(PointLightBundle {
