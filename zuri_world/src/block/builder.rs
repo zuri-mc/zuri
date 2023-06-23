@@ -1,7 +1,10 @@
 use crate::block::component::{
     AnyComponentStorage, Component, ComponentStorage, ComponentStorageType,
 };
-use crate::block::{Block, BlockMap, BlockType, BlockTypeIterator, BlockTypeIteratorInner, PropertyValue, RuntimeId, ToRuntimeId};
+use crate::block::{
+    Block, BlockMap, BlockType, BlockTypeIterator, BlockTypeIteratorInner, PropertyValue,
+    RuntimeId, ToRuntimeId,
+};
 use std::any::TypeId;
 use std::borrow::Cow;
 use std::collections::btree_map::BTreeMap;
@@ -298,7 +301,7 @@ impl<'a> ToRuntimeId for &BlockBuilder<'a> {
         for (name, values) in block_type.properties.iter().map(|(k, v)| (k.as_ref(), v)) {
             offset = offset * values.variant_count() as u32
                 + values
-                    .find_index(self.properties.get(name).unwrap().clone())
+                    .find_index(&self.properties.get(name).unwrap().clone())
                     .unwrap() as u32;
         }
         RuntimeId(base.0 + offset)

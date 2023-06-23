@@ -1,5 +1,5 @@
 use std::any::TypeId;
-use std::borrow::Borrow;
+use std::borrow::{Borrow, Cow};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fmt::{Display, Formatter, Write};
 use std::hash::{Hash, Hasher};
@@ -152,6 +152,9 @@ impl BlockMap {
         self.blocks_types.get_key_value(identifier).map(|(k, _v)| k)
     }
 
+    /// Gets the block variant with the provided runtime id. Corresponds with a block state.
+    ///
+    /// To get a block type instead, consider using [Self::block_type].
     pub fn block(&self, runtime_id: impl ToRuntimeId) -> Option<Block> {
         // todo: improve
 
@@ -367,13 +370,13 @@ impl PropertyValues {
             panic!("Index {} out of range", index);
         }
         match self {
-            PropertyValues::Strings(s) => PropertyValue::String(&s[index]),
+            PropertyValues::Strings(s) => PropertyValue::String(Cow::Borrowed(&s[index])),
             PropertyValues::Boolean => PropertyValue::Bool(index == 1), // todo: check the order of this
             PropertyValues::Ints(s) => PropertyValue::Int(s[index]),
         }
     }
 
-    fn find_index(&self, value: PropertyValue) -> Option<usize> {
+    fn find_index(&self, value: &PropertyValue) -> Option<usize> {
         match self {
             PropertyValues::Strings(values) => {
                 if let PropertyValue::String(s) = value {
@@ -394,7 +397,7 @@ impl PropertyValues {
             PropertyValues::Ints(values) => {
                 if let PropertyValue::Int(s) = value {
                     for (i, value) in values.iter().cloned().enumerate() {
-                        if value != s {
+                        if value != *s {
                             continue;
                         }
                         return Some(i);
@@ -574,9 +577,9 @@ impl<'a> Display for Block<'a> {
 }
 
 /// A single, non-owned value for a property.
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub enum PropertyValue<'a> {
-    String(&'a str),
+    String(Cow<'a, str>),
     Bool(bool),
     Int(i32),
 }
