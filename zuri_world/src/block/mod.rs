@@ -49,14 +49,30 @@ impl BlockMap {
     ///
     /// Returns None if the input could not be converted to a runtime id.
     pub fn block<T: ToRuntimeId>(&self, runtime_id: T) -> Result<Block, T::Err> {
-        // todo: improve
-
-        let (block_type, variant) = self
-            .variant_map
-            .get(runtime_id.to_runtime_id(self)?.0 as usize)
-            .unwrap();
+        let runtime_id = runtime_id.to_runtime_id(self)?;
+        let (block_type, mut variant) = self.variant_map.get(runtime_id.0 as usize).unwrap();
         let block_type = self.block_type(&block_type).unwrap();
-        Ok(block_type.variants().nth(*variant as usize).unwrap())
+
+        let mut property_ptr: Box<[u32]> = block_type
+            .properties
+            .iter()
+            .rev()
+            .map(|(_, values)| {
+                let index = variant % values.variant_count() as u32;
+
+                variant -= index;
+                variant /= values.variant_count() as u32;
+
+                index
+            })
+            .collect();
+        property_ptr.reverse();
+
+        Ok(Block {
+            block_type,
+            properties: property_ptr,
+            runtime_id,
+        })
     }
 
     /// Get the value of component [T] for a block with the provided runtime id.
@@ -541,6 +557,36 @@ impl<'a> Display for PropertyValue<'a> {
             }
             PropertyValue::Bool(v) => v.fmt(f),
             PropertyValue::Int(v) => v.fmt(f),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::block::{BlockMapBuilder, BlockType, PropertyValues};
+
+    #[test]
+    fn test_property_symmetry() {
+        let block_map = BlockMapBuilder::empty()
+            .with_block(
+                BlockType::new("test")
+                    .with_property("prop1", PropertyValues::Ints(vec![0, 1, 2, 3, 4, 5].into()))
+                    .with_property("prop2", PropertyValues::Ints(vec![0, 1, 2].into()))
+                    .with_property("prop3", PropertyValues::Bool)
+                    .with_property(
+                        "prop4",
+                        PropertyValues::Ints(vec![0, 1, 2, 3, 4, 5, 6, 7, 8].into()),
+                    )
+                    .with_property("prop5", PropertyValues::Ints(vec![0, 1, 2, 3].into())),
+            )
+            .build();
+
+        let block_type = block_map.block_type("test").unwrap();
+        let mut runtime_id = block_type.base_runtime_id.unwrap();
+        for variant in block_type.variants() {
+            assert_eq!(variant.clone(), block_map.block(runtime_id).unwrap());
+            assert_eq!(variant.clone(), block_map.block(variant).unwrap());
+            runtime_id.0 += 1;
         }
     }
 }
