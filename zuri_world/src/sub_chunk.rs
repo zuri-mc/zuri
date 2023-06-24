@@ -1,8 +1,8 @@
+use crate::block;
 use crate::block::{BlockBuilder, BlockMap, RuntimeId, ToRuntimeId};
 use crate::paletted_storage::{Palette, PalettedStorage};
 use crate::pos::SubChunkIndex;
 use zuri_net::proto::io::Reader;
-use crate::block;
 
 pub const SUBCHUNK_SIZE: u16 = 16;
 
@@ -53,7 +53,9 @@ impl<const L: usize> SubChunk<L> {
     }
 
     pub fn read(reader: &mut Reader, _y_index: &mut u32, block_map: &BlockMap) -> Self {
-        let air_rid = BlockBuilder::new(block::AIR_ID).to_runtime_id(block_map);
+        let air_rid = BlockBuilder::new(block::AIR_ID)
+            .to_runtime_id(block_map)
+            .expect("Missing air runtime id");
 
         // The first byte contains the chunk version. We support version 8 and 9.
         let ver = reader.u8();

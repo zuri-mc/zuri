@@ -4922,6 +4922,7 @@ dependencies = [
  "downcast-rs",
  "glam 0.22.0",
  "sorted-vec",
+ "thiserror",
  "zuri_nbt",
  "zuri_net",
 ]

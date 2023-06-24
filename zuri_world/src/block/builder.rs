@@ -11,6 +11,7 @@ use std::borrow::Cow;
 use std::collections::btree_map::BTreeMap;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
+use thiserror::Error;
 
 /// Allows for the creation of a [BlockMap] ready for use in the client.
 #[derive(Clone)]
@@ -107,12 +108,13 @@ impl BlockMapBuilder {
         });
 
         let mut current_rid = 0;
-        for block_type in blocks {
+        for mut block_type in blocks {
             let variant_count = block_type.variant_count();
 
             for i in 0..block_type.variant_count() {
                 variant_map.push((block_type.identifier.clone(), i as u32))
             }
+            block_type.base_runtime_id = Some(RuntimeId(current_rid as u32));
             block_rid_map.insert(block_type, RuntimeId(current_rid as u32));
 
             current_rid += variant_count;
@@ -296,31 +298,113 @@ impl<'a> BlockBuilder<'a> {
     }
 }
 
-impl<'a> ToRuntimeId for &BlockBuilder<'a> {
-    fn to_runtime_id(self, block_map: &BlockMap) -> RuntimeId {
-        // todo: don't panic
+impl<'a> ToRuntimeId for &'a BlockBuilder<'a> {
+    type Err = BlockBuilderErr<'a>;
+
+    fn to_runtime_id(self, block_map: &BlockMap) -> Result<RuntimeId, Self::Err> {
         let (block_type, base) = block_map
             .blocks_types
-            .get_key_value(self.identifier.as_ref())
-            .unwrap();
+            .get_key_value(self.identifier())
+            .ok_or_else(|| BlockBuilderErr::UnknownIdentifier(Cow::Borrowed(self.identifier())))?;
         let base = base.clone();
         let mut offset = 0;
 
-        if self.properties.len() != block_type.properties.len() {
-            panic!(); // todo: return error
+        if self.properties.len() < block_type.properties.len() {
+            for (name, _) in &block_type.properties {
+                if self.properties.contains_key(name.as_ref()) {
+                    continue;
+                }
+                return Err(BlockBuilderErr::<'a>::MissingProperty(
+                    Cow::Borrowed(self.identifier.as_ref()),
+                    Cow::Owned(name.to_string()),
+                ));
+            }
         }
-        for (name, values) in block_type.properties.iter().map(|(k, v)| (k.as_ref(), v)) {
-            offset = offset * values.variant_count() as u32
-                + values
-                    .find_index(&self.properties.get(name).unwrap().clone())
-                    .unwrap() as u32;
+        for (name, value) in self.properties.iter() {
+            let values = block_type.property_values(&name).ok_or_else(|| {
+                BlockBuilderErr::UnknownProperty(
+                    Cow::Borrowed(self.identifier()),
+                    Cow::Borrowed(name.as_ref()),
+                )
+            })?;
+            let value_index = values.find_index(value).ok_or_else(|| {
+                BlockBuilderErr::UnknownPropertyValue(
+                    Cow::Borrowed(self.identifier()),
+                    Cow::Borrowed(name.as_ref()),
+                    value.to_borrowed(),
+                )
+            })?;
+
+            offset = offset * values.variant_count() as u32 + value_index as u32;
         }
-        RuntimeId(base.0 + offset)
+        Ok(RuntimeId(base.0 + offset))
+    }
+}
+
+/// Returned when a [BlockBuilder] could not be converted to a single unique [RuntimeId].
+///
+/// All variants of the enum are structured the same, however not all variants have all fields.
+///  * **Field 1:** Block identifier
+///  * **Field 2:** Property name
+///  * **Field 3:** Property value
+#[derive(Debug, Error, Clone)]
+pub enum BlockBuilderErr<'a> {
+    /// The builder contains a property that the [BlockType] defined in the block map does not.
+    #[error("missing property `{1}` in builder for block type `{0}`")]
+    MissingProperty(Cow<'a, str>, Cow<'a, str>),
+    /// The builder's unique identifier could not be found in the block map.
+    #[error("block type with identifier `{0}` not found")]
+    UnknownIdentifier(Cow<'a, str>),
+    /// The builder defines a property that the corresponding [BlockType] does not.
+    #[error("block property with name `{1}` for block `{0}` not found")]
+    UnknownProperty(Cow<'a, str>, Cow<'a, str>),
+    /// A property in the builder has a value that is not allowed for the corresponding property in
+    /// the [BlockType].
+    #[error("value `{2}` is not allowed for block property `{1}` in block type `{0}`")]
+    UnknownPropertyValue(Cow<'a, str>, Cow<'a, str>, PropertyValue<'a>),
+}
+
+impl<'a> BlockBuilderErr<'a> {
+    /// Clones the error, returning an error with a static lifetime.
+    pub fn to_static(&self) -> BlockBuilderErr<'static> {
+        match self {
+            BlockBuilderErr::MissingProperty(a, b) => BlockBuilderErr::MissingProperty(
+                Cow::Owned(a.to_string()),
+                Cow::Owned(b.to_string()),
+            ),
+            BlockBuilderErr::UnknownIdentifier(a) => {
+                BlockBuilderErr::UnknownIdentifier(Cow::Owned(a.to_string()))
+            }
+            BlockBuilderErr::UnknownProperty(a, b) => BlockBuilderErr::UnknownProperty(
+                Cow::Owned(a.to_string()),
+                Cow::Owned(b.to_string()),
+            ),
+            BlockBuilderErr::UnknownPropertyValue(a, b, c) => {
+                BlockBuilderErr::UnknownPropertyValue(
+                    Cow::<'static, str>::Owned(a.to_string()),
+                    Cow::<'static, str>::Owned(b.to_string()),
+                    match c {
+                        PropertyValue::String(v) => {
+                            PropertyValue::<'static>::String(Cow::<'static, str>::Owned(
+                                v.to_string(),
+                            ))
+                        }
+                        PropertyValue::Int(v) => PropertyValue::<'static>::Int(*v),
+                        PropertyValue::Bool(v) => PropertyValue::<'static>::Bool(*v),
+                    },
+                )
+            }
+        }
     }
 }
 
 impl<'a> ToRuntimeId for BlockBuilder<'a> {
-    fn to_runtime_id(self, block_map: &BlockMap) -> RuntimeId {
-        (&self).to_runtime_id(block_map)
+    type Err = BlockBuilderErr<'static>;
+
+    fn to_runtime_id(self, block_map: &BlockMap) -> Result<RuntimeId, Self::Err> {
+        match (&self).to_runtime_id(block_map) {
+            Ok(v) => Ok(v),
+            Err(err) => Err(err.to_static()),
+        }
     }
 }

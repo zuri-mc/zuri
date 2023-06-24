@@ -1,4 +1,4 @@
-use glam::{IVec2, IVec3};
+use glam::IVec2;
 use std::iter;
 use std::sync::Arc;
 
@@ -24,7 +24,9 @@ impl Chunk {
     /// configured.
     #[must_use]
     pub fn empty(range: YRange, block_map: Arc<BlockMap>) -> Self {
-        let air = BlockBuilder::new(block::AIR_ID).to_runtime_id(&block_map);
+        let air = BlockBuilder::new(block::AIR_ID)
+            .to_runtime_id(&block_map)
+            .expect("Missing air runtime id");
 
         Self {
             block_map,
@@ -51,18 +53,19 @@ impl Chunk {
     #[must_use]
     pub fn at(&self, pos: ChunkIndex) -> RuntimeId {
         if !self.range.is_inside(pos) {
-            panic!("chunk pos is outside of bounds"); // todo: maybe return an option
+            panic!("chunk index is outside of bounds");
         }
         self.sub_chunks[self.subchunk_id(pos.y())].at(pos.into(), 0)
     }
 
     /// Sets the block at a position to a new block.
-    pub fn set(&mut self, pos: ChunkIndex, val: impl ToRuntimeId) {
+    pub fn set<T: ToRuntimeId>(&mut self, pos: ChunkIndex, val: T) -> Result<(), T::Err> {
         if !self.range.is_inside(pos) {
-            panic!("chunk pos is outside of bounds"); // todo: do we want to panic here
+            panic!("chunk index is outside of bounds");
         }
         let id = self.subchunk_id(pos.y());
-        self.sub_chunks[id].set(pos.into(), 0, val.to_runtime_id(&self.block_map));
+        self.sub_chunks[id].set(pos.into(), 0, val.to_runtime_id(&self.block_map)?);
+        Ok(())
     }
 
     /// Decodes a chunk from a [Reader].
@@ -73,7 +76,9 @@ impl Chunk {
         sub_chunk_count: u32,
         block_map: Arc<BlockMap>,
     ) -> Self {
-        let air_rid = BlockBuilder::new(block::AIR_ID).to_runtime_id(&block_map);
+        let air_rid = BlockBuilder::new(block::AIR_ID)
+            .to_runtime_id(&block_map)
+            .expect("Missing air runtime id");
 
         let mut sub_chunks = Vec::new();
         for _ in 0..(range.height() >> 4) {

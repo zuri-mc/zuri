@@ -1,5 +1,6 @@
 use std::any::TypeId;
 use std::borrow::{Borrow, Cow};
+use std::cmp::Ordering;
 use std::collections::{BTreeMap, HashMap};
 use std::fmt::{Display, Formatter, Write};
 use std::hash::{Hash, Hasher};
@@ -7,6 +8,7 @@ use std::io;
 use std::ops::Deref;
 
 pub use sorted_vec::SortedSet;
+use thiserror::Error;
 
 pub use builder::{BlockBuilder, BlockMapBuilder};
 pub use vanilla::AIR_ID;
@@ -44,19 +46,25 @@ impl BlockMap {
     /// Gets the block variant with the provided runtime id. Corresponds with a block state.
     ///
     /// To get a block type instead, consider using [Self::block_type].
-    pub fn block(&self, runtime_id: impl ToRuntimeId) -> Option<Block> {
+    ///
+    /// Returns None if the input could not be converted to a runtime id.
+    pub fn block<T: ToRuntimeId>(&self, runtime_id: T) -> Result<Block, T::Err> {
         // todo: improve
 
         let (block_type, variant) = self
             .variant_map
-            .get(runtime_id.to_runtime_id(self).0 as usize)?;
-        let block_type = self.block_type(&block_type)?;
-        block_type.variants().nth(*variant as usize)
+            .get(runtime_id.to_runtime_id(self)?.0 as usize)
+            .unwrap();
+        let block_type = self.block_type(&block_type).unwrap();
+        Ok(block_type.variants().nth(*variant as usize).unwrap())
     }
 
     /// Get the value of component [T] for a block with the provided runtime id.
+    ///
+    /// Returns none even if the input could not be converted to a valid runtime id.
     pub fn component<T: Component>(&self, runtime_id: impl ToRuntimeId) -> Option<&T> {
-        self.components::<T>().get(runtime_id.to_runtime_id(self))
+        self.components::<T>()
+            .get(runtime_id.to_runtime_id(self).ok()?)
     }
 
     /// Gets the component storage of a certain type, which contains all the components of that
@@ -75,9 +83,11 @@ impl BlockMap {
     }
 
     /// Get a mutable reference to component [T] for a block with the provided runtime id.
+    ///
+    /// Returns None even if the input could not be converted to a runtime id.
     pub fn component_mut<T: Component>(&mut self, runtime_id: impl ToRuntimeId) -> Option<&mut T> {
         let runtime_id = runtime_id.to_runtime_id(self);
-        self.components_mut::<T>().get_mut(runtime_id)
+        self.components_mut::<T>().get_mut(runtime_id.ok()?)
     }
 
     /// Provides a mutable reference to the [ComponentStorage] for a component type.
@@ -96,8 +106,12 @@ impl BlockMap {
 
     /// Sets a component for a block with a certain runtime id. Overrides the previously set value
     /// if this block already had the component.
+    ///
+    /// Panics if the input index could not be converted to a valid runtime id.
     pub fn set_component<T: Component>(&mut self, index: impl ToRuntimeId, value: T) {
-        let index = index.to_runtime_id(self);
+        let index = index
+            .to_runtime_id(self)
+            .expect("Could not convert to runtime id");
         self.components_mut::<T>().set(index, value);
     }
 
@@ -114,11 +128,11 @@ impl BlockMap {
                 writer.write(format!("{runtime_id}: ").as_bytes())?;
             }
 
-            if block.is_none() {
-                writer.write(format!("?\n").as_bytes())?;
+            if let Err(err) = block {
+                writer.write(format!("? ({err})\n").as_bytes())?;
                 continue;
             }
-            writer.write(format!("{}\n", self.block(runtime_id).unwrap()).as_bytes())?;
+            writer.write(format!("{}\n", block.unwrap()).as_bytes())?;
         }
         Ok(())
     }
@@ -139,6 +153,10 @@ pub struct BlockType {
     identifier: Box<str>,
     /// Maps property names to a set of possible values the property can have.
     properties: BTreeMap<Box<str>, PropertyValues>,
+    /// The lowest runtime id out of all the variants of this block.
+    ///
+    /// Gets computed when the block type gets added to a block map.
+    base_runtime_id: Option<RuntimeId>,
 }
 
 /// Hashing a [BlockType] is the same as hashing its unique identifier string.
@@ -161,6 +179,7 @@ impl BlockType {
         Self {
             identifier: name.into(),
             properties: Default::default(),
+            base_runtime_id: None,
         }
     }
 
@@ -249,6 +268,9 @@ impl BlockType {
                 .iter()
                 .map(|(_, values)| (0, values.variant_count() as u32))
                 .collect(),
+            next_runtime_id: self.base_runtime_id.expect(
+                "Cannot iterate over variants of BlockType that has not yet been registered",
+            ),
         })
     }
 }
@@ -338,6 +360,8 @@ enum BlockTypeIteratorInner<'a> {
         /// allowed values as second field. The index of the slice corresponds with the index of the
         /// property in [BlockType].
         properties: Box<[(u32, u32)]>,
+        /// The runtime id of the next variant returned by the iterator.
+        next_runtime_id: RuntimeId,
     },
     /// The iterator has exactly one remaining variant, which is a variant of a [BlockType] without
     /// any properties.
@@ -353,6 +377,7 @@ impl<'a> Iterator for BlockTypeIterator<'a> {
             BlockTypeIteratorInner::Multiple {
                 block_type,
                 properties,
+                next_runtime_id,
             } => {
                 let mut exhaust = false;
                 let next = properties
@@ -374,7 +399,9 @@ impl<'a> Iterator for BlockTypeIterator<'a> {
                 let ret = Some(Block {
                     block_type: *block_type,
                     properties: next,
+                    runtime_id: next_runtime_id.clone(),
                 });
+                next_runtime_id.0 += 1;
                 if exhaust {
                     self.0 = BlockTypeIteratorInner::Exhausted;
                 }
@@ -384,6 +411,7 @@ impl<'a> Iterator for BlockTypeIterator<'a> {
                 let ret = Some(Block {
                     block_type,
                     properties: Box::new([]),
+                    runtime_id: block_type.base_runtime_id.unwrap(),
                 });
                 self.0 = BlockTypeIteratorInner::Exhausted;
                 ret
@@ -403,6 +431,7 @@ pub struct Block<'a> {
     /// Maps properties to a value from its set of allowed values. The index of the slice
     /// corresponds with the index of the property in [BlockType].
     properties: Box<[u32]>,
+    runtime_id: RuntimeId,
 }
 
 impl<'a> Block<'a> {
@@ -414,6 +443,11 @@ impl<'a> Block<'a> {
     /// Gets the block's [BlockType].
     pub fn block_type(&self) -> &'a BlockType {
         self.block_type
+    }
+
+    /// The runtime id of the block. See [RuntimeId].
+    pub fn runtime_id(&self) -> RuntimeId {
+        self.runtime_id
     }
 
     /// Looks up the value of a certain property if the block has the property.
@@ -443,24 +477,15 @@ impl<'a> Block<'a> {
     }
 }
 
-impl<'a> ToRuntimeId for Block<'a> {
-    fn to_runtime_id(self, block_map: &BlockMap) -> RuntimeId {
-        let base = block_map
-            .blocks_types
-            .get(self.block_type.identifier())
-            .unwrap()
-            .0;
-        let mut offset = 0;
+impl<'a> Into<RuntimeId> for Block<'a> {
+    fn into(self) -> RuntimeId {
+        self.runtime_id
+    }
+}
 
-        for ((_, values), value) in self
-            .block_type
-            .properties
-            .iter()
-            .zip(self.properties.iter())
-        {
-            offset = offset * values.variant_count() as u32 + *value;
-        }
-        RuntimeId(base + offset)
+impl<'a> Into<RuntimeId> for &Block<'a> {
+    fn into(self) -> RuntimeId {
+        self.runtime_id
     }
 }
 
@@ -495,6 +520,17 @@ pub enum PropertyValue<'a> {
     Int(i32),
 }
 
+impl<'a> PropertyValue<'a> {
+    /// Ensures the [PropertyValue] does not own any values. (In this case, the string value is
+    /// borrowed)
+    pub fn to_borrowed(&'a self) -> PropertyValue<'a> {
+        match self {
+            PropertyValue::String(v) => PropertyValue::String(Cow::Borrowed(v.as_ref())),
+            v => v.clone(),
+        }
+    }
+}
+
 impl<'a> Display for PropertyValue<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -515,19 +551,46 @@ impl<'a> Display for PropertyValue<'a> {
 /// possible property values has its own runtime id. The amount of unique runtime ids each
 /// [BlockType] has corresponds with [BlockType::variant_count]. Runtime ids are also unique between
 /// different block types.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Debug, Copy, Clone, Eq, Ord, Hash)]
 pub struct RuntimeId(pub u32);
 
 /// Allows for types to be converted to a [RuntimeId] given a [BlockType].
 pub trait ToRuntimeId {
-    /// Get the [RuntimeId] corresponding with the value of the type. // todo: Option<RuntimeId>?
-    fn to_runtime_id(self, block_map: &BlockMap) -> RuntimeId;
+    /// The error to return when conversion to a runtime id has failed.
+    type Err: std::error::Error;
+
+    /// Get the [RuntimeId] corresponding with the value of the type.
+    fn to_runtime_id(self, block_map: &BlockMap) -> Result<RuntimeId, Self::Err>;
 }
 
 /// Automatically implement [ToRuntimeId] when conversion is trivial and doesn't need [BlockMap].
 impl<T: Into<RuntimeId>> ToRuntimeId for T {
-    fn to_runtime_id(self, _block_map: &BlockMap) -> RuntimeId {
-        self.into()
+    type Err = OutOfRangeError;
+
+    fn to_runtime_id(self, block_map: &BlockMap) -> Result<RuntimeId, Self::Err> {
+        let rid = self.into();
+        if rid >= block_map.runtime_ids() {
+            return Err(OutOfRangeError);
+        }
+        Ok(rid)
+    }
+}
+
+/// Returned when conversion to a runtime id results in a runtime id higher than the highest known
+/// one.
+#[derive(Debug, Error, Copy, Clone)]
+#[error("the runtime id is out of range")]
+pub struct OutOfRangeError;
+
+impl<T: Copy + Into<RuntimeId>> PartialEq<T> for RuntimeId {
+    fn eq(&self, other: &T) -> bool {
+        self.0 == other.clone().into().0
+    }
+}
+
+impl<T: Copy + Into<RuntimeId>> PartialOrd<T> for RuntimeId {
+    fn partial_cmp(&self, other: &T) -> Option<Ordering> {
+        self.0.partial_cmp(&other.clone().into().0)
     }
 }
 

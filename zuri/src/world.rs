@@ -222,10 +222,14 @@ fn block_update_system(
             continue;
         }
         if let Some(chunk_entity) = chunks.at_block_pos(pk.position.into()) {
-            query.get_mut(chunk_entity).unwrap().set(
-                <ChunkIndex as From<IVec3>>::from(pk.position.into()),
-                pk.new_block_runtime_id.0,
-            );
+            query
+                .get_mut(chunk_entity)
+                .unwrap()
+                .set(
+                    <ChunkIndex as From<IVec3>>::from(pk.position.into()),
+                    pk.new_block_runtime_id.0,
+                )
+                .unwrap();
         }
     }
 }
