@@ -26,9 +26,6 @@ Here is a non-exhaustive list of the most interesting crates. None of these crat
 While the basics for connecting to servers are down, there is still a lot of work to do. There are some work-in-progress
 branches that show more work:
 
-- **feature/blocks**<br/>
-  Receive chunks from servers and render them as blocks (currently, everything looks like a dirt block).
-
 - **feature/listener**<br/>
   Implements a server listening alongside the server login sequence for zuri_net.
 

@@ -9,6 +9,7 @@ use std::ops::Deref;
 pub use sorted_vec::SortedSet;
 
 pub use builder::{BlockBuilder, BlockMapBuilder};
+pub use component::Component;
 pub use runtime_id::*;
 pub use vanilla::AIR_ID;
 pub use zuri_world_derive::Component;
