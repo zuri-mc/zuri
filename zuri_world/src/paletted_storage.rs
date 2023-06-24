@@ -1,4 +1,5 @@
-use crate::block::{BlockMap, RuntimeId};
+use crate::block::{BlockBuilder, BlockMap, PropertyValue, RuntimeId, ToRuntimeId};
+use std::borrow::Cow;
 use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_nbt::NBTTag;
 use zuri_net::proto::io::Reader;
@@ -104,7 +105,7 @@ impl PalettedStorage {
         self.indices[u32_offset as usize] |= index << bit_offset;
     }
 
-    pub fn read(reader: &mut Reader, _block_map: &BlockMap) -> PalettedStorage {
+    pub fn read(reader: &mut Reader, block_map: &BlockMap) -> PalettedStorage {
         // The first byte encodes two values: the first 7 bits denote the amount of bits each index
         // takes in the index vector. The last gives info about how the palette is structured,
         let (bits_per_index, nbt_palette) = {
@@ -157,14 +158,37 @@ impl PalettedStorage {
             // the namespaced block id and the block state.
             for _ in 0..palette_size {
                 let nbt = reader.nbt(NetworkLittleEndian);
+
                 if let NBTTag::Compound(map) = nbt {
+                    let mut block_builder;
                     if let NBTTag::String(name) = map.get("name").unwrap() {
-                        if name.0 == "air" {
-                            palette.push(10462.into());
-                            continue;
+                        if !name.0.contains(':') {
+                            block_builder = BlockBuilder::new(format!("minecraft:{}", name.0));
+                        } else {
+                            block_builder = BlockBuilder::new(&name.0);
                         }
-                        palette.push(0.into());
+                    } else {
+                        panic!("missing `name` tag");
                     }
+
+                    if let NBTTag::Compound(states) = map.get("states").unwrap() {
+                        for (name, value) in states.iter() {
+                            block_builder.insert_property(
+                                name.as_str(),
+                                match value {
+                                    NBTTag::Byte(v) => PropertyValue::Bool(v.0 != 0),
+                                    NBTTag::Int(v) => PropertyValue::Int(v.0),
+                                    NBTTag::String(v) => PropertyValue::String(Cow::Borrowed(&v.0)),
+                                    tag => panic!(
+                                        "unrecognised property value with type `{}`",
+                                        tag.tag_type()
+                                    ),
+                                },
+                            );
+                        }
+                    }
+
+                    palette.push(block_builder.to_runtime_id(block_map).unwrap());
                 } else {
                     panic!("unexpected value type for root in nbt palette");
                 }
