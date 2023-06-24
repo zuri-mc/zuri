@@ -197,6 +197,16 @@ fn receive_packets(world: &mut World) {
                 Packet::LevelChunk(pk) => world.send_event(pk),
                 Packet::StartGame(pk) => world.send_event(pk),
                 Packet::UpdateBlock(pk) => world.send_event(pk),
+                // Ignore login sequence packets.
+                Packet::BiomeDefinitionList(_) => {}
+                Packet::CompressedBiomeDefinitionList(_) => {}
+                Packet::NetworkSettings(_) => {}
+                Packet::PlayStatus(_) => {}
+                Packet::ResourcePacksInfo(_) => {}
+                Packet::ResourcePackStack(_) => {}
+                Packet::ResourcePackChunkData(_) => {}
+                Packet::ResourcePackDataInfo(_) => {}
+                Packet::ServerToClientHandshake(_) => {}
                 _ => {
                     warn!("Unhandled packet {pk}");
                 }

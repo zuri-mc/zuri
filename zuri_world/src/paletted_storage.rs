@@ -1,3 +1,4 @@
+use crate::block::{BlockMap, RuntimeId};
 use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_nbt::NBTTag;
 use zuri_net::proto::io::Reader;
@@ -6,18 +7,18 @@ use crate::pos::SubChunkIndex;
 
 #[derive(Clone, Debug)]
 pub struct Palette {
-    mapping: Vec<u32>,
+    mapping: Vec<RuntimeId>,
 }
 
 impl Palette {
-    pub fn new(mapping: Vec<u32>) -> Self {
+    pub fn new(mapping: Vec<RuntimeId>) -> Self {
         if mapping.len() == 0 {
             panic!("Palette must contain at least 1 entry");
         }
         Self { mapping }
     }
 
-    pub fn index(&self, val: u32) -> Option<u32> {
+    pub fn index(&self, val: RuntimeId) -> Option<u32> {
         for (i, rid) in self.mapping.iter().copied().enumerate() {
             if rid == val {
                 return Some(i as u32);
@@ -56,7 +57,7 @@ impl PalettedStorage {
         }
     }
 
-    pub fn at(&self, pos: SubChunkIndex) -> u32 {
+    pub fn at(&self, pos: SubChunkIndex) -> RuntimeId {
         let palette_index = if self.bits_per_index == 0 {
             0
         } else {
@@ -70,7 +71,7 @@ impl PalettedStorage {
         self.palette.mapping[palette_index as usize]
     }
 
-    pub fn set(&mut self, pos: SubChunkIndex, val: u32) {
+    pub fn set(&mut self, pos: SubChunkIndex, val: RuntimeId) {
         let index = match self.palette.index(val) {
             None => {
                 self.palette.mapping.push(val);
@@ -103,7 +104,7 @@ impl PalettedStorage {
         self.indices[u32_offset as usize] |= index << bit_offset;
     }
 
-    pub fn read(reader: &mut Reader) -> PalettedStorage {
+    pub fn read(reader: &mut Reader, _block_map: &BlockMap) -> PalettedStorage {
         // The first byte encodes two values: the first 7 bits denote the amount of bits each index
         // takes in the index vector. The last gives info about how the palette is structured,
         let (bits_per_index, nbt_palette) = {
@@ -145,11 +146,11 @@ impl PalettedStorage {
             1
         };
         // For some reason, there are two different ways to encode a palette.
-        let mut palette = Vec::with_capacity(palette_size);
+        let mut palette = Vec::<RuntimeId>::with_capacity(palette_size);
         if !nbt_palette {
             // In most cases, the palette is just encoded as a vector of `var_i32`s.
             for _ in 0..palette_size {
-                palette.push(reader.var_i32() as u32);
+                palette.push((reader.var_i32() as u32).into());
             }
         } else {
             // The palette can be encoded with nbt. In this case, each entry is a compound tag with
@@ -159,10 +160,10 @@ impl PalettedStorage {
                 if let NBTTag::Compound(map) = nbt {
                     if let NBTTag::String(name) = map.get("name").unwrap() {
                         if name.0 == "air" {
-                            palette.push(10462);
+                            palette.push(10462.into());
                             continue;
                         }
-                        palette.push(0);
+                        palette.push(0.into());
                     }
                 } else {
                     panic!("unexpected value type for root in nbt palette");

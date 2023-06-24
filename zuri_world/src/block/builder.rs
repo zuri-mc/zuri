@@ -6,7 +6,6 @@ use crate::block::{
     Block, BlockMap, BlockType, BlockTypeIterator, BlockTypeIteratorInner, PropertyValue,
     RuntimeId, ToRuntimeId,
 };
-use bevy::prelude::Resource;
 use std::any::TypeId;
 use std::borrow::Cow;
 use std::collections::btree_map::BTreeMap;
@@ -14,7 +13,8 @@ use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 /// Allows for the creation of a [BlockMap] ready for use in the client.
-#[derive(Clone, Resource)]
+#[derive(Clone)]
+#[cfg_attr(feature = "bevy", derive(bevy::prelude::Resource))]
 pub struct BlockMapBuilder {
     blocks: HashSet<BlockType>,
     /// Maps the [TypeId] of a component to a function that creates a [ComponentStorage] for it.
@@ -125,7 +125,7 @@ impl BlockMapBuilder {
 
         BlockMap {
             blocks_types: block_rid_map,
-            _runtime_id_count: runtime_id_count as u32,
+            runtime_id_count: runtime_id_count as u32,
             variant_map,
             components,
         }

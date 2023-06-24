@@ -6,31 +6,36 @@ use std::hash::{Hash, Hasher};
 use std::io;
 use std::ops::Deref;
 
-use bevy::prelude::Resource;
 pub use sorted_vec::SortedSet;
 
 pub use builder::{BlockBuilder, BlockMapBuilder};
+pub use vanilla::AIR_ID;
 
 use crate::block::component::*;
 
 mod builder;
 pub mod component;
-pub mod types;
 mod vanilla;
 
 /// Holds all known block types and runtime blocks.
 ///
 /// Each variant of a block type (block state) can have its own values for components.
-#[derive(Resource, Debug)]
+#[derive(Debug)]
 pub struct BlockMap {
     /// Maps all existing block types to their first runtime id.
     blocks_types: HashMap<BlockType, RuntimeId>,
-    _runtime_id_count: u32,
+    runtime_id_count: u32,
     variant_map: Vec<(Box<str>, u32)>,
     components: HashMap<TypeId, Box<dyn AnyComponentStorage>>,
 }
 
 impl BlockMap {
+    /// Returns the amount of known runtime ids. The number returned is one higher than the largest
+    /// runtime id.
+    pub fn runtime_ids(&self) -> u32 {
+        self.runtime_id_count
+    }
+
     /// Get the [BlockType] for a certain unique block identifier, if it exists.
     pub fn block_type(&self, identifier: &str) -> Option<&BlockType> {
         self.blocks_types.get_key_value(identifier).map(|(k, _v)| k)
@@ -79,7 +84,12 @@ impl BlockMap {
     pub fn components_mut<T: Component>(&mut self) -> &mut ComponentStorage<T> {
         self.components
             .get_mut(&TypeId::of::<T>())
-            .expect("Component not registered")
+            .unwrap_or_else(|| {
+                panic!(
+                    "Component of type `{}` is not registered.",
+                    std::any::type_name::<T>()
+                )
+            })
             .downcast_mut()
             .unwrap()
     }
@@ -98,7 +108,7 @@ impl BlockMap {
         writer: &mut impl io::Write,
         include_ids: bool,
     ) -> io::Result<()> {
-        for runtime_id in 0..self._runtime_id_count {
+        for runtime_id in 0..self.runtime_id_count {
             let block = self.block(runtime_id);
             if include_ids {
                 writer.write(format!("{runtime_id}: ").as_bytes())?;

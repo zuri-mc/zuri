@@ -2,8 +2,6 @@ use crate::block::RuntimeId;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
-pub mod geometry;
-
 /// The base trait for any type of component.
 ///
 /// A component does not actually require to have any special methods, besides that it should

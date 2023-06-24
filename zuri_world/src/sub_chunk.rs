@@ -1,6 +1,8 @@
+use crate::block::{BlockBuilder, BlockMap, RuntimeId, ToRuntimeId};
 use crate::paletted_storage::{Palette, PalettedStorage};
 use crate::pos::SubChunkIndex;
 use zuri_net::proto::io::Reader;
+use crate::block;
 
 pub const SUBCHUNK_SIZE: u16 = 16;
 
@@ -8,14 +10,14 @@ pub const SUBCHUNK_SIZE: u16 = 16;
 /// It consists of `L` layers which are used for things like waterlogged blocks.
 #[derive(Clone)]
 pub struct SubChunk<const L: usize> {
-    _air_id: u32,
+    _air_id: RuntimeId,
     layers: [PalettedStorage; L],
     // todo: biomes
 }
 
 impl<const L: usize> SubChunk<L> {
     /// Creates `L` paletted storages filled with `air_rid`.
-    fn empty_layers(air_id: u32) -> [PalettedStorage; L] {
+    fn empty_layers(air_id: RuntimeId) -> [PalettedStorage; L] {
         let mut layers = Vec::with_capacity(L);
         for _ in 0..L {
             layers.push(PalettedStorage::new(vec![], Palette::new(vec![air_id])));
@@ -29,28 +31,30 @@ impl<const L: usize> SubChunk<L> {
     }
 
     /// Creates a subchunk filled with `air_rid`.
-    pub fn empty(air_id: u32) -> Self {
+    pub fn empty(air_id: RuntimeId) -> Self {
         Self {
             _air_id: air_id,
             layers: Self::empty_layers(air_id),
         }
     }
 
-    pub fn at(&self, pos: SubChunkIndex, layer: u8) -> u32 {
+    pub fn at(&self, pos: SubChunkIndex, layer: u8) -> RuntimeId {
         if layer as usize >= L {
             panic!("layer {layer} is out of bounds");
         }
         self.layers[layer as usize].at(pos)
     }
 
-    pub fn set(&mut self, pos: SubChunkIndex, layer: u8, val: u32) {
+    pub fn set(&mut self, pos: SubChunkIndex, layer: u8, val: RuntimeId) {
         if layer as usize >= L {
             panic!("layer {layer} is out of bounds")
         }
         self.layers[layer as usize].set(pos, val);
     }
 
-    pub fn read(reader: &mut Reader, _y_index: &mut u32, air_id: u32) -> Self {
+    pub fn read(reader: &mut Reader, _y_index: &mut u32, block_map: &BlockMap) -> Self {
+        let air_rid = BlockBuilder::new(block::AIR_ID).to_runtime_id(block_map);
+
         // The first byte contains the chunk version. We support version 8 and 9.
         let ver = reader.u8();
         assert!(ver == 1 || ver == 8 || ver == 9);
@@ -73,14 +77,14 @@ impl<const L: usize> SubChunk<L> {
         }
 
         // Now, reach each layer of the sub chunk.
-        let mut layers = Self::empty_layers(air_id);
+        let mut layers = Self::empty_layers(air_rid);
         for current_layer in 0..layer_count {
-            layers[current_layer as usize] = PalettedStorage::read(reader);
+            layers[current_layer as usize] = PalettedStorage::read(reader, block_map);
         }
 
         // todo: biomes
         Self {
-            _air_id: air_id,
+            _air_id: air_rid,
             layers,
         }
     }

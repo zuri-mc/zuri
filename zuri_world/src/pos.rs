@@ -1,5 +1,5 @@
 use crate::sub_chunk::SUBCHUNK_SIZE;
-use bevy::prelude::*;
+use glam::IVec3;
 
 /// A block position relative to the origin of a chunk. The x and z coordinates are always
 /// guaranteed to be in the range `0..16`.

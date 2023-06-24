@@ -1,4 +1,4 @@
-use std::ops::Range;
+use std::ops::{Range, RangeInclusive};
 
 use crate::pos::ChunkIndex;
 use crate::sub_chunk::SUBCHUNK_SIZE;
@@ -36,6 +36,19 @@ impl YRange {
     pub fn is_inside(&self, pos: impl Into<ChunkIndex>) -> bool {
         let c = pos.into();
         self.min <= c.y() && self.max >= c.y()
+    }
+
+    pub fn iter(&self) -> RangeInclusive<i16> {
+        (self.min..=self.max).into_iter()
+    }
+}
+
+impl IntoIterator for YRange {
+    type Item = i16;
+    type IntoIter = RangeInclusive<i16>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
     }
 }
 

@@ -16,7 +16,7 @@ serde = { version = "1.0.163" , features = ["derive"] }
 zuri_math = { path = "../zuri_math" }
 zuri_nbt = { path = "../zuri_nbt" }
 zuri_net = { path = "../zuri_net" }
-zuri_world = { path = "../zuri_world" }
+zuri_world = { path = "../zuri_world", features = ["bevy"] }
 zuri_xbox = { path = "../zuri_xbox" }
 rand = "0.8.5"
 oauth2 = "4.3.0"

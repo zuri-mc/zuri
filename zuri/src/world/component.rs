@@ -1,5 +1,5 @@
-use crate::block::component::Component;
 use bevy::prelude::Mesh;
+use zuri_world::block::component::Component;
 
 #[derive(Debug)]
 pub struct Geometry {

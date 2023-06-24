@@ -1,10 +1,10 @@
-use crate::block::component::geometry::Geometry;
-use crate::block::component::ComponentStorageType;
 use crate::block::{BlockMapBuilder, BlockType, PropertyValues};
 use bytes::Bytes;
 use std::collections::HashMap;
 use zuri_nbt::encoding::NetworkLittleEndian;
 use zuri_nbt::{tag, NBTTag};
+
+pub const AIR_ID: &str = "minecraft:air";
 
 /// Returns a base [BlockMapBuilder] containing all vanilla block states.
 pub fn vanilla_block_map() -> BlockMapBuilder {
@@ -73,8 +73,7 @@ pub fn vanilla_block_map() -> BlockMapBuilder {
         }
     }
 
-    let mut block_map =
-        BlockMapBuilder::empty().with_component_type::<Geometry>(ComponentStorageType::Vector);
+    let mut block_map = BlockMapBuilder::empty();
 
     for (name, properties) in vanilla_block_states {
         let mut block_type = BlockType::new(name);
@@ -85,32 +84,4 @@ pub fn vanilla_block_map() -> BlockMapBuilder {
     }
 
     block_map
-    /*    let mut block_map = block_map.build();
-
-    block_map.set_component(
-        BlockBuilder::new("minecraft:air"),
-        Geometry {
-            mesh: Mesh::new(PrimitiveTopology::TriangleList),
-        },
-    );
-    {
-        let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-        let vertices: Vec<[f32; 3]> = vec![[0., 0., 0.], [0., 1., 0.], [1., 0., 1.], [1., 1., 1.]];
-        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
-        let normals: Vec<[f32; 3]> = vec![[1., 0., 0.], [1., 0., 0.], [1., 0., 0.], [1., 0., 0.]];
-        mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
-        let uvs: Vec<[f32; 2]> = vec![[0., 0.], [0., 1.], [1., 0.], [1., 1.]];
-        mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
-        mesh.set_indices(Some(Indices::U32(vec![0, 1, 2, 1, 2, 3, 2, 1, 0, 3, 2, 1])));
-
-        let mut rids = Vec::new();
-        for block in BlockBuilder::new("minecraft:tallgrass").matches(&block_map) {
-            rids.push(block.to_runtime_id(&block_map));
-        }
-        for rid in rids {
-            block_map.set_component(rid, Geometry { mesh: mesh.clone() });
-        }
-    }
-
-    block_map*/
 }
