@@ -1,4 +1,4 @@
-use glam::IVec2;
+use glam::{IVec2, IVec3};
 use std::iter;
 use std::sync::Arc;
 

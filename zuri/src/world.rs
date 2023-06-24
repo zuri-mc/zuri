@@ -9,6 +9,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use zuri_net::proto::io::Reader;
 use zuri_net::proto::packet::level_chunk::LevelChunk;
+use zuri_net::proto::packet::network_chunk_publisher_update::NetworkChunkPublisherUpdate;
 use zuri_net::proto::packet::start_game::StartGame;
 use zuri_net::proto::packet::update_block::UpdateBlock;
 use zuri_world::block;
@@ -34,6 +35,8 @@ impl Plugin for WorldPlugin {
         // Systems
         .add_system(build_block_map_system)
         .add_system(chunk_load_system)
+        .add_system(chunk_unload_system)
+        .add_system(update_chunk_radius_system)
         .add_system_to_stage(CoreStage::PostUpdate, chunk_update_system)
         .add_system_to_stage(CoreStage::PreUpdate, block_update_system);
     }
@@ -103,6 +106,11 @@ impl ChunkManager {
     /// The provided Y-value does not have an effect on the result.
     pub fn at_block_pos(&self, world_pos: IVec3) -> Option<Entity> {
         self.get(IVec2::new(world_pos.x >> 4, world_pos.z >> 4))
+    }
+
+    /// Returns an iterator over all loaded chunks.
+    pub fn iter(&self) -> impl Iterator<Item = (&ChunkPos, &Entity)> {
+        self.chunks.iter()
     }
 
     /// Removes all known chunks from the chunk manager. Does NOT remove these entities from the
@@ -283,7 +291,11 @@ fn chunk_load_system(
                         perceptual_roughness: 0.94,
                         ..default()
                     }),
-                    transform: Transform::from_xyz(pos.x as f32, -32., pos.y as f32),
+                    transform: Transform::from_xyz(
+                        pos.x as f32,
+                        (0 + world.y_range.min()) as f32,
+                        pos.y as f32,
+                    ),
                     ..default()
                 },
                 chunk,
@@ -291,5 +303,33 @@ fn chunk_load_system(
             .id();
 
         chunks.set(event.position, Some(entity));
+    }
+}
+
+/// Unloads chunks that are too far from where the chunk origin is.
+fn chunk_unload_system(mut commands: Commands, mut chunks: ResMut<ChunkManager>) {
+    let (origin, radius) = chunks.chunk_radius();
+    let origin = Vec2::new(origin.x as f32 + 0.5, origin.z as f32 + 0.5);
+    let radius_squared = (radius * radius) as f32;
+
+    chunks.chunks.retain(|pos, entity| {
+        let chunk_center = Vec2::new((pos.x * 16) as f32 + 8., (pos.y * 16) as f32 + 8.);
+
+        if (chunk_center - origin).length_squared() <= radius_squared {
+            return true;
+        }
+        debug!("Unloading chunk {pos}");
+        commands.entity(entity.clone()).despawn();
+        false
+    });
+}
+
+/// Updates the chunk radius when the server tells the client to.
+fn update_chunk_radius_system(
+    mut events: EventReader<NetworkChunkPublisherUpdate>,
+    mut chunks: ResMut<ChunkManager>,
+) {
+    for event in events.iter() {
+        chunks.set_chunk_radius(event.position.0, event.radius.0);
     }
 }

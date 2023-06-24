@@ -18,6 +18,7 @@ use zuri_net::client::data::{ClientData, IdentityData};
 use zuri_net::client::Handler;
 use zuri_net::connection::ConnError;
 use zuri_net::proto::packet::level_chunk::LevelChunk;
+use zuri_net::proto::packet::network_chunk_publisher_update::NetworkChunkPublisherUpdate;
 use zuri_net::proto::packet::start_game::StartGame;
 use zuri_net::proto::packet::update_block::UpdateBlock;
 use zuri_net::proto::packet::Packet;
@@ -41,6 +42,7 @@ impl Plugin for ClientPlugin {
             .init_resource::<Events<Packet>>()
             // Packet events go here.
             .add_event::<LevelChunk>()
+            .add_event::<NetworkChunkPublisherUpdate>()
             .add_event::<StartGame>()
             .add_event::<UpdateBlock>()
             .add_startup_system(init_client)
@@ -195,6 +197,7 @@ fn receive_packets(world: &mut World) {
             }
             Ok(pk) => match pk {
                 Packet::LevelChunk(pk) => world.send_event(pk),
+                Packet::NetworkChunkPublisherUpdate(pk) => world.send_event(pk),
                 Packet::StartGame(pk) => world.send_event(pk),
                 Packet::UpdateBlock(pk) => world.send_event(pk),
                 // Ignore login sequence packets.
