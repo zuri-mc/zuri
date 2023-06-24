@@ -10,16 +10,16 @@ use std::any::TypeId;
 use std::borrow::Cow;
 use std::collections::btree_map::BTreeMap;
 use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
 use thiserror::Error;
 
 /// Allows for the creation of a [BlockMap] ready for use in the client.
-#[derive(Clone)]
 #[cfg_attr(feature = "bevy", derive(bevy::prelude::Resource))]
 pub struct BlockMapBuilder {
     blocks: HashSet<BlockType>,
     /// Maps the [TypeId] of a component to a function that creates a [ComponentStorage] for it.
-    components: BTreeMap<TypeId, Arc<dyn Fn(usize) -> Box<dyn AnyComponentStorage> + Sync + Send>>,
+    components: BTreeMap<TypeId, Box<dyn Fn(usize) -> Box<dyn AnyComponentStorage> + Sync + Send>>,
+    /// Gets called right after the [BlockMap] is built. Can be used to insert components.
+    build_functions: Vec<Box<dyn FnOnce(&mut BlockMap) + Sync + Send>>,
 }
 
 impl BlockMapBuilder {
@@ -36,6 +36,7 @@ impl BlockMapBuilder {
         Self {
             blocks: Default::default(),
             components: Default::default(),
+            build_functions: Default::default(),
         }
     }
 
@@ -76,7 +77,7 @@ impl BlockMapBuilder {
             .components
             .insert(
                 TypeId::of::<T>(),
-                Arc::new(move |cap| Box::new(ComponentStorage::<T>::new(storage, cap as u32))),
+                Box::new(move |cap| Box::new(ComponentStorage::<T>::new(storage, cap as u32))),
             )
             .is_some()
         {
@@ -85,6 +86,25 @@ impl BlockMapBuilder {
                 std::any::type_name::<T>()
             );
         }
+    }
+
+    /// Inserts a new build function, returning the builder. See [Self::insert_build_function] for
+    /// more info.
+    pub fn with_build_function(
+        mut self,
+        f: impl FnOnce(&mut BlockMap) + Sync + Send + 'static,
+    ) -> Self {
+        self.insert_build_function(f);
+        self
+    }
+
+    /// Inserts a new build function, which will get executed after all previously added build
+    /// functions.
+    ///
+    /// Can be used to add components to block when the [BlockMap] is constructed. Existing
+    /// components can also be modified.
+    pub fn insert_build_function(&mut self, f: impl FnOnce(&mut BlockMap) + Sync + Send + 'static) {
+        self.build_functions.push(Box::new(f))
     }
 
     /// Create a [BlockMap] from the data in the builder, consuming it in the process.
@@ -125,12 +145,17 @@ impl BlockMapBuilder {
             components.insert(comp_type, storage_fn(runtime_id_count));
         }
 
-        BlockMap {
+        let mut block_map = BlockMap {
             blocks_types: block_rid_map,
             runtime_id_count: runtime_id_count as u32,
             variant_map,
             components,
+        };
+        for f in self.build_functions {
+            f(&mut block_map);
         }
+
+        block_map
     }
 }
 

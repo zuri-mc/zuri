@@ -26,7 +26,16 @@ impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(
             BlockMapBuilder::vanilla()
-                .with_component_type::<component::Geometry>(ComponentStorageType::Vector),
+                .with_component_type::<component::Geometry>(ComponentStorageType::Vector)
+                .with_build_function(|block_map| {
+                    // Hard-code air for now.
+                    block_map.set_component(
+                        BlockBuilder::new(block::AIR_ID),
+                        component::Geometry {
+                            mesh: Mesh::new(PrimitiveTopology::TriangleList),
+                        },
+                    )
+                }),
         )
         .insert_resource(BlockTextures::default())
         .insert_resource(ChunkManager::default())
@@ -185,17 +194,8 @@ fn build_block_map_system(world: &mut ECSWorld) {
         builder.insert_block(block_type);
     }
 
-    let mut block_map = builder.build();
-    // Hard-code air for now.
-    block_map.set_component(
-        BlockBuilder::new(block::AIR_ID),
-        component::Geometry {
-            mesh: Mesh::new(PrimitiveTopology::TriangleList),
-        },
-    );
-
     world.insert_resource(World {
-        block_map: Arc::new(block_map),
+        block_map: Arc::new(builder.build()),
         y_range: YRange::new(-64, 319),
     });
 }
