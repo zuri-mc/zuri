@@ -4925,6 +4925,15 @@ dependencies = [
  "thiserror",
  "zuri_nbt",
  "zuri_net",
+ "zuri_world_derive",
+]
+
+[[package]]
+name = "zuri_world_derive"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn 1.0.107",
 ]
 
 [[package]]

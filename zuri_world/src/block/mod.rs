@@ -11,6 +11,7 @@ pub use sorted_vec::SortedSet;
 pub use builder::{BlockBuilder, BlockMapBuilder};
 pub use runtime_id::*;
 pub use vanilla::AIR_ID;
+pub use zuri_world_derive::Component;
 
 use crate::block::component::*;
 
@@ -320,7 +321,7 @@ impl PropertyValues {
         }
         match self {
             PropertyValues::Strings(s) => PropertyValue::String(Cow::Borrowed(&s[index])),
-            PropertyValues::Bool => PropertyValue::Bool(index == 1), // todo: check the order of this
+            PropertyValues::Bool => PropertyValue::Bool(index == 1),
             PropertyValues::Ints(s) => PropertyValue::Int(s[index]),
         }
     }

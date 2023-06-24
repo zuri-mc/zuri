@@ -13,3 +13,4 @@ sorted-vec = "0.8.2"
 thiserror = "1.0.40"
 zuri_nbt = { path = "../zuri_nbt" }
 zuri_net = { path = "../zuri_net" }
+zuri_world_derive = { path = "../zuri_world_derive" }
