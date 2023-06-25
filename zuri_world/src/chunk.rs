@@ -86,7 +86,8 @@ impl Chunk {
         }
 
         for mut sub_chunk_num in 0..sub_chunk_count {
-            let sub_chunk = SubChunk::read(reader, &mut sub_chunk_num, &block_map);
+            let sub_chunk =
+                SubChunk::read(reader, &mut sub_chunk_num, range.min() as i32, &block_map);
             sub_chunks[sub_chunk_num as usize] = sub_chunk;
         }
         Self {

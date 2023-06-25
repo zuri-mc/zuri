@@ -52,7 +52,12 @@ impl<const L: usize> SubChunk<L> {
         self.layers[layer as usize].set(pos, val);
     }
 
-    pub fn read(reader: &mut Reader, _y_index: &mut u32, block_map: &BlockMap) -> Self {
+    pub fn read(
+        reader: &mut Reader,
+        y_index: &mut u32,
+        min_y_pos: i32,
+        block_map: &BlockMap,
+    ) -> Self {
         let air_rid = BlockBuilder::new(block::AIR_ID)
             .to_runtime_id(block_map)
             .expect("Missing air runtime id");
@@ -72,9 +77,8 @@ impl<const L: usize> SubChunk<L> {
             // If the version is 9, there is an extra byte which tells us where the sub chunk is
             // positioned vertically in the chunk.
             if ver == 9 {
-                reader.u8();
-                // todo: this doesnt work
-                //*y_index = reader.u8() as u32;
+                let new_index = reader.u8();
+                *y_index = (new_index as i32 - (min_y_pos >> 4)) as u32;
             }
         }
 
