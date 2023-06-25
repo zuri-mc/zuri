@@ -17,6 +17,10 @@ use uuid::Uuid;
 use zuri_net::client::data::{ClientData, IdentityData};
 use zuri_net::client::Handler;
 use zuri_net::connection::ConnError;
+use zuri_net::proto::packet::level_chunk::LevelChunk;
+use zuri_net::proto::packet::network_chunk_publisher_update::NetworkChunkPublisherUpdate;
+use zuri_net::proto::packet::start_game::StartGame;
+use zuri_net::proto::packet::update_block::UpdateBlock;
 use zuri_net::proto::packet::Packet;
 use zuri_xbox::live;
 
@@ -36,6 +40,11 @@ impl Plugin for ClientPlugin {
             // Special case for the event for the sending of packets. Initializing the resource
             // directly causes it to never be cleared automatically.
             .init_resource::<Events<Packet>>()
+            // Packet events go here.
+            .add_event::<LevelChunk>()
+            .add_event::<NetworkChunkPublisherUpdate>()
+            .add_event::<StartGame>()
+            .add_event::<UpdateBlock>()
             .add_startup_system(init_client)
             .add_system_to_stage(CoreStage::Last, graceful_disconnect)
             .add_system(client_connection_system)
@@ -167,12 +176,16 @@ fn send_packets(mut packets: ResMut<Events<Packet>>, chan: Option<NonSend<Sender
 /// Receives the packets read by the packet reader thread and sends them as an event so it can be
 /// handled by the ECS. Should run on the main thread due to tokio.
 fn receive_packets(world: &mut World) {
-    let mut opt_chan = world.get_non_send_resource_mut::<Receiver<Packet>>();
-    if opt_chan.is_none() {
+    if world.get_non_send_resource::<Receiver<Packet>>().is_none() {
         return;
     }
     loop {
-        match opt_chan.as_mut().unwrap().try_recv() {
+        match world
+            .get_non_send_resource_mut::<Receiver<Packet>>()
+            .as_mut()
+            .unwrap()
+            .try_recv()
+        {
             Err(err) => {
                 return match err {
                     TryRecvError::Empty => {}
@@ -182,8 +195,21 @@ fn receive_packets(world: &mut World) {
                     }
                 }
             }
-            #[allow(clippy::match_single_binding)]
             Ok(pk) => match pk {
+                Packet::LevelChunk(pk) => world.send_event(pk),
+                Packet::NetworkChunkPublisherUpdate(pk) => world.send_event(pk),
+                Packet::StartGame(pk) => world.send_event(pk),
+                Packet::UpdateBlock(pk) => world.send_event(pk),
+                // Ignore login sequence packets.
+                Packet::BiomeDefinitionList(_) => {}
+                Packet::CompressedBiomeDefinitionList(_) => {}
+                Packet::NetworkSettings(_) => {}
+                Packet::PlayStatus(_) => {}
+                Packet::ResourcePacksInfo(_) => {}
+                Packet::ResourcePackStack(_) => {}
+                Packet::ResourcePackChunkData(_) => {}
+                Packet::ResourcePackDataInfo(_) => {}
+                Packet::ServerToClientHandshake(_) => {}
                 _ => {
                     warn!("Unhandled packet {pk}");
                 }

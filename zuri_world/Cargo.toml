@@ -4,4 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = "0.9.1"
+ahash = "0.8.3"
+bevy = { version = "0.9.1", optional = true }
+bytes = "1.4.0"
+downcast-rs = "1.2.0"
+glam = "0.22.0"
+sorted-vec = "0.8.2"
+thiserror = "1.0.40"
+zuri_nbt = { path = "../zuri_nbt" }
+zuri_net = { path = "../zuri_net" }
+zuri_world_derive = { path = "../zuri_world_derive" }

@@ -2,6 +2,7 @@ use uuid::Uuid;
 use zuri_net_derive::proto;
 
 use crate::proto::ints::{VarI64, VarU32};
+use crate::proto::io::{Readable, Reader, Writable, Writer};
 use crate::proto::types::device::Device;
 use crate::proto::types::skin::Skin;
 
@@ -33,11 +34,35 @@ pub struct PlayerListRemove {
     pub uuids: Vec<Uuid>,
 }
 
-#[proto]
 #[derive(Clone, Debug)]
 pub struct PlayerListAdd {
-    #[len_type(VarU32)]
-    pub uuids: Vec<PlayerListEntry>,
+    pub entries: Vec<PlayerListEntry>,
+}
+
+impl Writable for PlayerListAdd {
+    fn write(&self, writer: &mut Writer) {
+        writer.var_u32(self.entries.len() as u32);
+        for entry in &self.entries {
+            entry.write(writer);
+        }
+        for entry in &self.entries {
+            writer.bool(entry.skin.trusted);
+        }
+    }
+}
+
+impl Readable<PlayerListAdd> for PlayerListAdd {
+    fn read(reader: &mut Reader) -> PlayerListAdd {
+        let entry_count = reader.var_u32();
+        let mut entries = Vec::with_capacity(entry_count as usize);
+        for _ in 0..entry_count {
+            entries.push(PlayerListEntry::read(reader));
+        }
+        for i in 0..entry_count {
+            entries[i as usize].skin.trusted = reader.bool();
+        }
+        PlayerListAdd { entries }
+    }
 }
 
 /// An entry found in the PlayerList packet. It represents a single player using the UUID found in

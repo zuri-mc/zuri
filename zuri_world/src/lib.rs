@@ -1,17 +1,6 @@
-use bevy::prelude::*;
-
-use crate::system::chunk_update_system;
-
+pub mod block;
 pub mod chunk;
+mod paletted_storage;
 pub mod pos;
 pub mod range;
-mod subchunk;
-mod system;
-
-pub struct WorldPlugin;
-
-impl Plugin for WorldPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_system(chunk_update_system);
-    }
-}
+pub(crate) mod sub_chunk;
