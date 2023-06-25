@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use zuri_net::proto::packet::start_game::StartGame;
 
 use crate::entity::Head;
 use crate::input::ClientInput;
@@ -7,7 +8,9 @@ pub struct LocalPlayerPlugin;
 
 impl Plugin for LocalPlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(move_system).add_system(camera_sync_system);
+        app.add_system(move_system)
+            .add_system(camera_sync_system)
+            .add_system(initial_position_system);
     }
 }
 
@@ -54,5 +57,16 @@ fn camera_sync_system(
 
         cam_transform.translation = tr.translation + head.eye_height;
         cam_transform.rotation = tr.rotation * head.rot;
+    }
+}
+
+fn initial_position_system(
+    mut events: EventReader<StartGame>,
+    mut query: Query<&mut Transform, With<Local>>,
+) {
+    for event in events.iter() {
+        for mut tr in &mut query {
+            tr.translation = event.player_position;
+        }
     }
 }

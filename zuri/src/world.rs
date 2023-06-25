@@ -295,11 +295,7 @@ fn chunk_load_system(
                         perceptual_roughness: 0.94,
                         ..default()
                     }),
-                    transform: Transform::from_xyz(
-                        pos.x as f32,
-                        (0 + world.y_range.min()) as f32,
-                        pos.y as f32,
-                    ),
+                    transform: Transform::from_xyz(pos.x as f32, 0., pos.y as f32),
                     ..default()
                 },
                 chunk,
