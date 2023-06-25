@@ -5,10 +5,10 @@ edition = "2021"
 
 [dependencies]
 ahash = "0.8.3"
-bevy = { version = "0.9.1", optional = true }
+bevy = { version = "0.10.1", optional = true }
 bytes = "1.4.0"
 downcast-rs = "1.2.0"
-glam = "0.22.0"
+glam = "0.23.0"
 sorted-vec = "0.8.2"
 thiserror = "1.0.40"
 zuri_nbt = { path = "../zuri_nbt" }
