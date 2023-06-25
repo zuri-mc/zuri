@@ -88,11 +88,15 @@ impl Plugin for ClientPlugin {
     }
 }
 
+/// The base set for network related systems.
 #[derive(SystemSet, Copy, Clone, Hash, Eq, PartialEq, Debug)]
 #[system_set(base)]
 pub enum NetworkSet {
+    /// Packets are received and sent as events.
     Receive,
+    /// Received packets are usually processed by systems here.
     Process,
+    /// Any queued packets will be sent to the connected server at the end of the frame.
     Send,
 }
 

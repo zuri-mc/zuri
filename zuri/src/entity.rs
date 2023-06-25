@@ -25,26 +25,14 @@ impl Plugin for EntityPlugin {
             .add_plugin(NametagPlugin)
             .add_systems(
                 (
-                    init_player_system.before(EntityStage::Process),
+                    init_player_system,
                     despawn_entity_system.before(spawn_entity_system),
-                    spawn_entity_system.before(EntityStage::Process),
+                    spawn_entity_system,
+                    handle_move_system,
                 )
                     .in_base_set(NetworkSet::Process),
-            )
-            .add_systems((handle_move_system,).in_base_set(NetworkSet::Process));
+            );
     }
-}
-
-#[derive(SystemSet, Copy, Clone, Hash, Eq, PartialEq, Debug)]
-pub enum EntityStage {
-    Process,
-}
-
-/// Basic components required by every entity.
-#[derive(Bundle)]
-pub struct BaseEntityBundle {
-    #[bundle]
-    pub transform: TransformBundle,
 }
 
 /// A component for an entity with a head that has separate rotation from its body.
