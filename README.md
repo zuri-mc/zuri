@@ -23,14 +23,11 @@ Here is a non-exhaustive list of the most interesting crates. None of these crat
   Full protocol implementation that aims to be compatible with the latest Minecraft: Bedrock Edition release.
 
 ## Progress
-While the basics for connecting to servers are down, there is still a lot of work to do. There are some work-in-progress
-branches that show more work:
+While the basics are down, there is still a lot of work to do. There are some work-in-progress branches that show more 
+work:
 
 - **feature/listener**<br/>
   Implements a server listening alongside the server login sequence for zuri_net.
-
-- **feature/entity-manager**<br/>
-  Shows players and other entities in the client as a basic capsule model.
 
 - **feature/player-move**<br/>
   Syncs the client's movement with the server.

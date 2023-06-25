@@ -16,6 +16,7 @@ impl Plugin for LocalPlayerPlugin {
 
 /// Flag component to indicate the locally controlled player.
 #[derive(Component)]
+#[component(storage = "SparseSet")]
 pub struct Local;
 
 #[allow(clippy::type_complexity)]
