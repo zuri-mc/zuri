@@ -8,7 +8,6 @@ use bevy::window::{CursorGrabMode, PresentMode};
 use bevy::{
     pbr::wireframe::{WireframeConfig, WireframePlugin},
     prelude::*,
-    render::{render_resource::WgpuFeatures, settings::WgpuSettings},
 };
 
 use dotenvy::dotenv;
@@ -30,18 +29,15 @@ async fn main() {
     // Load environment variables from a `.env` file.
     dotenv().ok();
     App::new()
-        .insert_resource(WgpuSettings {
-            features: WgpuFeatures::POLYGON_MODE_LINE,
-            ..default()
-        })
+        .insert_resource(FixedTime::new_from_secs(1. / 20.))
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
-                    window: WindowDescriptor {
+                    primary_window: Some(Window {
                         title: "Zuri".into(),
                         present_mode: PresentMode::Immediate,
                         ..default()
-                    },
+                    }),
                     ..default()
                 })
                 .set(ImagePlugin::default_nearest()),
@@ -58,20 +54,21 @@ async fn main() {
 }
 
 fn cursor_grab_system(
-    mut windows: ResMut<Windows>,
     btn: Res<Input<MouseButton>>,
     key: Res<Input<KeyCode>>,
+
+    mut windows: Query<&mut Window>,
 ) {
-    let window = windows.get_primary_mut().unwrap();
+    if let Some(mut window) = windows.iter_mut().next() {
+        if btn.just_pressed(MouseButton::Left) {
+            window.cursor.grab_mode = CursorGrabMode::Locked;
+            window.cursor.visible = false;
+        }
 
-    if btn.just_pressed(MouseButton::Left) {
-        window.set_cursor_grab_mode(CursorGrabMode::Locked);
-        window.set_cursor_visibility(false);
-    }
-
-    if key.just_pressed(KeyCode::Escape) {
-        window.set_cursor_grab_mode(CursorGrabMode::None);
-        window.set_cursor_visibility(true);
+        if key.just_pressed(KeyCode::Escape) {
+            window.cursor.grab_mode = CursorGrabMode::None;
+            window.cursor.visible = true;
+        }
     }
 }
 
@@ -89,19 +86,8 @@ fn setup(mut commands: Commands, mut wireframe_config: ResMut<WireframeConfig>) 
         brightness: 0.3,
     });
     // sunlight
-    const HALF_SIZE: f32 = 10.0;
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
-            // Configure the projection to better fit the scene
-            shadow_projection: OrthographicProjection {
-                left: -HALF_SIZE,
-                right: HALF_SIZE,
-                bottom: -HALF_SIZE,
-                top: HALF_SIZE,
-                near: -10.0 * HALF_SIZE,
-                far: 10.0 * HALF_SIZE,
-                ..default()
-            },
             shadows_enabled: true,
             illuminance: 3600.,
             ..default()

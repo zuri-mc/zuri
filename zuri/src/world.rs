@@ -44,10 +44,10 @@ impl Plugin for WorldPlugin {
         // Systems
         .add_system(build_block_map_system)
         .add_system(chunk_load_system)
-        .add_system(chunk_unload_system)
+        .add_system(chunk_unload_system.in_base_set(CoreSet::FixedUpdate))
         .add_system(update_chunk_radius_system)
-        .add_system_to_stage(CoreStage::PostUpdate, chunk_update_system)
-        .add_system_to_stage(CoreStage::PreUpdate, block_update_system);
+        .add_system(chunk_update_system.in_base_set(CoreSet::PostUpdate))
+        .add_system(block_update_system.in_base_set(CoreSet::PreUpdate));
     }
 }
 
@@ -136,7 +136,6 @@ fn build_block_map_system(world: &mut ECSWorld) {
         return;
     }
     let mut event_reader = start_game_event.get_reader();
-
     let mut builder = world
         .remove_resource::<BlockMapBuilder>()
         .expect("BlockMapBuilder is missing on StartGame");
@@ -198,6 +197,7 @@ fn build_block_map_system(world: &mut ECSWorld) {
         block_map: Arc::new(builder.build()),
         y_range: YRange::new(-64, 319),
     });
+    world.resource_mut::<Events<StartGame>>().clear();
 }
 
 /// Updates the mesh of a chunk when it has been modified.

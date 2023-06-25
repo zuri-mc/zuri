@@ -46,10 +46,10 @@ impl Plugin for ClientPlugin {
             .add_event::<StartGame>()
             .add_event::<UpdateBlock>()
             .add_startup_system(init_client)
-            .add_system_to_stage(CoreStage::Last, graceful_disconnect)
-            .add_system(client_connection_system)
-            .add_system_to_stage(CoreStage::First, receive_packets)
-            .add_system_to_stage(CoreStage::Last, send_packets);
+            .add_system(graceful_disconnect.in_base_set(CoreSet::Last))
+            .add_system(client_connection_system.in_base_set(CoreSet::PreUpdate))
+            .add_system(receive_packets.in_base_set(CoreSet::FirstFlush))
+            .add_system(send_packets.in_base_set(CoreSet::PostUpdateFlush));
     }
 }
 

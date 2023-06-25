@@ -45,19 +45,21 @@ fn keyboard_input_system(keyboard: Res<Input<KeyCode>>, mut input: ResMut<Client
 }
 
 fn mouse_input_system(
-    windows: Res<Windows>,
     mut mouse_mot_event: EventReader<MouseMotion>,
     mut input: ResMut<ClientInput>,
+
+    windows: Query<&Window>,
 ) {
     input.rotation = Vec2::ZERO;
 
-    let window = windows.primary();
-    if window.cursor_grab_mode() != CursorGrabMode::Locked {
-        return;
-    }
+    if let Ok(window) = windows.get_single() {
+        if window.cursor.grab_mode != CursorGrabMode::Locked {
+            return;
+        }
 
-    for e in mouse_mot_event.iter() {
-        input.rotation += e.delta;
+        for e in mouse_mot_event.iter() {
+            input.rotation += e.delta;
+        }
+        input.rotation /= window.height();
     }
-    input.rotation /= window.height();
 }
