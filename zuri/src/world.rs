@@ -1,6 +1,7 @@
 pub mod component;
 mod mesh;
 
+use crate::client::NetworkSet;
 use bevy::prelude::World as ECSWorld;
 use bevy::prelude::*;
 use bevy::render::mesh::PrimitiveTopology;
@@ -43,11 +44,13 @@ impl Plugin for WorldPlugin {
         .add_startup_system(textures_init_system)
         // Systems
         .add_system(build_block_map_system)
-        .add_system(chunk_load_system)
-        .add_system(chunk_unload_system.in_base_set(CoreSet::FixedUpdate))
-        .add_system(update_chunk_radius_system)
-        .add_system(chunk_update_system.in_base_set(CoreSet::PostUpdate))
-        .add_system(block_update_system.in_base_set(CoreSet::PreUpdate));
+        .add_systems((
+            chunk_unload_system.in_base_set(CoreSet::FixedUpdate),
+            update_chunk_radius_system.in_base_set(NetworkSet::Process),
+            chunk_update_system.in_base_set(CoreSet::PostUpdate),
+            block_update_system.in_base_set(CoreSet::PreUpdate),
+        ))
+        .add_systems((chunk_load_system.run_if(world_is_loaded),));
     }
 }
 
@@ -127,6 +130,11 @@ impl ChunkManager {
     pub fn clear(&mut self) {
         self.chunks.clear();
     }
+}
+
+/// Condition system that can be used to only run systems when there is a world loaded.
+pub fn world_is_loaded(world: Option<Res<World>>) -> bool {
+    world.is_some()
 }
 
 /// Builds the [BlockMap] when the StartGame packet is received.
@@ -255,13 +263,8 @@ fn chunk_load_system(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut world_chunks: Query<&mut Chunk>,
     block_tex: Res<BlockTextures>,
-    world: Option<Res<World>>,
+    world: Res<World>,
 ) {
-    if world.is_none() {
-        return;
-    }
-    let world = &world.unwrap();
-
     if events.is_empty() {
         return;
     }
