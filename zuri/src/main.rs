@@ -18,7 +18,7 @@ use crate::input::InputPlugin;
 use crate::player::{Local, LocalPlayerPlugin};
 use crate::world::WorldPlugin;
 
-mod client;
+pub mod client;
 pub mod entity;
 mod input;
 pub mod player;

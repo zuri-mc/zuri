@@ -20,9 +20,14 @@ use zuri_net::connection::ConnError;
 use zuri_net::proto::packet::add_actor::AddActor;
 use zuri_net::proto::packet::add_player::AddPlayer;
 use zuri_net::proto::packet::level_chunk::LevelChunk;
+use zuri_net::proto::packet::level_event::LevelEvent;
+use zuri_net::proto::packet::level_sound_event::LevelSoundEvent;
 use zuri_net::proto::packet::move_actor_absolute::MoveActorAbsolute;
+use zuri_net::proto::packet::move_actor_delta::MoveActorDelta;
+use zuri_net::proto::packet::move_player::MovePlayer;
 use zuri_net::proto::packet::network_chunk_publisher_update::NetworkChunkPublisherUpdate;
 use zuri_net::proto::packet::remove_actor::RemoveActor;
+use zuri_net::proto::packet::set_actor_data::SetActorData;
 use zuri_net::proto::packet::start_game::StartGame;
 use zuri_net::proto::packet::update_block::UpdateBlock;
 use zuri_net::proto::packet::Packet;
@@ -48,17 +53,47 @@ impl Plugin for ClientPlugin {
             .add_event::<AddActor>()
             .add_event::<AddPlayer>()
             .add_event::<LevelChunk>()
+            .add_event::<LevelEvent>()
+            .add_event::<LevelSoundEvent>()
             .add_event::<MoveActorAbsolute>()
+            .add_event::<MoveActorDelta>()
+            .add_event::<MovePlayer>()
             .add_event::<NetworkChunkPublisherUpdate>()
             .add_event::<RemoveActor>()
+            .add_event::<SetActorData>()
             .add_event::<StartGame>()
             .add_event::<UpdateBlock>()
+            .configure_sets((
+                NetworkSet::Receive
+                    .before(CoreSet::Update)
+                    .before(CoreSet::FixedUpdate),
+                NetworkSet::Process
+                    .before(CoreSet::Update)
+                    .before(CoreSet::FixedUpdate)
+                    .before(CoreSet::PreUpdateFlush)
+                    .after(NetworkSet::Receive),
+                NetworkSet::Send
+                    .after(CoreSet::Update)
+                    .after(CoreSet::FixedUpdate),
+            ))
             .add_startup_system(init_client)
             .add_system(graceful_disconnect.in_base_set(CoreSet::Last))
-            .add_system(client_connection_system.in_base_set(CoreSet::PreUpdate))
-            .add_system(receive_packets.in_base_set(CoreSet::FirstFlush))
-            .add_system(send_packets.in_base_set(CoreSet::PostUpdateFlush));
+            .add_system(
+                client_connection_system
+                    .in_base_set(NetworkSet::Receive)
+                    .before(receive_packets),
+            )
+            .add_system(receive_packets.in_base_set(NetworkSet::Receive))
+            .add_system(send_packets.in_base_set(NetworkSet::Send));
     }
+}
+
+#[derive(SystemSet, Copy, Clone, Hash, Eq, PartialEq, Debug)]
+#[system_set(base)]
+pub enum NetworkSet {
+    Receive,
+    Process,
+    Send,
 }
 
 type Client = zuri_net::client::Client<PacketHandler>;
@@ -207,9 +242,14 @@ fn receive_packets(world: &mut World) {
                 Packet::AddActor(pk) => world.send_event(pk),
                 Packet::AddPlayer(pk) => world.send_event(pk),
                 Packet::LevelChunk(pk) => world.send_event(pk),
+                Packet::LevelEvent(pk) => world.send_event(pk),
+                Packet::LevelSoundEvent(pk) => world.send_event(pk),
                 Packet::MoveActorAbsolute(pk) => world.send_event(pk),
+                Packet::MoveActorDelta(pk) => world.send_event(pk),
+                Packet::MovePlayer(pk) => world.send_event(pk),
                 Packet::NetworkChunkPublisherUpdate(pk) => world.send_event(pk),
                 Packet::RemoveActor(pk) => world.send_event(pk),
+                Packet::SetActorData(pk) => world.send_event(pk),
                 Packet::StartGame(pk) => world.send_event(pk),
                 Packet::UpdateBlock(pk) => world.send_event(pk),
                 // Ignore login sequence packets.

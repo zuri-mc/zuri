@@ -1,4 +1,5 @@
-use crate::entity::EntityStage;
+use crate::client::NetworkSet;
+use crate::entity::{despawn_entity_system, spawn_entity_system};
 use bevy::prelude::*;
 use std::cmp::Ordering;
 use std::collections::HashMap;
@@ -10,19 +11,16 @@ pub(super) struct EntityManagerPlugin;
 
 impl Plugin for EntityManagerPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(EntityManager::default())
-            .add_stage_before(
-                EntityStage::Process,
-                EntityManagerStage::PostSpawn,
-                SystemStage::parallel(),
+        app.insert_resource(EntityManager::default()).add_systems(
+            (
+                apply_system_buffers.after(despawn_entity_system),
+                entity_remove_system,
+                apply_system_buffers.after(spawn_entity_system),
+                entity_add_system,
             )
-            .add_stage_after(
-                EntityStage::Despawn,
-                EntityManagerStage::PostDespawn,
-                SystemStage::parallel(),
-            )
-            .add_system_to_stage(EntityManagerStage::PostSpawn, entity_add_system)
-            .add_system_to_stage(EntityManagerStage::PostDespawn, entity_remove_system);
+                .chain()
+                .in_base_set(NetworkSet::Process),
+        );
     }
 }
 
@@ -168,12 +166,6 @@ impl From<UniqueId> for VarI64 {
     }
 }
 
-#[derive(StageLabel, Copy, Clone)]
-enum EntityManagerStage {
-    PostSpawn,
-    PostDespawn,
-}
-
 /// Adds entities to the entity manager when they are added in the world with a [IdentifiableEntity]
 /// component.
 fn entity_add_system(
@@ -187,17 +179,41 @@ fn entity_add_system(
             .insert(mc_entity.runtime_id(), (mc_entity.unique_id(), ecs_entity))
         {
             error!(
-                "Overriding entity with runtime id `{}` (previously {:?})",
+                "Overriding entity with runtime id {} (previously {:?})",
                 mc_entity.runtime_id(),
                 prev.1,
             );
             commands.entity(prev.1).despawn();
-        } else {
-            info!(
-                "Now tracking entity with runtime id {}",
-                mc_entity.runtime_id()
-            );
+            if prev.0 != mc_entity.unique_id() {
+                entities.unique_id_map.remove(&prev.0);
+            }
+            continue;
         }
+
+        if let Some(prev) = entities
+            .unique_id_map
+            .insert(mc_entity.unique_id(), (mc_entity.runtime_id(), ecs_entity))
+        {
+            error!(
+                "Overriding entity with unique id {} (previously {:?})",
+                mc_entity.unique_id(),
+                prev.1,
+            );
+            commands.entity(prev.1).despawn();
+            if prev.0 != mc_entity.runtime_id() {
+                entities.runtime_id_map.remove(&prev.0);
+            }
+            continue;
+        }
+
+        entities
+            .entity_to_rid
+            .insert(ecs_entity, mc_entity.runtime_id());
+
+        info!(
+            "Now tracking entity with runtime id {}",
+            mc_entity.runtime_id()
+        );
     }
 }
 
@@ -205,22 +221,22 @@ fn entity_add_system(
 /// removed.
 fn entity_remove_system(
     mut entities: ResMut<EntityManager>,
-    removed: RemovedComponents<IdentifiableEntity>,
+    mut removed: RemovedComponents<IdentifiableEntity>,
 ) {
     for entity in removed.iter() {
-        let rid = entities
-            .entity_to_rid
-            .get(&entity)
-            .cloned()
-            .expect("Entity did not have runtime id");
+        let rid = entities.entity_to_rid.get(&entity).cloned();
+        if rid.is_none() {
+            continue;
+        }
+        let rid = rid.unwrap();
         let uid = entities
             .runtime_id_map
             .remove(&rid)
-            .expect("Entity to remove is no longer present")
+            .expect("Entity did not have unique id")
             .0;
         entities.unique_id_map.remove(&uid);
         entities.entity_to_rid.remove(&entity);
 
-        info!("No longer tracking entity with runtime id `{}`", rid);
+        info!("Stopped tracking entity with runtime id {}", rid);
     }
 }

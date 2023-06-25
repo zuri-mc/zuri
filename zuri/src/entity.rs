@@ -2,12 +2,15 @@ mod manager;
 
 pub use manager::{EntityManager, RuntimeId, UniqueId};
 
+use crate::client::NetworkSet;
 use crate::entity::manager::{EntityManagerPlugin, IdentifiableEntity};
 use crate::player;
 use bevy::prelude::*;
 use zuri_net::proto::packet::add_actor::AddActor;
 use zuri_net::proto::packet::add_player::AddPlayer;
 use zuri_net::proto::packet::move_actor_absolute::MoveActorAbsolute;
+use zuri_net::proto::packet::move_actor_delta::MoveActorDelta;
+use zuri_net::proto::packet::move_player::MovePlayer;
 use zuri_net::proto::packet::remove_actor::RemoveActor;
 use zuri_net::proto::packet::start_game::StartGame;
 
@@ -16,34 +19,22 @@ pub struct EntityPlugin;
 
 impl Plugin for EntityPlugin {
     fn build(&self, app: &mut App) {
-        app.add_stage_after(
-            CoreStage::PreUpdate,
-            EntityStage::Spawn,
-            SystemStage::parallel(),
-        )
-        .add_stage_after(
-            EntityStage::Spawn,
-            EntityStage::Process,
-            SystemStage::parallel(),
-        )
-        .add_stage_after(
-            EntityStage::Process,
-            EntityStage::Despawn,
-            SystemStage::parallel(),
-        )
-        .add_plugin(EntityManagerPlugin)
-        .add_system_to_stage(EntityStage::Spawn, init_player_system)
-        .add_system_to_stage(EntityStage::Process, move_entity_system)
-        .add_system_to_stage(EntityStage::Spawn, spawn_entity_system)
-        .add_system_to_stage(EntityStage::Despawn, despawn_entity_system);
+        app.add_plugin(EntityManagerPlugin)
+            .add_systems(
+                (
+                    init_player_system.before(EntityStage::Process),
+                    despawn_entity_system.before(spawn_entity_system),
+                    spawn_entity_system.before(EntityStage::Process),
+                )
+                    .in_base_set(NetworkSet::Process),
+            )
+            .add_systems((handle_move_system,).in_base_set(NetworkSet::Process));
     }
 }
 
-#[derive(StageLabel, Copy, Clone)]
+#[derive(SystemSet, Copy, Clone, Hash, Eq, PartialEq, Debug)]
 pub enum EntityStage {
-    Spawn,
     Process,
-    Despawn,
 }
 
 /// Basic components required by every entity.
@@ -124,24 +115,49 @@ fn spawn_entity_system(
 }
 
 /// Updates the position of entities on the server.
-fn move_entity_system(
+fn handle_move_system(
     manager: Res<EntityManager>,
     mut query: Query<&mut Transform>,
-    mut pks: EventReader<MoveActorAbsolute>,
+
+    mut pks_abs: EventReader<MoveActorAbsolute>,
+    mut pks_detla: EventReader<MoveActorDelta>,
+    mut pks_player: EventReader<MovePlayer>,
 ) {
-    for pk in pks.iter() {
-        let entity = manager.entity_by_rid(pk.entity_runtime_id);
+    let mut move_to = |pk_name: &str, runtime_id: RuntimeId, pos: Vec3| {
+        let entity = manager.entity_by_rid(runtime_id);
         if entity.is_none() {
             error!(
-                "Received MoveActorAbsolute for unknown entity with runtime id `{}`",
-                pk.entity_runtime_id
+                "Received {} for unknown entity with runtime id {}",
+                pk_name, runtime_id
             );
-            continue;
+            return;
         }
 
         if let Ok(mut transform) = query.get_mut(entity.unwrap()) {
-            transform.translation = pk.position;
+            transform.translation = pos;
         }
+    };
+
+    for pk in pks_abs.iter() {
+        move_to(
+            std::any::type_name::<MoveActorAbsolute>(),
+            pk.entity_runtime_id.into(),
+            pk.position,
+        );
+    }
+    for pk in pks_detla.iter() {
+        move_to(
+            std::any::type_name::<MoveActorDelta>(),
+            pk.entity_runtime_id.into(),
+            pk.position,
+        );
+    }
+    for pk in pks_player.iter() {
+        move_to(
+            std::any::type_name::<MovePlayer>(),
+            pk.entity_runtime_id.into(),
+            pk.position,
+        );
     }
 }
 
@@ -156,7 +172,7 @@ fn despawn_entity_system(
         let entity = manager.entity_by_uid(pk.entity_unique_id);
         if entity.is_none() {
             error!(
-                "Cannot remove unknown entity with unique id `{}`",
+                "Cannot remove unknown entity with unique id {}",
                 pk.entity_unique_id.0
             );
             continue;
