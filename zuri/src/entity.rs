@@ -1,9 +1,11 @@
 mod manager;
+pub mod nametag;
 
 pub use manager::{EntityManager, RuntimeId, UniqueId};
 
 use crate::client::NetworkSet;
 use crate::entity::manager::{EntityManagerPlugin, IdentifiableEntity};
+use crate::entity::nametag::{Nametag, NametagPlugin};
 use crate::player;
 use bevy::prelude::*;
 use zuri_net::proto::packet::add_actor::AddActor;
@@ -20,6 +22,7 @@ pub struct EntityPlugin;
 impl Plugin for EntityPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(EntityManagerPlugin)
+            .add_plugin(NametagPlugin)
             .add_systems(
                 (
                     init_player_system.before(EntityStage::Process),
@@ -80,37 +83,64 @@ fn spawn_entity_system(
     mut pks: EventReader<AddPlayer>,
     mut pks2: EventReader<AddActor>,
 ) {
-    let spawn_func = &mut |ident: IdentifiableEntity, position: Vec3, color: Color| {
-        // We spawn a capsule for now.
-        let mut mat = StandardMaterial::from(color);
-        mat.reflectance = 0.01;
-        mat.metallic = 0.;
-
+    for pk in pks.iter() {
         commands
             .spawn(PbrBundle {
-                mesh: meshes.add(shape::Capsule { ..default() }.into()),
-                material: mats.add(mat).into(),
-                transform: Transform::from_xyz(position.x, position.y, position.z),
-                global_transform: Default::default(),
-                visibility: Default::default(),
-                computed_visibility: Default::default(),
+                mesh: meshes.add(
+                    shape::Capsule {
+                        radius: 0.45,
+                        depth: 1.2,
+                        ..Default::default()
+                    }
+                    .into(),
+                ),
+                material: mats
+                    .add(StandardMaterial {
+                        base_color: Color::RED,
+                        metallic: 0.,
+                        reflectance: 0.,
+                        unlit: true,
+                        ..Default::default()
+                    })
+                    .into(),
+                transform: Transform::from_translation(pk.position),
+                ..Default::default()
             })
-            .insert(ident);
-    };
-
-    for pk in pks.iter() {
-        spawn_func(
-            IdentifiableEntity::new(pk.entity_runtime_id, pk.ability_data.entity_unique_id),
-            pk.position,
-            Color::RED,
-        );
+            .insert(IdentifiableEntity::new(
+                pk.entity_runtime_id,
+                pk.ability_data.entity_unique_id,
+            ))
+            .insert(Nametag {
+                contents: pk.username.clone(),
+                y_offset: 1.4,
+            });
     }
     for pk in pks2.iter() {
-        spawn_func(
-            IdentifiableEntity::new(pk.entity_runtime_id, pk.entity_unique_id),
-            pk.position,
-            Color::BLUE,
-        );
+        commands
+            .spawn(PbrBundle {
+                mesh: meshes.add(
+                    shape::UVSphere {
+                        radius: 0.45,
+                        ..Default::default()
+                    }
+                    .into(),
+                ),
+                material: mats
+                    .add(StandardMaterial {
+                        base_color: Color::BLUE,
+                        metallic: 0.,
+                        reflectance: 0.,
+                        unlit: true,
+                        ..Default::default()
+                    })
+                    .into(),
+                transform: Transform::from_translation(pk.position),
+                ..Default::default()
+            })
+            .insert(IdentifiableEntity::new(
+                pk.entity_runtime_id,
+                pk.entity_unique_id,
+            ));
     }
 }
 

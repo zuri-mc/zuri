@@ -703,6 +703,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_mod_billboard"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1e35ebb02257425f4c9b54c4c71795ea91d78c1c1b08e9a4bdeb55eb5665dc4"
+dependencies = [
+ "bevy",
+ "bitflags",
+]
+
+[[package]]
 name = "bevy_pbr"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4905,6 +4915,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "bevy",
+ "bevy_mod_billboard",
  "bytes",
  "dotenvy",
  "futures-lite",
