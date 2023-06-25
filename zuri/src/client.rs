@@ -17,8 +17,12 @@ use uuid::Uuid;
 use zuri_net::client::data::{ClientData, IdentityData};
 use zuri_net::client::Handler;
 use zuri_net::connection::ConnError;
+use zuri_net::proto::packet::add_actor::AddActor;
+use zuri_net::proto::packet::add_player::AddPlayer;
 use zuri_net::proto::packet::level_chunk::LevelChunk;
+use zuri_net::proto::packet::move_actor_absolute::MoveActorAbsolute;
 use zuri_net::proto::packet::network_chunk_publisher_update::NetworkChunkPublisherUpdate;
+use zuri_net::proto::packet::remove_actor::RemoveActor;
 use zuri_net::proto::packet::start_game::StartGame;
 use zuri_net::proto::packet::update_block::UpdateBlock;
 use zuri_net::proto::packet::Packet;
@@ -41,8 +45,12 @@ impl Plugin for ClientPlugin {
             // directly causes it to never be cleared automatically.
             .init_resource::<Events<Packet>>()
             // Packet events go here.
+            .add_event::<AddActor>()
+            .add_event::<AddPlayer>()
             .add_event::<LevelChunk>()
+            .add_event::<MoveActorAbsolute>()
             .add_event::<NetworkChunkPublisherUpdate>()
+            .add_event::<RemoveActor>()
             .add_event::<StartGame>()
             .add_event::<UpdateBlock>()
             .add_startup_system(init_client)
@@ -196,8 +204,12 @@ fn receive_packets(world: &mut World) {
                 }
             }
             Ok(pk) => match pk {
+                Packet::AddActor(pk) => world.send_event(pk),
+                Packet::AddPlayer(pk) => world.send_event(pk),
                 Packet::LevelChunk(pk) => world.send_event(pk),
+                Packet::MoveActorAbsolute(pk) => world.send_event(pk),
                 Packet::NetworkChunkPublisherUpdate(pk) => world.send_event(pk),
+                Packet::RemoveActor(pk) => world.send_event(pk),
                 Packet::StartGame(pk) => world.send_event(pk),
                 Packet::UpdateBlock(pk) => world.send_event(pk),
                 // Ignore login sequence packets.

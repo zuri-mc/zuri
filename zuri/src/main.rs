@@ -14,15 +14,15 @@ use bevy::{
 use dotenvy::dotenv;
 
 use crate::client::ClientPlugin;
-use crate::entity::Head;
+use crate::entity::{EntityPlugin, Head};
 use crate::input::InputPlugin;
 use crate::player::{Local, LocalPlayerPlugin};
 use crate::world::WorldPlugin;
 
 mod client;
-mod entity;
+pub mod entity;
 mod input;
-mod player;
+pub mod player;
 mod world;
 
 #[tokio::main]
@@ -48,6 +48,7 @@ async fn main() {
         )
         .add_plugin(WireframePlugin)
         .add_plugin(FrameTimeDiagnosticsPlugin)
+        .add_plugin(EntityPlugin)
         .add_plugin(ClientPlugin)
         .add_plugin(InputPlugin)
         .add_plugin(LocalPlayerPlugin)
