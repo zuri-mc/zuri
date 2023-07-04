@@ -1,0 +1,10 @@
+[package]
+name = "zuri_model"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = "0.10.1"
+glam = { version = "0.23.0", features = ["serde"] }
+serde = { version = "1.0.163" , features = ["derive"] }
+serde_json = "1.0.96"
