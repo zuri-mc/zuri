@@ -40,6 +40,7 @@ pub struct Bone {
     pub rotation: Option<Vec3>,
     #[serde(default)]
     pub cubes: Vec<Cube>,
+    pub binding: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
