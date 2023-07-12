@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zuri_net_derive::proto;
 

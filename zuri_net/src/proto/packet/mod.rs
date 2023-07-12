@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use actor_event::*;
 use actor_pick_request::*;
 use add_actor::*;

@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use zuri_net_derive::proto;
 
 use crate::proto::types::ability::AbilityData;
