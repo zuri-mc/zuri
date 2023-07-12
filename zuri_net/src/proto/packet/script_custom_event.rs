@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use bytes::Bytes;
 
 use zuri_net_derive::proto;
@@ -7,6 +9,7 @@ use zuri_net_derive::proto;
 /// essentially an RPC kind of system.
 #[proto]
 #[derive(Debug, Clone)]
+#[deprecated = "Deprecated as of Bedrock Edition v1.20.10"]
 pub struct ScriptCustomEvent {
     /// The name of the event. The script and the server will use this event name to identify the
     /// data that is sent.

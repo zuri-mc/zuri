@@ -206,6 +206,7 @@ pub enum EntityDataKey {
     PlayerLastDeathPosition,
     PlayerLastDeathDimension,
     PlayerHasDied,
+    CollisionBox,
 }
 
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
@@ -324,4 +325,5 @@ pub enum EntityDataFlag {
     Rising,
     FeelingHappy,
     Searching,
+    Crawling,
 }

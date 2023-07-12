@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use crate::proto::ints::VarU64;
 use crate::proto::types::event::EventType;
 use zuri_net_derive::proto;
@@ -6,7 +8,8 @@ use zuri_net_derive::proto;
 /// telemetry reasons, much like the SimpleEvent packet.
 #[proto]
 #[derive(Debug, Clone)]
-pub struct Event {
+#[deprecated = "Deprecated as of Bedrock Edition v1.20.10"]
+pub struct LegacyTelemetryEvent {
     /// The runtime ID of the player. The runtime ID is unique for each world session, and entities
     /// are generally identified in packets using this runtime ID.
     pub entity_runtime_id: VarU64,

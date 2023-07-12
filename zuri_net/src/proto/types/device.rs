@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use zuri_net_derive::proto;
 
@@ -14,10 +16,12 @@ pub enum Device {
     Win10,
     Win32,
     Dedicated,
+    #[deprecated = "Deprecated as of Bedrock Edition v1.20.10"]
     TVOS,
     Orbis,
     NX,
     XBOX,
+    #[deprecated = "Deprecated as of Bedrock Edition v1.20.10"]
     WP,
     Linux,
     #[fallback]
