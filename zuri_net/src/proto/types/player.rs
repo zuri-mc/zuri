@@ -40,6 +40,9 @@ pub enum PlayerActionType {
     StartItemUseOn,
     StopItemUseOn,
     HandledTeleport,
+    MissedSwing,
+    StartCrawling,
+    StopCrawling,
 }
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]

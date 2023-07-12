@@ -9,6 +9,7 @@ use add_player::*;
 use add_volume_entity::*;
 use adventure_settings::*;
 use agent_action::*;
+use agent_animation::*;
 use animate::*;
 use animate_entity::*;
 use anvil_damage::*;
@@ -60,7 +61,6 @@ use education_resource_uri::*;
 use education_settings::*;
 use emote::*;
 use emote_list::*;
-use event::*;
 use feature_registry::*;
 use filter_text::*;
 use game_rules_changed::*;
@@ -78,6 +78,7 @@ use item_stack_request::*;
 use item_stack_response::*;
 use lab_table::*;
 use lectern_update::*;
+use legacy_telemetry_event::*;
 use lesson_progress::*;
 use level_chunk::*;
 use level_event::*;
@@ -209,6 +210,7 @@ pub mod add_player;
 pub mod add_volume_entity;
 pub mod adventure_settings;
 pub mod agent_action;
+pub mod agent_animation;
 pub mod animate;
 pub mod animate_entity;
 pub mod anvil_damage;
@@ -260,7 +262,7 @@ pub mod education_resource_uri;
 pub mod education_settings;
 pub mod emote;
 pub mod emote_list;
-pub mod event;
+pub mod legacy_telemetry_event;
 pub mod feature_registry;
 pub mod filter_text;
 pub mod game_rules_changed;
@@ -459,7 +461,7 @@ encodable_enum!(
         SetPlayerGameType = 62,
         PlayerList = 63,
         SimpleEvent = 64,
-        Event = 65,
+        LegacyTelemetryEvent = 65,
         SpawnExperienceOrb = 66,
         ClientBoundMapItemData = 67,
         MapInfoRequest = 68,
@@ -594,6 +596,7 @@ encodable_enum!(
         CompressedBiomeDefinitionList = 301,
         TrimData = 302,
         OpenSign = 303,
+        AgentAnimation = 304,
     }
 );
 

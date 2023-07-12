@@ -57,7 +57,7 @@ pub enum ActorEventType {
     BalloonPop = 71,
     TreasureHunt = 72,
     SummonAgent = 73,
-    FinishedChargingCrossbow = 74,
+    FinishedChargingItem = 74,
     LandedOnGround = 75,
     ActorGrowUp = 76,
     VibrationDetected = 77,
