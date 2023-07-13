@@ -1,5 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![deny(missing_docs)]
+
+use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
@@ -10,6 +12,7 @@ use encode::Writer;
 
 use crate::decode::Reader;
 use crate::err::{ErrorPath, Path, PathPart, ReadError, WriteError};
+use crate::view::View;
 
 pub mod decode;
 pub mod encode;
@@ -19,6 +22,7 @@ mod r#impl;
 #[cfg(feature = "serde")]
 pub mod serde;
 pub mod tag;
+pub mod view;
 
 /// An enum representing all possible NBT data.
 #[derive(Debug, Clone, PartialEq)]
@@ -90,6 +94,13 @@ impl NBTTag {
             NBTTag::ByteArray(v) => v.tag_type(),
             NBTTag::IntArray(v) => v.tag_type(),
             NBTTag::LongArray(v) => v.tag_type(),
+        }
+    }
+
+    /// Creates a [View] for the NBT tag for easy reading.
+    pub fn view(&self) -> View {
+        View {
+            tag: Some(Cow::Borrowed(self)),
         }
     }
 
