@@ -32,6 +32,17 @@ work:
 - **feature/player-move**<br/>
   Syncs the client's movement with the server.
 
+## Usage
+To use zuri, first clone the repository. Then, run `cargo run --release` to build and run zuri in release mode. 
+
+By default, zuri will try to connect to a server running locally on port 19132 and without xbox authentication. This
+can be configured through the `ZURI_IP` and `XBOX` environment variables respectively. Zuri supports setting environment
+variables with a `.env` file like the following example:
+```env
+ZURI_IP="127.0.0.1:19132"
+XBOX=false
+```
+
 ## Notable mentions
 
 - [**Sandertv/gophertunnel**](https://github.com/Sandertv/gophertunnel)<br/>
