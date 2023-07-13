@@ -29,7 +29,7 @@ pub struct ViewIterator<'a>(InnerViewIterator<'a>);
 #[derive(Debug, Error, Clone)]
 pub enum ViewError {
     /// The target tag and possibly one or more parent tags could not be found.
-    #[error("missing tag`")]
+    #[error("missing tag")]
     MissingTag,
     /// The tag was found, but is a different type than expected.
     #[error("expected tag of type `{expected}`, found type `{found}`")]
