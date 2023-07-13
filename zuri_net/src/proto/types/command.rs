@@ -1,12 +1,9 @@
-use std::collections::BTreeMap;
-
-use crate::proto::ints::VarU32;
-use bytes::Bytes;
 use num_derive::{FromPrimitive, ToPrimitive};
 use uuid::Uuid;
+
 use zuri_net_derive::proto;
 
-use crate::proto::io::{Reader, Writer};
+use crate::proto::ints::VarU32;
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
 pub enum CommandArg {
@@ -102,107 +99,27 @@ pub enum ParamOption {
     AsChainedCommand,
 }
 
-#[derive(Debug, Clone)]
-pub struct Command {
-    pub name: String,
-    pub description: String,
-    pub flags: u16,
-    pub permission_level: u8,
-    pub aliases: Vec<String>,
-    pub overloads: Vec<CommandOverload>,
-}
-
-impl Command {
-    pub fn write(&self, _: &mut Writer) {
-        // writer.string(self.name.as_str());
-        // writer.string(self.description.as_str());
-        // writer.u16(self.flags);
-        // writer.u8(self.permission_level);
-        // writer.write_TODO(self.LEN);
-        // writer.write_String(self.aliases);
-        // writer.write_TODO(self.LEN);
-        // writer.write_CommandOverload(self.overloads);
-        todo!()
-    }
-
-    pub fn read(_: &mut Reader) -> Self {
-        // Self {
-        //     name: reader.string(),
-        //     description: reader.string(),
-        //     flags: reader.u16(),
-        //     permission_level: reader.u8(),
-        //     LEN: reader.read_TODO(),
-        //     aliases: reader.read_String(),
-        //     LEN: reader.read_TODO(),
-        //     overloads: reader.read_CommandOverload(),
-        // }
-        todo!()
-    }
-}
-
 #[derive(Debug, Clone, Default)]
 pub struct CommandEnum {
     pub enum_type: String,
-    pub options: Vec<String>,
-    pub dynamic: bool,
+    pub value_indices: Vec<u32>,
 }
 
-impl CommandEnum {
-    pub fn write(&self, writer: &mut Writer, value_indices: BTreeMap<String, usize>) {
-        writer.string(self.enum_type.as_str());
-        writer.var_u32(self.options.len() as u32);
-        if self.dynamic {
-            self.options
-                .iter()
-                .for_each(|option| writer.string(option.as_str()));
-        } else {
-            let len = value_indices.len();
-            if len <= u8::MAX as usize {
-                self.options
-                    .iter()
-                    .for_each(|option| writer.u8(*value_indices.get(option).unwrap() as u8));
-            } else if len <= u16::MAX as usize {
-                self.options
-                    .iter()
-                    .for_each(|option| writer.u16(*value_indices.get(option).unwrap() as u16));
-            } else {
-                self.options
-                    .iter()
-                    .for_each(|option| writer.u32(*value_indices.get(option).unwrap() as u32));
-            }
-        }
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        // TODO: READING
-        Self {
-            enum_type: reader.string(),
-            ..Default::default()
-        }
-    }
-}
-
+#[proto]
 #[derive(Debug, Clone)]
 pub struct CommandEnumConstraint {
     pub enum_option: String,
     pub enum_name: String,
-    pub constraints: Bytes,
+    #[len_type(VarU32)]
+    pub constraints: Vec<CommandEnumConstraints>,
 }
 
-impl CommandEnumConstraint {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.string(self.enum_option.as_str());
-        writer.string(self.enum_name.as_str());
-        writer.byte_slice(&self.constraints);
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            enum_option: reader.string(),
-            enum_name: reader.string(),
-            constraints: reader.byte_slice(),
-        }
-    }
+#[proto(u8)]
+#[derive(Debug, Clone)]
+pub enum CommandEnumConstraints {
+    CheatsEnabled,
+    OperatorPermissions,
+    HostPermissions,
 }
 
 #[proto]
@@ -214,84 +131,11 @@ pub struct CommandOrigin {
     pub player_unique_id: i64,
 }
 
+#[proto]
 #[derive(Debug, Clone)]
 pub struct CommandOutputMessage {
     pub success: bool,
     pub message: String,
+    #[len_type(VarU32)]
     pub parameters: Vec<String>,
-}
-
-impl CommandOutputMessage {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.bool(self.success);
-        writer.string(self.message.as_str());
-        writer.var_u32(self.parameters.len() as u32);
-        self.parameters
-            .iter()
-            .for_each(|parameter| writer.string(parameter.as_str()));
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            success: reader.bool(),
-            message: reader.string(),
-            parameters: (0..reader.var_u32()).map(|_| reader.string()).collect(),
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct CommandOverload {
-    pub parameters: Vec<CommandParameter>,
-}
-
-impl CommandOverload {
-    pub fn write(&self, writer: &mut Writer) {
-        writer.var_u32(self.parameters.len() as u32);
-        self.parameters
-            .iter()
-            .for_each(|parameter| parameter.write(writer));
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            parameters: (0..reader.var_u32())
-                .map(|_| CommandParameter::read(reader))
-                .collect(),
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct CommandParameter {
-    pub name: String,
-    pub parameter_type: u32,
-    pub optional: bool,
-    pub options: u8,
-    pub command_enum: CommandEnum,
-    pub suffix: String,
-}
-
-impl CommandParameter {
-    pub fn write(&self, writer: &mut Writer) {
-        // if self.command_enum.dynamic {
-        //     self.parameter_type = CommandArg::SoftEnum | CommandArg::Valid |
-        // }
-        writer.string(self.name.as_str());
-        writer.u32(self.parameter_type);
-        writer.bool(self.optional);
-        writer.u8(self.options);
-        todo!()
-    }
-
-    pub fn read(reader: &mut Reader) -> Self {
-        Self {
-            name: reader.string(),
-            parameter_type: reader.u32(),
-            optional: reader.bool(),
-            options: reader.u8(),
-            command_enum: CommandEnum::read(reader),
-            suffix: reader.string(),
-        }
-    }
 }
