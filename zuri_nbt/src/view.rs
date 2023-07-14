@@ -1,5 +1,22 @@
 //! The [View] struct is a utility for easily traversing and reading NBT data in an efficient manner
 //! and without too much boilerplate.
+//!
+//! # Usage
+//! ```
+//! # use zuri_nbt::{NBTTag, NBTTagType};
+//! # use zuri_nbt::view::ViewError;
+//! let nbt: NBTTag;
+//! # nbt = NBTTag::Compound(Default::default());
+//! // Read a string tag at `nbt.foo[3].bar`, if all these tags exist.
+//! let result = nbt.view().at("foo").at(3).at("bar").string();
+//! # assert_eq!(result, Err(ViewError::MissingTag(3)));
+//! // Check if the nbt tag is any flaot tag (and return the value).
+//! let result = nbt.view().any_float();
+//! # assert_eq!(result, Err(ViewError::MismatchedType {
+//! #    expected: NBTTagType::Double,
+//! #    found: NBTTagType::Compound,
+//! # }));
+//! ```
 
 use std::borrow::Cow;
 use std::collections::hash_map;
