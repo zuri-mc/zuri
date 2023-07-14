@@ -1,7 +1,6 @@
 #![doc = include_str!("../README.md")]
 #![deny(missing_docs)]
 
-use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt::Debug;
 
@@ -99,9 +98,7 @@ impl NBTTag {
 
     /// Creates a [View] for the NBT tag for easy reading.
     pub fn view(&self) -> View {
-        View {
-            tag: Some(Cow::Borrowed(self)),
-        }
+        View::new(self)
     }
 
     /// Attempts to read the data from a buffer into an NBT value using the specified [Reader]
