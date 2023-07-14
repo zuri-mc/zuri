@@ -1,5 +1,5 @@
 //! See [NbtError].
-use std::collections::LinkedList;
+use std::collections::VecDeque;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 use std::string::FromUtf8Error;
@@ -123,12 +123,12 @@ impl<I: Eq> Eq for ErrorPath<I> {}
 
 /// A 'path' in a rust type that indicates where an error occurred.
 #[derive(Debug, Default, Clone, Eq, PartialEq)]
-pub struct Path(pub LinkedList<PathPart>);
+pub struct Path(pub VecDeque<PathPart>);
 
 impl Path {
     /// Create a path from a single [PathPart].
     pub fn from_single(part: PathPart) -> Self {
-        Self(LinkedList::from([part]))
+        Self(VecDeque::from([part]))
     }
 }
 
