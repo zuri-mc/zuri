@@ -61,7 +61,7 @@ pub enum NBTTag {
 
 /// An enum representing all possible NBT tag types.
 #[allow(missing_docs)]
-#[derive(Copy, Clone, Debug, Display, IntoStaticStr)]
+#[derive(Copy, Clone, Debug, Display, IntoStaticStr, Eq, PartialEq)]
 pub enum NBTTagType {
     Byte,
     Short,

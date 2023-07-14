@@ -43,7 +43,7 @@ pub struct ViewIterator<'a>(InnerViewIterator<'a>);
 
 /// An error returned when trying to turn a [View] into a concrete value. Displays what went wrong
 /// during reading.
-#[derive(Debug, Error, Clone)]
+#[derive(Debug, Error, Clone, Eq, PartialEq)]
 pub enum ViewError {
     /// The target tag and possibly one or more parent tags could not be found.
     ///
@@ -86,7 +86,7 @@ impl<'a> View<'a> {
     }
 
     /// Gets the underlying [NBTTag] that the view points to, if present.
-    pub fn get(&'a self) -> Option<&'a NBTTag> {
+    pub fn get(&self) -> Option<&NBTTag> {
         match &self.tag {
             InnerView::Ok(v) => Some(v.as_ref()),
             InnerView::NotFound(_) => None,
@@ -107,7 +107,7 @@ impl<'a> View<'a> {
     /// consider non-container tags (int, string, ...) as being non-empty.
     ///
     /// Returns true if the view does not point to any NBT tag.
-    pub fn is_empty(&'a self) -> bool {
+    pub fn is_empty(&self) -> bool {
         match self.get() {
             None => true,
             Some(NBTTag::Compound(v)) => v.is_empty(),
@@ -126,7 +126,7 @@ impl<'a> View<'a> {
     /// [tag::String] is not considered a container tag!
     ///
     /// Returns false if the view does not point to any NBT tag.
-    pub fn is_container(&'a self) -> bool {
+    pub fn is_container(&self) -> bool {
         match self.get() {
             Some(
                 NBTTag::Compound(_)
@@ -143,7 +143,7 @@ impl<'a> View<'a> {
     ///
     /// Runs either [Self::at_key] if the index is a [ViewIndex::CompoundIndex] or [Self::at_index]
     /// if the index is a [ViewIndex::ListIndex].
-    pub fn at<'b>(&'a self, index: impl Into<ViewIndex<'b>>) -> Self {
+    pub fn at<'b>(&self, index: impl Into<ViewIndex<'b>>) -> Self {
         match index.into() {
             ViewIndex::CompoundIndex(v) => self.at_key(v.as_ref()),
             ViewIndex::ListIndex(v) => self.at_index(v),
@@ -174,7 +174,7 @@ impl<'a> View<'a> {
     ///
     /// If the key was not found, or the underlying NBT tag is not a list tag or array tag, the
     /// returned view will simply point to nothing.
-    pub fn at_index(&'a self, index: usize) -> Self {
+    pub fn at_index(&self, index: usize) -> Self {
         Self {
             tag: match &self.tag {
                 InnerView::Ok(Cow::Borrowed(NBTTag::List(v))) => {
@@ -207,7 +207,7 @@ impl<'a> View<'a> {
 
     /// Reads the current tag pointed to. If this tag is any integer tag, it is converted to an i64
     /// and returned.
-    pub fn any_int(&'a self) -> Result<i64, ViewError> {
+    pub fn any_int(&self) -> Result<i64, ViewError> {
         match &self.tag {
             InnerView::Ok(Cow::Borrowed(NBTTag::Long(s))) => Ok(s.0.clone()),
             InnerView::Ok(Cow::Borrowed(NBTTag::Int(s))) => Ok(s.0.clone() as i64),
@@ -227,7 +227,7 @@ impl<'a> View<'a> {
 
     /// Reads the current tag pointed to. If this tag is any floating point tag, it is converted to
     /// an f64 and returned.
-    pub fn any_float(&'a self) -> Result<f64, ViewError> {
+    pub fn any_float(&self) -> Result<f64, ViewError> {
         match &self.tag {
             InnerView::Ok(Cow::Borrowed(NBTTag::Double(s))) => Ok(s.0.clone()),
             InnerView::Ok(Cow::Borrowed(NBTTag::Float(s))) => Ok(s.0.clone() as f64),
@@ -255,7 +255,7 @@ impl<'a> View<'a> {
     }
 
     /// Returns the string value of the tag if the underlying tag is a [tag::String].
-    pub fn string(&'a self) -> Result<&'a str, ViewError> {
+    pub fn string(&self) -> Result<&'a str, ViewError> {
         match &self.tag {
             InnerView::Ok(Cow::Borrowed(NBTTag::String(s))) => Ok(s.as_str()),
             InnerView::Ok(Cow::Owned(NBTTag::String(_))) => unreachable!(),
