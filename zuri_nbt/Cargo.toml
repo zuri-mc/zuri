@@ -16,8 +16,5 @@ strum = "0.25.0"
 strum_macros = "0.25.1"
 thiserror = "1.0.40"
 
-[features]
-default = ["serde"]
-
 [dev-dependencies]
 serde = { version = "1.0.162", features = ["derive"] }
