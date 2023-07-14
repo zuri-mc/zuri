@@ -390,6 +390,17 @@ impl<'a> View<'a> {
         iter
     }
 
+    /// Iterate over entries in the underlying list tag, if the view points to one.
+    pub fn iter_list(&self) -> ViewIterator<'a> {
+        match &self.tag {
+            InnerView::Ok(Cow::Borrowed(NBTTag::List(v))) => {
+                ViewIterator(InnerViewIterator::List(v.iter()))
+            }
+            InnerView::Ok(Cow::Owned(NBTTag::List(_))) => unreachable!(),
+            _ => ViewIterator(InnerViewIterator::None),
+        }
+    }
+
     /// Iterate over entries in the underlying compound tag, if the view points to one.
     pub fn iter_compound(&self) -> impl Iterator<Item = (&'a str, &'a NBTTag)> {
         self.compound()
