@@ -1,10 +1,10 @@
+mod chunk_mesh;
 pub mod component;
 mod mesh;
 
 use crate::client::NetworkSet;
 use bevy::prelude::World as ECSWorld;
 use bevy::prelude::*;
-use bevy::render::mesh::PrimitiveTopology;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -29,13 +29,20 @@ impl Plugin for WorldPlugin {
             BlockMapBuilder::vanilla()
                 .with_component_type::<component::Geometry>(ComponentStorageType::Vector)
                 .with_build_function(|block_map| {
-                    // Hard-code air for now.
-                    block_map.set_component(
-                        BlockBuilder::new(block::AIR_ID),
-                        component::Geometry {
-                            mesh: Mesh::new(PrimitiveTopology::TriangleList),
-                        },
-                    )
+                    let air_rid = block_map
+                        .block(BlockBuilder::new(block::AIR_ID))
+                        .unwrap()
+                        .runtime_id()
+                        .0;
+                    // todo: load models & textures
+                    let solid_block = component::Geometry::from_mesh(mesh::solid_block());
+                    for rid in 0..block_map.runtime_ids() {
+                        // Hard-code air for now.
+                        if rid == air_rid {
+                            continue;
+                        }
+                        block_map.set_component(rid, solid_block.clone())
+                    }
                 }),
         )
         .insert_resource(BlockTextures::default())
@@ -47,7 +54,9 @@ impl Plugin for WorldPlugin {
         .add_systems((
             chunk_unload_system.in_base_set(CoreSet::FixedUpdate),
             update_chunk_radius_system.in_base_set(NetworkSet::Process),
-            chunk_update_system.in_base_set(CoreSet::PostUpdate),
+            chunk_update_system
+                .in_base_set(CoreSet::PostUpdate)
+                .run_if(world_is_loaded),
             block_update_system.in_base_set(CoreSet::PreUpdate),
         ))
         .add_systems((chunk_load_system.run_if(world_is_loaded),));
@@ -210,11 +219,15 @@ fn build_block_map_system(world: &mut ECSWorld) {
 
 /// Updates the mesh of a chunk when it has been modified.
 fn chunk_update_system(
+    world: Res<World>,
     mut assets: ResMut<Assets<Mesh>>,
     mut query: Query<(&mut Handle<Mesh>, &Chunk), Changed<Chunk>>,
 ) {
     for (mesh, chunk) in &mut query {
-        assets.set_untracked(mesh.id(), mesh::build_mesh(chunk));
+        assets.set_untracked(
+            mesh.id(),
+            chunk_mesh::build_mesh(world.block_map.as_ref(), chunk),
+        );
     }
 }
 
@@ -290,7 +303,7 @@ fn chunk_load_system(
         let entity = commands
             .spawn((
                 PbrBundle {
-                    mesh: meshes.add(mesh::build_mesh(&chunk)),
+                    mesh: meshes.add(chunk_mesh::build_mesh(&world.block_map, &chunk)),
                     material: materials.add(StandardMaterial {
                         base_color_texture: Some(block_tex.dirt.clone().unwrap()),
                         base_color: Color::WHITE,
