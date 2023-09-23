@@ -1,4 +1,13 @@
 use crate::proto::io::{Readable, Reader, Writable, Writer};
+use zuri_net_derive::proto;
+
+#[proto]
+#[derive(Debug, Clone)]
+pub struct RGB {
+    pub r: f32,
+    pub g: f32,
+    pub b: f32,
+}
 
 #[derive(Debug, Clone)]
 pub struct RGBA {

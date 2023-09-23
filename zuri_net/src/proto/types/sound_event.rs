@@ -439,4 +439,11 @@ pub enum SoundEvent {
     SnifferEggHatched,
     WaxedSignInteractFail,
     RecordRelic,
+    Bump,
+    PumpkinCarve,
+    ConvertHuskToZombie,
+    PigDeath,
+    HoglinZombified,
+    AmbientUnderwaterEnter,
+    AmbientUnderwaterExit,
 }

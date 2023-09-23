@@ -124,6 +124,7 @@ use player_skin::*;
 use position_tracking_db_client_request::*;
 use position_tracking_db_server_broadcast::*;
 use purchase_receipt::*;
+use refresh_entitlements::*;
 use remove_actor::*;
 use remove_entity::*;
 use remove_objective::*;
@@ -264,7 +265,6 @@ pub mod education_resource_uri;
 pub mod education_settings;
 pub mod emote;
 pub mod emote_list;
-pub mod legacy_telemetry_event;
 pub mod feature_registry;
 pub mod filter_text;
 pub mod game_rules_changed;
@@ -282,6 +282,7 @@ pub mod item_stack_request;
 pub mod item_stack_response;
 pub mod lab_table;
 pub mod lectern_update;
+pub mod legacy_telemetry_event;
 pub mod lesson_progress;
 pub mod level_chunk;
 pub mod level_event;
@@ -325,6 +326,7 @@ pub mod player_skin;
 pub mod position_tracking_db_client_request;
 pub mod position_tracking_db_server_broadcast;
 pub mod purchase_receipt;
+pub mod refresh_entitlements;
 pub mod remove_actor;
 pub mod remove_entity;
 pub mod remove_objective;
@@ -599,6 +601,7 @@ encodable_enum!(
         TrimData = 302,
         OpenSign = 303,
         AgentAnimation = 304,
+        RefreshEntitlements = 305,
     }
 );
 

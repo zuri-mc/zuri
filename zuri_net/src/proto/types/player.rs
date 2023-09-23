@@ -43,6 +43,8 @@ pub enum PlayerActionType {
     MissedSwing,
     StartCrawling,
     StopCrawling,
+    StartFlying,
+    StopFlying,
 }
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]
