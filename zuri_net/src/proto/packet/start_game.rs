@@ -68,7 +68,7 @@ pub struct StartGame {
     pub achievements_disabled: bool,
     /// Dictates if the world is in editor mode, a special mode recently introduced adding "powerful
     /// tools for editing worlds, intended for experienced creators."
-    pub editor_world: bool,
+    pub editor_world_type: EditorWorldType,
     /// Dictates if the world was created as a project in the editor mode. The functionality of this
     /// field is currently unknown.
     pub created_in_editor: bool,
@@ -177,7 +177,7 @@ pub struct StartGame {
     pub education_shared_resource_uri: EducationSharedResourceURI,
     /// Specifies if experimental gameplay should be force enabled. For servers, this should always
     /// be set to false.
-    pub force_experimental_gameplay: Option<bool>,
+    pub force_experimental_gameplay: bool,
     /// Specifies the level of restriction on in-game chat.
     pub chat_restriction_level: ChatRestrictionLevel,
     /// Specifies if the client should ignore other players when interacting with the world.
@@ -240,6 +240,13 @@ pub struct StartGame {
     pub server_authorative_sound: bool,
 }
 
+#[proto(VarI32)]
+#[derive(Debug, Clone)]
+pub enum EditorWorldType {
+    NotEditor,
+    Project,
+    TestLevel,
+}
 #[proto(i16)]
 #[derive(Debug, Clone)]
 pub enum SpawnBiomeType {

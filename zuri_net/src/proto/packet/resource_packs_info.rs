@@ -1,3 +1,4 @@
+use crate::proto::ints::VarU32;
 use zuri_net_derive::proto;
 
 /// Sent by the server to inform the client on what resource packs the server has. It sends a list
@@ -23,6 +24,19 @@ pub struct ResourcePacksInfo {
     /// ResourcePackStack packet.
     #[len_type(u16)]
     pub texture_packs: Vec<TexturePackInfo>,
+    /// A list of texture packs to be downloaded over HTTP.
+    #[len_type(VarU32)]
+    pub pack_urls: Vec<PackUrl>,
+}
+
+/// Represents a resource pack served to the client over HTTP.
+#[proto]
+#[derive(Debug, Clone)]
+pub struct PackUrl {
+    /// The unique identifier for the resource pack.
+    pub uuid: String,
+    /// The URL from which the pack should be downloaded by the client.
+    pub url: String,
 }
 
 /// Holds information about the behaviour pack such as its name, description and version.

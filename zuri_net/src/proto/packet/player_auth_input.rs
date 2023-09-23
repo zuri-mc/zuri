@@ -63,6 +63,8 @@ pub enum InputFlag {
     PerformItemStackRequest,
     HandledTeleport,
     Emoting,
+    StartFlying,
+    StopFlying,
 }
 
 impl InputFlag {
