@@ -1,5 +1,4 @@
 use crate::proto::ints::VarU32;
-use crate::proto::io::{Readable, Writable};
 use crate::proto::types::recipe::{
     MaterialReducer, PotionContainerChangeRecipe, PotionRecipe, Recipe,
 };
