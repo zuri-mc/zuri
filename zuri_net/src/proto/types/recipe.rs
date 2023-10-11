@@ -156,29 +156,33 @@ pub struct ShapelessRecipe {
     pub recipe_network_id: VarU32,
 }
 
+#[proto]
 #[derive(Debug, Clone)]
 pub struct MaterialReducer {
     pub network_id: i32,
     pub metadata_value: u32,
+    #[len_type(VarU32)]
     pub outputs: Vec<MaterialReducerOutput>,
 }
 
-impl Writable for MaterialReducer {
+#[derive(Debug, Clone)]
+pub struct ItemType {
+    pub network_id: i32,
+    pub metadata_value: u32,
+}
+
+impl Writable for ItemType {
     fn write(&self, writer: &mut Writer) {
         writer.var_i32((self.network_id << 16) | (self.metadata_value as i32));
-        writer.var_u32(self.outputs.len() as u32);
-        self.outputs.iter().for_each(|output| output.write(writer));
     }
 }
 
-impl Readable<MaterialReducer> for MaterialReducer {
+impl Readable<ItemType> for ItemType {
     fn read(reader: &mut Reader) -> Self {
+        let value = reader.var_i32();
         Self {
-            network_id: reader.var_i32() >> 16,
-            metadata_value: (reader.var_i32() & 0xFFFF) as u32,
-            outputs: (0..reader.var_u32())
-                .map(|_| MaterialReducerOutput::read(reader))
-                .collect(),
+            network_id: value << 16,
+            metadata_value: (value & 0x7fff) as u32,
         }
     }
 }

@@ -1,5 +1,5 @@
-use zuri_net_derive::proto;
 use crate::proto::ints::VarU64;
+use zuri_net_derive::proto;
 
 /// An Education Edition packet sent from the server to the client to return a response to a
 /// previously requested action.
