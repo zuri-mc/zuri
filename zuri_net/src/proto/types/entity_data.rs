@@ -326,4 +326,7 @@ pub enum EntityDataFlag {
     FeelingHappy,
     Searching,
     Crawling,
+    TimerFlag1,
+    TimerFlag2,
+    TimerFlag3,
 }

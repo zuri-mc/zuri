@@ -65,6 +65,7 @@ pub enum InputFlag {
     Emoting,
     StartFlying,
     StopFlying,
+    ClientAckServerData,
 }
 
 impl InputFlag {

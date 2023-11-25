@@ -6,5 +6,5 @@ pub mod packet;
 #[allow(clippy::all)] // todo: remove on cleanup.
 pub mod types;
 
-pub const CURRENT_PROTOCOL: i32 = 618;
-pub const CURRENT_VERSION: &str = "1.20.30";
+pub const CURRENT_PROTOCOL: i32 = 622;
+pub const CURRENT_VERSION: &str = "1.20.40";
