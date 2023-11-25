@@ -45,6 +45,7 @@ pub enum PlayerActionType {
     StopCrawling,
     StartFlying,
     StopFlying,
+    ClientAckServerData,
 }
 
 #[derive(Debug, Clone, FromPrimitive, ToPrimitive)]

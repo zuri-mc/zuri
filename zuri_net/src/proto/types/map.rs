@@ -28,12 +28,41 @@ impl MapUpdateFlag {
 #[proto]
 #[derive(Debug, Clone)]
 pub struct MapDecoration {
-    pub decoration_type: u8,
+    pub decoration_type: MapDecorationType,
     pub rotation: u8,
     pub x: u8,
     pub y: u8,
     pub label: String,
     pub colour: VarRGBA,
+}
+
+#[proto(u8)]
+#[derive(Debug, Clone)]
+pub enum MapDecorationType {
+    MarkerWhite,
+    MarkerGreen,
+    MarkerRed,
+    MarkerBlue,
+    CrossWhite,
+    TriangleRed,
+    SquareWhite,
+    MarkerSign,
+    MarkerPink,
+    MarkerOrange,
+    MarkerYellow,
+    MarkerTeal,
+    TriangleGreen,
+    SmallSquareWhite,
+    Mansion,
+    Monument,
+    NoDraw,
+    VillageDesert,
+    VillagePlains,
+    VillageSavanna,
+    VillageSnowy,
+    VillageTaiga,
+    JungleTemple,
+    WitchHut,
 }
 
 #[derive(Debug, Clone)]

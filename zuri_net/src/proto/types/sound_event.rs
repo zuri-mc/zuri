@@ -446,4 +446,6 @@ pub enum SoundEvent {
     HoglinZombified,
     AmbientUnderwaterEnter,
     AmbientUnderwaterExit,
+    BottleFill,
+    BottleEmpty,
 }
