@@ -15,7 +15,7 @@ futures-lite = "1.12.0"
 async-trait = "0.1.60"
 serde = { version = "1.0.163" , features = ["derive"] }
 zuri_math = { path = "../zuri_math" }
-zuri_nbt = { path = "../zuri_nbt" }
+zuri_nbt = "0.3.0"
 zuri_net = { path = "../zuri_net" }
 zuri_world = { path = "../zuri_world", features = ["bevy"] }
 zuri_xbox = { path = "../zuri_xbox" }

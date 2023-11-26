@@ -11,6 +11,6 @@ downcast-rs = "1.2.0"
 glam = "0.23.0"
 sorted-vec = "0.8.2"
 thiserror = "1.0.40"
-zuri_nbt = { path = "../zuri_nbt", features = ["serde"] }
+zuri_nbt = { version = "0.3.0", features = ["serde"] }
 zuri_net = { path = "../zuri_net" }
 zuri_world_derive = { path = "../zuri_world_derive" }

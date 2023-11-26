@@ -5042,6 +5042,8 @@ dependencies = [
 [[package]]
 name = "zuri_nbt"
 version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1982ba3925239b58cb055415c83fc10e6dea6a2fca5b6a679cec5d29d0c868be"
 dependencies = [
  "bytes",
  "serde",
