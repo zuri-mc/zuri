@@ -12,7 +12,14 @@ pub struct ShowStoreOffer {
     /// A string that identifies the offer for which a window should be opened. While typically a
     /// UUID, the ID could be anything.
     pub offer_id: String,
-    /// Specifies if all other offers of the same 'author' as the one of the offer associated with
-    /// the `offer_id` should also be displayed, alongside the target offer.
-    pub show_all: bool,
+    /// The type of offer to show to the player.
+    pub typ: StoreOfferType,
+}
+
+#[proto(u8)]
+#[derive(Debug, Clone, PartialEq)]
+pub enum StoreOfferType {
+    Marketplace,
+    DressingRoom,
+    ServerRange,
 }

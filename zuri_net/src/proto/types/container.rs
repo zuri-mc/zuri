@@ -66,6 +66,8 @@ pub enum Container {
     Barrel,
     Cursor,
     CreatedOutput,
+    SmithingTableTemplate,
+    CrafterLevelEntity,
 }
 
 #[derive(Debug, Copy, Clone, FromPrimitive, ToPrimitive)]
@@ -122,6 +124,8 @@ pub enum ContainerType {
     JigsawEditor = 32,
     SmithingTable = 33,
     ChestBoat = 34,
+    DecoratedPot,
+    Crafter,
 }
 
 #[derive(Debug, Clone)]

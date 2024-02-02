@@ -51,7 +51,6 @@ use container_open::*;
 use container_set_data::*;
 use correct_player_move_prediction::*;
 use crafting_data::*;
-use crafting_event::*;
 use create_photo::*;
 use creative_content::*;
 use death_info::*;
@@ -121,6 +120,7 @@ use player_hot_bar::*;
 use player_input::*;
 use player_list::*;
 use player_skin::*;
+use player_toggle_crafter_slot_request::*;
 use position_tracking_db_client_request::*;
 use position_tracking_db_server_broadcast::*;
 use purchase_receipt::*;
@@ -157,6 +157,7 @@ use set_health::*;
 use set_last_hurt_by::*;
 use set_local_player_as_initialised::*;
 use set_player_game_type::*;
+use set_player_inventory_options::*;
 use set_score::*;
 use set_scoreboard_identity::*;
 use set_spawn_position::*;
@@ -253,7 +254,6 @@ pub mod container_open;
 pub mod container_set_data;
 pub mod correct_player_move_prediction;
 pub mod crafting_data;
-pub mod crafting_event;
 pub mod create_photo;
 pub mod creative_content;
 pub mod death_info;
@@ -323,6 +323,7 @@ pub mod player_hot_bar;
 pub mod player_input;
 pub mod player_list;
 pub mod player_skin;
+pub mod player_toggle_crafter_slot_request;
 pub mod position_tracking_db_client_request;
 pub mod position_tracking_db_server_broadcast;
 pub mod purchase_receipt;
@@ -359,6 +360,7 @@ pub mod set_health;
 pub mod set_last_hurt_by;
 pub mod set_local_player_as_initialised;
 pub mod set_player_game_type;
+pub mod set_player_inventory_options;
 pub mod set_score;
 pub mod set_scoreboard_identity;
 pub mod set_spawn_position;
@@ -453,7 +455,6 @@ encodable_enum!(
         InventorySlot = 50,
         ContainerSetData = 51,
         CraftingData = 52,
-        CraftingEvent = 53,
         GUIDataPickItem = 54,
         AdventureSettings = 55,
         BlockActorData = 56,
@@ -602,6 +603,8 @@ encodable_enum!(
         OpenSign = 303,
         AgentAnimation = 304,
         RefreshEntitlements = 305,
+        PlayerToggleCrafterSlotRequest = 306,
+        SetPlayerInventoryOptions = 307,
     }
 );
 

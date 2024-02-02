@@ -448,4 +448,11 @@ pub enum SoundEvent {
     AmbientUnderwaterExit,
     BottleFill,
     BottleEmpty,
+    CrafterCraft,
+    CrafterFail,
+    DecoratedPotInsert,
+    DecoratedPotInsertFail,
+    CrafterDisableSlot,
+    CopperBulbTurnOn,
+    CopperBulbTurnOff,
 }
